@@ -1,0 +1,51 @@
+[project]
+name = "micro-grind-explorer"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "lark",
+]
+
+[tool.basedpyright]
+# The core strictness level. 
+# "all" is even stricter than "strict" as it enables every single rule.
+typeCheckingMode = "all"
+
+# PROJECT SETTINGS
+# ----------------
+# Tells basedpyright where your code is
+include = ["src"]
+# Exclude folders you don't want checked (standard defaults usually work)
+exclude = ["**/node_modules", "**/__pycache__", ".venv"]
+
+# Basedpyright defaults to "All" platforms, which is safer than Pyright's
+# default of "whatever OS you are currently on."
+pythonPlatform = "All"
+pythonVersion = "3.14" # Set this to your minimum supported version
+
+# STRICTNESS OVERRIDES
+# --------------------
+# Basedpyright-specific rules that aren't in standard Pyright:
+
+# Ban all usage of 'Any'. This is the ultimate "strict mode" setting.
+reportAny = "error"
+
+# Ban writing ": Any" explicitly in your code.
+reportExplicitAny = "error"
+
+# Treat unreachable code as an error (Pyright only greys it out).
+reportUnreachable = "error"
+
+# Force you to specify which rule you are ignoring (e.g. # pyright: ignore[reportAny])
+reportIgnoreCommentWithoutRule = "error"
+
+# Disallow implicit string concatenation (e.g. "a" "b" becoming "ab")
+reportImplicitStringConcatenation = "error"
+
+# Ensure all generic types are indexed (e.g. list[int] instead of just list)
+reportMissingTypeArgument = "error"
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.39.2",
+]
