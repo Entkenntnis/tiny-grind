@@ -80,7 +80,7 @@ def check(
 ) -> None:
     match (term, whnf(expected_type, globals, reducers)):
         case (Lam(v1, vt1, body), Pi(v2, vt2, pi_body)):
-            if not is_equivalent(vt1, vt2, globals, reducers):
+            if not is_equivalent(vt1, vt2, globals, reducers, ctx=ctx, infer_fn=infer):
                 raise TypeError(f"Lambda param type {vt1} doesn't match Pi {vt2}")
 
             # The name in the Pi might be different from the name in the Lambda.
@@ -95,7 +95,9 @@ def check(
             pass
 
     inferred_type = infer(term, ctx, globals, reducers)
-    if not is_equivalent(inferred_type, expected_type, globals, reducers):
+    if not is_equivalent(
+        inferred_type, expected_type, globals, reducers, ctx=ctx, infer_fn=infer
+    ):
         raise TypeError(
             f"Type mismatch, Term: {term}, Expected: {expected_type}, Inferred: {inferred_type}"
         )
