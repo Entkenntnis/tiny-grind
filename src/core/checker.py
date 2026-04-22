@@ -37,6 +37,42 @@ class TypeChecker:
             return term_type
         return None
 
+    def _infer_function_type(self, term: Term, ctx: Context) -> Pi | None:
+        try:
+            match term:
+                case Lam(var, var_type, body):
+                    body_type = self._infer(body, self._extend_ctx(ctx, var, var_type))
+                    return Pi(var, var_type, body_type)
+                case _:
+                    inferred = self._whnf(self._infer(term, ctx))
+                    if isinstance(inferred, Pi):
+                        return inferred
+        except TypeError:
+            return None
+        return None
+
+    def _is_eta_equivalent(self, t1: Term, t2: Term, ctx: Context) -> bool:
+        pi1 = self._infer_function_type(t1, ctx)
+        pi2 = self._infer_function_type(t2, ctx)
+        if pi1 is None or pi2 is None:
+            return False
+
+        if not self._is_equivalent(pi1, pi2, ctx):
+            return False
+
+        forbidden = (
+            get_free_vars(t1)
+            | get_free_vars(t2)
+            | get_free_vars(pi1.var_type)
+            | get_free_vars(pi1.body)
+            | get_free_vars(pi2.var_type)
+            | get_free_vars(pi2.body)
+        )
+        z = fresh_name("eta", forbidden)
+        body_ctx = self._extend_ctx(ctx, z, pi1.var_type)
+        z_var = Var(z)
+        return self._is_equivalent(App(t1, z_var), App(t2, z_var), body_ctx)
+
     @staticmethod
     def _extend_ctx(ctx: Context, name: str, var_type: Term) -> Context:
         return ctx + [(name, var_type)]
@@ -140,6 +176,11 @@ class TypeChecker:
                 t1_proof_type, t2_proof_type, ctx
             ):
                 return True
+
+        if isinstance(t1, Lam) != isinstance(t2, Lam) and self._is_eta_equivalent(
+            t1, t2, ctx
+        ):
+            return True
 
         match (t1, t2):
             case (Var(n1), Var(n2)):
