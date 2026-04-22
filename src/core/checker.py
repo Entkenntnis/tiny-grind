@@ -52,6 +52,8 @@ def infer(
             if not isinstance(t2, Sort):
                 raise TypeError(f"Body of Pi must be a Sort, got {t2}")
 
+            if t2.level == 0:
+                return Sort(0)  # Prop is impredicative!
             return Sort(max(t1.level, t2.level))
 
         case Ann(term, type):
