@@ -115,9 +115,7 @@ def subst : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y: A) -> @Eq A x y -> P
         )
         px
 
-def IsInjective : (alpha : Type) -> (beta : Type) -> (f : alpha -> beta) -> Prop :=
-  fun (alpha : Type) (beta : Type) (f : alpha -> beta) =>
-    forall (a : alpha) (b : alpha), @Eq beta (f a) (f b) -> @Eq alpha a b
+
 
 
 """
