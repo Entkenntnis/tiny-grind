@@ -29,6 +29,6 @@ Main omissions from the kernel:
 
 - No `inductive` keyword, constructors are hardcoded as axioms, recursors implemented in python where necessary. Stick to LEAN implementation for soundness, avoids a lot of headaches in the kernel.
 - No universe polymorphism, so category theory will be pain, stick to the parts of mathematics that are intended for mortals.
-- No `let`, seems to need kernel support, but I haven't wrapped my head around it yet, might be added soonish
+- No `let`, seems to need kernel support, but I haven't wrapped my head around it yet, good first task
 
 Most syntactical sugar (implicit arguments, shorthands, match, case) is omitted, as this is not impacting the theoretical expressiveness, it can be added ad-hoc.
