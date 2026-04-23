@@ -10,7 +10,6 @@ from core.prelude import load_prelude
 from core.kernel import Kernel
 from core.parser import parse_declarations
 from core.checker import TypeError as KernelTypeError
-from core.syntax import Axiom, Definition
 
 
 # Colors
@@ -31,11 +30,7 @@ def run_tests():
             kernel = Kernel()
             load_prelude(kernel)
             for decl in parse_declarations(path.read_text(encoding="utf-8")):
-                match decl:
-                    case Definition():
-                        kernel.add_definition(decl)
-                    case Axiom():
-                        kernel.add_axiom(decl)
+                kernel.add_decl(decl)
             succeeded = True
             error_msg = ""
         except (ValueError, KernelTypeError, OSError) as e:

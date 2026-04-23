@@ -7,7 +7,6 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
 
 
-from core.syntax import Axiom, Definition
 from core.parser import parse_declarations
 from core.kernel import Kernel
 from core.prelude import load_prelude
@@ -125,8 +124,4 @@ def triv_example : @Eq Prop True True :=
 kernel = Kernel()
 load_prelude(kernel)
 for decl in parse_declarations(CODE):
-    match decl:
-        case Definition():
-            kernel.add_definition(decl)
-        case Axiom():
-            kernel.add_axiom(decl)
+    kernel.add_decl(decl)

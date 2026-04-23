@@ -89,7 +89,7 @@ def substitute(term: Term, target: str, replacement: Term) -> Term:
 
             # ignore shadowing
             if var == target:
-                if isinstance(term, Lam):
+                if isinstance(term, Lam) and var is not None:
                     return Lam(var, new_var_type, body)
                 return Pi(var, new_var_type, body)
 

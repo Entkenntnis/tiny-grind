@@ -14,8 +14,8 @@ class TypeChecker:
     def __init__(
         self, globals: Globals, reducers: dict[str, Reducer], ctx: Context | None = None
     ) -> None:
-        self.globals = globals
-        self.reducers = reducers
+        self.globals: Globals = globals
+        self.reducers: dict[str, Reducer] = reducers
         self.ctx: Context = [] if ctx is None else list(ctx)
 
     def infer(self, term: Term) -> Term:

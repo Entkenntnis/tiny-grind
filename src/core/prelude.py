@@ -1,7 +1,7 @@
 from core.eval import Globals, Reducer, collect_args, whnf
 from core.kernel import Kernel
 from core.parser import parse_declarations
-from core.syntax import App, Axiom, Definition, Term, Var
+from core.syntax import App, Term, Var
 
 
 PRELUDE = """
@@ -152,8 +152,4 @@ def load_prelude(kernel: Kernel):
 
     decls = parse_declarations(PRELUDE)
     for d in decls:
-        match d:
-            case Axiom():
-                kernel.add_axiom(d)
-            case Definition():
-                kernel.add_definition(d)
+        kernel.add_decl(d)
