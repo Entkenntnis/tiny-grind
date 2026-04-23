@@ -34,7 +34,7 @@ class Kernel:
             # 1. First, ensure the 'type' provided is actually a valid type.
             # In our system, the type of a type muste be a Sort (Prop or Type).
             # We don't know the level, so we just infer and check if it's a Sort.
-            type_of_type = checker.infer(defn.type)
+            type_of_type = whnf(checker.infer(defn.type), self.globals, self.reducers)
             if not isinstance(type_of_type, Sort):
                 raise TypeError(
                     f"The type provided for '{defn.name}' is not a valid Sort."
