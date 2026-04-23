@@ -115,6 +115,8 @@ def subst : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y: A) -> @Eq A x y -> P
         )
         px
 
+def triv_example : @Eq Prop True True :=
+    @Eq.refl Prop True
 
 
 

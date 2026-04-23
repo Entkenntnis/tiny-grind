@@ -1,5 +1,5 @@
 from core.eval import Globals, Reducer, whnf
-from core.logic import fresh_name, get_free_vars, rename, substitute
+from core.logic import fresh_name, get_free_vars, substitute
 from core.syntax import Ann, App, Lam, Pi, Sort, Term, Var
 
 # mapping of variables and their types
@@ -31,8 +31,12 @@ class TypeChecker:
         return whnf(term, self.globals, self.reducers)
 
     def _proof_term_type(self, term: Term, ctx: Context) -> Term | None:
-        term_type = self._whnf(self._infer(term, ctx))
-        type_of_term_type = self._whnf(self._infer(term_type, ctx))
+        try:
+            term_type = self._whnf(self._infer(term, ctx))
+            type_of_term_type = self._whnf(self._infer(term_type, ctx))
+        except TypeError:
+            return None
+
         if isinstance(type_of_term_type, Sort) and type_of_term_type.level == 0:
             return term_type
         return None
@@ -60,15 +64,9 @@ class TypeChecker:
         if not self._is_equivalent(pi1, pi2, ctx):
             return False
 
-        forbidden = (
-            get_free_vars(t1)
-            | get_free_vars(t2)
-            | get_free_vars(pi1.var_type)
-            | get_free_vars(pi1.body)
-            | get_free_vars(pi2.var_type)
-            | get_free_vars(pi2.body)
+        z = self._fresh_name_for(
+            "eta", ctx, t1, t2, pi1.var_type, pi1.body, pi2.var_type, pi2.body
         )
-        z = fresh_name("eta", forbidden)
         body_ctx = self._extend_ctx(ctx, z, pi1.var_type)
         z_var = Var(z)
         return self._is_equivalent(App(t1, z_var), App(t2, z_var), body_ctx)
@@ -76,6 +74,12 @@ class TypeChecker:
     @staticmethod
     def _extend_ctx(ctx: Context, name: str, var_type: Term) -> Context:
         return ctx + [(name, var_type)]
+
+    def _fresh_name_for(self, base: str, ctx: Context, *terms: Term) -> str:
+        forbidden = {name for name, _ in ctx} | set(self.globals)
+        for term in terms:
+            forbidden |= get_free_vars(term)
+        return fresh_name(base, forbidden)
 
     def _infer(self, term: Term, ctx: Context) -> Term:
         match term:
@@ -194,11 +198,12 @@ class TypeChecker:
             case (Lam(v1, vt1, b1), Lam(v2, vt2, b2)):
                 if not self._is_equivalent(vt1, vt2, ctx):
                     return False  # mismatching domain types
-                z = fresh_name("z", get_free_vars(b1) | get_free_vars(b2))
+                z = self._fresh_name_for("z", ctx, vt1, vt2, b1, b2)
                 body_ctx = self._extend_ctx(ctx, z, vt1)
+                z_var = Var(z)
                 return self._is_equivalent(
-                    rename(b1, v1, z),
-                    rename(b2, v2, z),
+                    substitute(b1, v1, z_var),
+                    substitute(b2, v2, z_var),
                     body_ctx,
                 )
             case (Pi(v1, vt1, b1), Pi(v2, vt2, b2)):
@@ -210,11 +215,12 @@ class TypeChecker:
                     case (None, None):
                         return self._is_equivalent(b1, b2, ctx)
                     case (str(), str()):
-                        z = fresh_name("z", get_free_vars(b1) | get_free_vars(b2))
+                        z = self._fresh_name_for("z", ctx, vt1, vt2, b1, b2)
                         body_ctx = self._extend_ctx(ctx, z, vt1)
+                        z_var = Var(z)
                         return self._is_equivalent(
-                            rename(b1, v1, z),
-                            rename(b2, v2, z),
+                            substitute(b1, v1, z_var),
+                            substitute(b2, v2, z_var),
                             body_ctx,
                         )
                     case (None, str()):

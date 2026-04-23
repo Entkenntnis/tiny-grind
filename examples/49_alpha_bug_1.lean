@@ -1,0 +1,2 @@
+def ValidEqAlpha : @Eq (Prop -> Prop -> Prop) (fun (x : Prop) => fun (z_1 : Prop) => x) (fun (y : Prop) => fun (z : Prop) => y) :=
+  @Eq.refl (Prop -> Prop -> Prop) (fun (x : Prop) => fun (z_1 : Prop) => x)
