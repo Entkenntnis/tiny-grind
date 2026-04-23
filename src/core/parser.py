@@ -138,7 +138,7 @@ class _ToAst(Transformer[Token, Any]):
     def axiom(self, children: list[Any]) -> Axiom:
         return Axiom(name=cast(str, children[0]), type=cast(Term, children[1]))
 
-    def start(self, children: list[Definition]) -> list[Definition]:
+    def start(self, children: list[Definition | Axiom]) -> list[Definition | Axiom]:
         return children
 
 
