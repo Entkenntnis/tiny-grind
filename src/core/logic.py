@@ -1,4 +1,4 @@
-from core.syntax import Ann, App, Lam, Pi, Sort, Term, Var
+from core.syntax import Ann, App, Lam, Let, Pi, Sort, Term, Var
 
 
 def get_free_vars(term: Term) -> set[str]:
@@ -13,6 +13,12 @@ def get_free_vars(term: Term) -> set[str]:
             # Pi var could be none, empty set then
             return get_free_vars(var_type) | (
                 get_free_vars(body) - ({var} if var else set())
+            )
+        case Let(var, var_type, value, body):
+            return (
+                get_free_vars(var_type)
+                | get_free_vars(value)
+                | (get_free_vars(body) - {var})
             )
         case _:
             return set()
@@ -49,6 +55,11 @@ def rename(term: Term, old: str, new: str) -> Term:
             new_var_type = rename(var_type, old, new)
             new_body = body if var == old else rename(body, old, new)
             return Pi(var, new_var_type, new_body)
+        case Let(var, var_type, value, body):
+            new_var_type = rename(var_type, old, new)
+            new_value = rename(value, old, new)
+            new_body = body if var == old else rename(body, old, new)
+            return Let(var, new_var_type, new_value, new_body)
         case _:
             return term
 
@@ -73,21 +84,17 @@ def substitute(term: Term, target: str, replacement: Term) -> Term:
             )
         case Sort():
             return term
-        case _:
-            # handle Lam and Pi
-            # this is unproblematic
-            new_var_type = substitute(term.var_type, target, replacement)
+        case Lam(var, var_type, body) | Pi(var, var_type, body):
+            new_var_type = substitute(var_type, target, replacement)
 
             # ignore shadowing
-            if term.var == target:
+            if var == target:
                 if isinstance(term, Lam):
-                    return Lam(term.var, new_var_type, term.body)
-                else:
-                    return Pi(term.var, new_var_type, term.body)
+                    return Lam(var, new_var_type, body)
+                return Pi(var, new_var_type, body)
 
-            # now, here I have to handle capture avoidance
-            current_var = term.var
-            current_body = term.body
+            current_var = var
+            current_body = body
 
             if (
                 current_var is not None
@@ -106,7 +113,28 @@ def substitute(term: Term, target: str, replacement: Term) -> Term:
 
             new_body = substitute(current_body, target, replacement)
 
-            if isinstance(term, Lam) and current_var is not None:
+            if isinstance(term, Lam):
+                assert current_var is not None
                 return Lam(current_var, new_var_type, new_body)
-            else:
-                return Pi(current_var, new_var_type, new_body)
+            return Pi(current_var, new_var_type, new_body)
+        case Let(var, var_type, value, body):
+            new_var_type = substitute(var_type, target, replacement)
+            new_value = substitute(value, target, replacement)
+
+            if var == target:
+                return Let(var, new_var_type, new_value, body)
+
+            current_var = var
+            current_body = body
+            if target in get_free_vars(current_body) and current_var in get_free_vars(
+                replacement
+            ):
+                new_binder_name = fresh_name(
+                    current_var,
+                    get_free_vars(current_body) | get_free_vars(replacement),
+                )
+                current_body = rename(current_body, current_var, new_binder_name)
+                current_var = new_binder_name
+
+            new_body = substitute(current_body, target, replacement)
+            return Let(current_var, new_var_type, new_value, new_body)

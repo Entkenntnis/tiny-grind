@@ -51,6 +51,15 @@ class Ann(TermBase):
     type: Term
 
 
+@final
+@dataclass(frozen=True)
+class Let(TermBase):
+    var: str
+    var_type: Term
+    value: Term
+    body: Term
+
+
 # yeah, we kinda should support universes, Sort(0) = Prop, Sort(1) = Type, Sort(2) = Type 1, ...
 @final
 @dataclass(frozen=True)
@@ -59,7 +68,7 @@ class Sort(TermBase):
 
 
 # use this type for all signatures
-type Term = Var | Lam | Pi | App | Ann | Sort
+type Term = Var | Lam | Pi | App | Ann | Let | Sort
 
 
 @final

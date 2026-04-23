@@ -1,11 +1,11 @@
-from core.syntax import Axiom, Term, Var, Lam, App, Ann, Sort, Pi, Definition
+from core.syntax import Ann, App, Axiom, Definition, Lam, Let, Pi, Sort, Term, Var
 
 
 def print_term(term: Term, prec: int = 0) -> str:
     """
     Converts a Term dataclass into a string representation.
     prec: Current precedence level
-        0: Lowest (Pi, Lam)
+        0: Lowest (Pi, Lam, Let)
         1: Ann
         2: App
         3: Highest (Atoms: Var, Sort, Parens)
@@ -38,6 +38,14 @@ def print_term(term: Term, prec: int = 0) -> str:
         case Lam(var, var_type, body):
             # Lam is level 0.
             res = f"fun ({var} : {print_term(var_type, 0)}) => {print_term(body, 0)}"
+            return f"({res})" if prec > 0 else res
+
+        case Let(var, var_type, value, body):
+            # Let is level 0.
+            res = (
+                f"let {var} : {print_term(var_type, 0)} := "
+                f"{print_term(value, 0)}; {print_term(body, 0)}"
+            )
             return f"({res})" if prec > 0 else res
 
         case Pi(var, var_type, body):

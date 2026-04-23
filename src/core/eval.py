@@ -1,7 +1,7 @@
 from typing import Callable
 
 from core.logic import substitute
-from core.syntax import Ann, App, Lam, Term, Var
+from core.syntax import Ann, App, Lam, Let, Term, Var
 
 type Globals = dict[str, tuple[Term, Term | None]]  # name -> (type, value) - or axioms
 
@@ -40,6 +40,9 @@ def whnf(term: Term, globals: Globals, reducers: dict[str, Reducer]) -> Term:
         # 3. strip annotations
         case Ann(inner, _):
             return whnf(inner, globals, reducers)
+
+        case Let(var, _, value, body):
+            return whnf(substitute(body, var, value), globals, reducers)
 
         case _:
             return term

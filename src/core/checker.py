@@ -1,6 +1,6 @@
 from core.eval import Globals, Reducer, whnf
 from core.logic import fresh_name, get_free_vars, substitute
-from core.syntax import Ann, App, Lam, Pi, Sort, Term, Var
+from core.syntax import Ann, App, Lam, Let, Pi, Sort, Term, Var
 
 # mapping of variables and their types
 type Context = list[tuple[str, Term]]
@@ -109,7 +109,9 @@ class TypeChecker:
                             return substitute(body, var, n)
                         return body
                     case _:
-                        raise TypeError(f"Expected a function type for {m}, got {m_type}")
+                        raise TypeError(
+                            f"Expected a function type for {m}, got {m_type}"
+                        )
 
             case Pi(var, var_type, body):
                 t1 = self._whnf(self._infer(var_type, ctx))
@@ -133,6 +135,16 @@ class TypeChecker:
                     )
                 self._check(term, type, ctx)
                 return type
+
+            case Let(var, var_type, value, body):
+                type_of_type = self._whnf(self._infer(var_type, ctx))
+                if not isinstance(type_of_type, Sort):
+                    raise TypeError(
+                        f"Let binder type must have a Sort kind, got {type_of_type}"
+                    )
+                self._check(value, var_type, ctx)
+                body_type = self._infer(body, self._extend_ctx(ctx, var, var_type))
+                return substitute(body_type, var, value)
 
             case Lam():
                 raise TypeError(

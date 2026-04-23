@@ -8,7 +8,7 @@ from typing import Any, Final, cast
 from lark import Lark, Token, Transformer
 from lark.exceptions import LarkError
 
-from core.syntax import Ann, App, Axiom, Definition, Lam, Pi, Sort, Term, Var
+from core.syntax import Ann, App, Axiom, Definition, Lam, Let, Pi, Sort, Term, Var
 
 # Pre-compile the grammar for performance
 _GRAMMAR = r"""
@@ -17,7 +17,10 @@ start: (definition | axiom)*
 definition: "def" NAME ":" term ":=" term             -> definition
 axiom: "axiom" NAME ":" term                          -> axiom
 
-?term: lambda_term
+?term: let_term
+
+?let_term: "let" NAME ":" term ":=" term ";" term     -> let_term
+         | lambda_term
 
 ?lambda_term: ("fun" | "λ") typed_binder+ "=>" term   -> lambda_term
             | forall_term
@@ -116,6 +119,14 @@ class _ToAst(Transformer[Token, Any]):
 
     def ann_term(self, children: list[Term]) -> Term:
         return Ann(term=children[0], type=children[1])
+
+    def let_term(self, children: list[Any]) -> Term:
+        return Let(
+            var=cast(str, children[0]),
+            var_type=cast(Term, children[1]),
+            value=cast(Term, children[2]),
+            body=cast(Term, children[3]),
+        )
 
     def definition(self, children: list[Any]) -> Definition:
         return Definition(
