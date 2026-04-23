@@ -89,7 +89,11 @@ def substitute(term: Term, target: str, replacement: Term) -> Term:
             current_var = term.var
             current_body = term.body
 
-            if current_var is not None and current_var in get_free_vars(replacement):
+            if (
+                current_var is not None
+                and target in get_free_vars(current_body)
+                and current_var in get_free_vars(replacement)
+            ):
                 # we don't touch the replacement, but rename the binder in the body instead
                 # before we start the substitution run
                 new_binder_name = fresh_name(
