@@ -17,3 +17,11 @@ I would like to introduce tactics mode into the syntax. Next, I need an interfac
 - constraint propagation
 - some basic case analysis
 
+## Limitations
+
+Main omissions from the kernel:
+
+- No `inductive` keyword, constructors are hardcoded as axioms, recursors implemented in python where necessary. Stick to LEAN implementation for soundness, avoids a lot of headaches in the kernel.
+- No universe polymorphism, so category theory will be pain, stick to the parts of mathematics that are intended for mortals.
+
+Most syntactical sugar (implicit arguments, shorthands, match, case) is omitted, as this is not impacting the theoretical expressiveness, it can be added ad-hoc.
