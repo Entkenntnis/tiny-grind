@@ -150,6 +150,8 @@ class TypeChecker:
                 raise TypeError(
                     "Cannot infer type of lambda. Use an annotation or check it against a Pi."
                 )
+            case _:
+                raise TypeError("Unelaborated node encountered, fatal system failure.")
 
     def _check(self, term: Term, expected_type: Term, ctx: Context) -> None:
         match (term, self._whnf(expected_type)):

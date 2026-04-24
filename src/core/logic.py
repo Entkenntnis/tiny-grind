@@ -138,3 +138,5 @@ def substitute(term: Term, target: str, replacement: Term) -> Term:
 
             new_body = substitute(current_body, target, replacement)
             return Let(current_var, new_var_type, new_value, new_body)
+        case _:
+            return term

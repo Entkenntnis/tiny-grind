@@ -67,8 +67,14 @@ class Sort(TermBase):
     level: int
 
 
+@final
+@dataclass(frozen=True)
+class ElabTactic(TermBase):
+    name: str  # "sorry" or "grind"
+
+
 # use this type for all signatures
-type Term = Var | Lam | Pi | App | Ann | Let | Sort
+type Term = Var | Lam | Pi | App | Ann | Let | Sort | ElabTactic
 
 
 @final

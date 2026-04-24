@@ -118,6 +118,11 @@ def triv_example : @Eq Prop True True :=
     @Eq.refl Prop True
 
 
+def test : True := by sorry
+
+-- def subst2 : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y: A) -> @Eq A x y -> P x -> P y := 
+--     by sorry
+
 
 """
 

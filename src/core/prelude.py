@@ -28,6 +28,8 @@ axiom @Eq.refl : (A : Type) -> (a : A) -> @Eq A a a
 axiom @Eq.rec : (A : Type) -> (a : A) -> (motive : (x : A) -> @Eq A a x -> Prop) -> motive a (@Eq.refl A a) -> (b : A) -> (t : @Eq A a b) -> motive b t
 
 
+axiom sorryAx : (A : Prop) -> A
+
 """
 
 

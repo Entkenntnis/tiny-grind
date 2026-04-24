@@ -1,4 +1,16 @@
-from core.syntax import Ann, App, Axiom, Definition, Lam, Let, Pi, Sort, Term, Var
+from core.syntax import (
+    Ann,
+    App,
+    Axiom,
+    Definition,
+    ElabTactic,
+    Lam,
+    Let,
+    Pi,
+    Sort,
+    Term,
+    Var,
+)
 
 
 def print_term(term: Term, prec: int = 0) -> str:
@@ -58,6 +70,8 @@ def print_term(term: Term, prec: int = 0) -> str:
                 # Dependent Pi: (x : A) -> B
                 res = f"({var} : {print_term(var_type, 0)}) -> {print_term(body, 0)}"
             return f"({res})" if prec > 0 else res
+        case ElabTactic(name):
+            return f"by {name}"
 
 
 def print_definition(defn: Definition) -> str:

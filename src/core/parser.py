@@ -8,7 +8,19 @@ from typing import Any, Final, cast
 from lark import Lark, Token, Transformer
 from lark.exceptions import LarkError
 
-from core.syntax import Ann, App, Axiom, Definition, Lam, Let, Pi, Sort, Term, Var
+from core.syntax import (
+    Ann,
+    App,
+    Axiom,
+    Definition,
+    ElabTactic,
+    Lam,
+    Let,
+    Pi,
+    Sort,
+    Term,
+    Var,
+)
 
 # Pre-compile the grammar for performance
 _GRAMMAR = r"""
@@ -35,6 +47,7 @@ axiom: "axiom" NAME ":" term                          -> axiom
 ?app_term: atom+                                   -> app_chain
 
 ?atom: NAME                                        -> var
+     | "by" NAME                                   -> tactic
      | "Prop"                                      -> prop_sort
      | "Type"                                      -> type_sort
      | "Sort" INT                                  -> sort_n
@@ -76,6 +89,9 @@ class _ToAst(Transformer[Token, Any]):
 
     def sort_n(self, children: list[int]) -> Sort:
         return Sort(level=children[0])
+
+    def tactic(self, children: list[Token]) -> ElabTactic:
+        return ElabTactic(name=str(children[0]))
 
     def typed_binder(self, children: list[Any]) -> tuple[str, Term]:
         # Matches: "(" NAME ":" term ")"
