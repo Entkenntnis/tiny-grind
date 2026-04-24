@@ -23,7 +23,7 @@ class ElaborationError(Exception):
     pass
 
 
-# TODO: Debug the elaborator, it should work I guess, but it does not yet
+# The elaborator is not completely clever yet, but should be "good enough" for the start
 class Elaborator:
     def __init__(self, kernel: Kernel) -> None:
         self.kernel: Kernel = kernel
@@ -35,19 +35,16 @@ class Elaborator:
         (if known). Tactics need this information.
         """
         match term:
-            case ElabTactic("sorry"):
+            case ElabTactic(name):
                 if expected_type is None:
                     raise ElaborationError(
-                        "Cannot use 'sorry' here: no expected type available"
+                        f"Cannot use '{name}' here: no expected type available"
                     )
-                return self._sorry(expected_type)
-
-            case ElabTactic("grind"):
-                if expected_type is None:
-                    raise ElaborationError(
-                        "Cannot use 'grind' here: no expected type available"
-                    )
-                return self._grind(expected_type, ctx)
+                if name == "sorry":
+                    return self._sorry(expected_type, ctx)
+                if name == "grind":
+                    return self._grind(expected_type, ctx)
+                raise ElaborationError(f"Unknown tactci '{name}'")
 
             case Var(_) | Sort(_):
                 return term
@@ -104,16 +101,25 @@ class Elaborator:
                 new_body = self.elaborate(body, new_ctx, None)
                 return Let(var, new_var_type, new_value, new_body)
 
-            case _:
-                raise ElaborationError(f"Unhandled term during elaboration: {term}")
-
-    def _sorry(self, goal_type: Term) -> Term:
+    def _sorry(self, goal_type: Term, ctx: Context) -> Term:
         """Uses the generic `sorryAx` axiom to close a goal of type `Prop`."""
-        goal_whnf = whnf(goal_type, self.kernel.globals, self.kernel.reducers)
-        if not isinstance(goal_whnf, Sort) or goal_whnf.level != 0:
+        # Infer the *type* of the goal – this must be Prop.
+        checker = TypeChecker(self.kernel.globals, self.kernel.reducers, ctx)
+        try:
+            goal_type_type = checker.infer(goal_type)
+        except TypeError as e:
             raise ElaborationError(
-                f"sorry can only close goals of type Prop, but goal is {goal_type}"
+                f"sorry cannot infer the type of the goal {goal_type}: {e}"
+            ) from e
+
+        goal_type_type_whnf = whnf(
+            goal_type_type, self.kernel.globals, self.kernel.reducers
+        )
+        if not isinstance(goal_type_type_whnf, Sort) or goal_type_type_whnf.level != 0:
+            raise ElaborationError(
+                f"sorry can only close goals of type Prop. Goal {goal_type} has type {goal_type_type}"
             )
+
         # sorryAx : (A : Prop) -> A
         return App(Var("sorryAx"), goal_type)
 
