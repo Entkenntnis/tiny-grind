@@ -10,7 +10,7 @@ class Kernel:
     def __init__(self) -> None:
         self.globals: Globals = {}
         self.reducers: dict[str, Reducer] = {}
-        self.elaborator: Elaborator = Elaborator(self)
+        self.elaborator: Elaborator = Elaborator(self.globals, self.reducers)
 
     def register_reducer(self, name: str, fn: Reducer):
         self.reducers[name] = fn

@@ -1,4 +1,4 @@
-from core.eval import whnf
+from core.eval import Globals, Reducer, whnf
 from core.logic import substitute
 from core.syntax import (
     Ann,
@@ -12,11 +12,8 @@ from core.syntax import (
     Var,
 )
 from core.checker import TypeError, TypeChecker, Context
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from core.kernel import Kernel
+from frontend.grind import grind
+from frontend.sorry import sorry
 
 
 class ElaborationError(Exception):
@@ -25,8 +22,9 @@ class ElaborationError(Exception):
 
 # The elaborator is not completely clever yet, but should be "good enough" for the start
 class Elaborator:
-    def __init__(self, kernel: Kernel) -> None:
-        self.kernel: Kernel = kernel
+    def __init__(self, globals: Globals, reducers: dict[str, Reducer]) -> None:
+        self.globals: Globals = globals
+        self.reducers: dict[str, Reducer] = reducers
 
     def elaborate(self, term: Term, ctx: Context, expected_type: Term | None) -> Term:
         """
@@ -41,9 +39,9 @@ class Elaborator:
                         f"Cannot use '{name}' here: no expected type available"
                     )
                 if name == "sorry":
-                    return self._sorry(expected_type, ctx)
+                    return sorry(expected_type, ctx, self.globals, self.reducers)
                 if name == "grind":
-                    return self._grind(expected_type, ctx)
+                    return grind(expected_type, ctx, self.globals, self.reducers)
                 raise ElaborationError(f"Unknown tactci '{name}'")
 
             case Var(_) | Sort(_):
@@ -59,11 +57,9 @@ class Elaborator:
                 # Try to infer the argument type from the function part.
                 arg_type: Term | None = None
                 try:
-                    checker = TypeChecker(
-                        self.kernel.globals, self.kernel.reducers, ctx
-                    )
+                    checker = TypeChecker(self.globals, self.reducers, ctx)
                     m_type = checker.infer(new_m)
-                    m_whnf = whnf(m_type, self.kernel.globals, self.kernel.reducers)
+                    m_whnf = whnf(m_type, self.globals, self.reducers)
                     if isinstance(m_whnf, Pi):
                         arg_type = m_whnf.var_type
                 except TypeError:
@@ -75,9 +71,7 @@ class Elaborator:
                 new_var_type = self.elaborate(var_type, ctx, None)
                 body_expected: Term | None = None
                 if expected_type is not None:
-                    exp_whnf = whnf(
-                        expected_type, self.kernel.globals, self.kernel.reducers
-                    )
+                    exp_whnf = whnf(expected_type, self.globals, self.reducers)
                     if isinstance(exp_whnf, Pi):
                         body_expected = (
                             substitute(exp_whnf.body, exp_whnf.var, Var(var))
@@ -100,36 +94,6 @@ class Elaborator:
                 new_ctx = self._extend_ctx(ctx, var, new_var_type)
                 new_body = self.elaborate(body, new_ctx, None)
                 return Let(var, new_var_type, new_value, new_body)
-
-    def _sorry(self, goal_type: Term, ctx: Context) -> Term:
-        """Uses the generic `sorryAx` axiom to close a goal of type `Prop`."""
-        # Infer the *type* of the goal – this must be Prop.
-        checker = TypeChecker(self.kernel.globals, self.kernel.reducers, ctx)
-        try:
-            goal_type_type = checker.infer(goal_type)
-        except TypeError as e:
-            raise ElaborationError(
-                f"sorry cannot infer the type of the goal {goal_type}: {e}"
-            ) from e
-
-        goal_type_type_whnf = whnf(
-            goal_type_type, self.kernel.globals, self.kernel.reducers
-        )
-        if not isinstance(goal_type_type_whnf, Sort) or goal_type_type_whnf.level != 0:
-            raise ElaborationError(
-                f"sorry can only close goals of type Prop. Goal {goal_type} has type {goal_type_type}"
-            )
-
-        # sorryAx : (A : Prop) -> A
-        return App(Var("sorryAx"), goal_type)
-
-    def _grind(self, goal_type: Term, ctx: Context) -> Var:
-        """Simple `grind`: search the context for an exact match."""
-        checker = TypeChecker(self.kernel.globals, self.kernel.reducers, ctx)
-        for var_name, var_type in reversed(ctx):
-            if checker.is_equivalent(var_type, goal_type):
-                return Var(var_name)
-        raise ElaborationError(f"grind could not solve goal: {goal_type}")
 
     @staticmethod
     def _extend_ctx(ctx: Context, name: str, var_type: Term) -> Context:
