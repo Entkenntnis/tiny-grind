@@ -11,4 +11,6 @@ def grind(
     print(f"[GRIND.DEBUG] goal: {print_term(goal_type)}")
     print(f"[GRIND.DEBUG] ctx: {ctx}")
 
+    # use intro to add new elements to the E-graph
+
     raise RuntimeError(f"grind not implemented yet")
