@@ -19,9 +19,7 @@ I would like to introduce tactics mode into the syntax. Next, I need an interfac
 
 ## Coming soon
 
-Some things I'm working on:
-
-- Add an elaborator that can handle tactics, e.g. sorry and a stub for grind
+Stub for grind is available, now it's time to get an overview of how the solver handles inputs and outputs and setup the necesesary axioms.
 
 ## Limitations
 
