@@ -1,3 +1,4 @@
+set_option diagnostics true
 def lion_and_unicorn :
   -- domain and constants
     (Day : Type) ->

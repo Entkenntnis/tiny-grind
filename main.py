@@ -16,8 +16,7 @@ from scaffolding.syntax import Definition
 from scaffolding.helper import substitute_grind
 from tinygrind.entry import tinygrind
 
-
-output = "-- Visit https://live.lean-lang.org to verify this file\n\n"
+output = ""
 
 
 def process_problem(dirpath: str, filename: str):
@@ -66,4 +65,4 @@ traverse_folder("problems")
 with open("output.lean", "w", encoding="utf-8") as f:
     _ = f.write(output)
 
-print("\nProofs saved to output.lean\nBYE")
+print("\nProofs saved to problems/output.lean\nBYE")
