@@ -1,5 +1,15 @@
 # tiny-grind
 
+An educational best-effort reimplmenetation of the grind tactic in Python.
+
+## Introduction
+
+Let's assume 
+
+
+
+
+
 An educational best-effort reimplementation of the grind tactic in Python within a tiny LEAN kernel.
 
 > **The Programmers' Credo:**
