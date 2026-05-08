@@ -47,7 +47,7 @@ axiom: "axiom" NAME ":" term                          -> axiom
 ?app_term: atom+                                   -> app_chain
 
 ?atom: NAME                                        -> var
-     | "by" NAME                                   -> tactic
+     | "by" NAME ("(" /[^)]+/ ")")*                 -> tactic
      | "Prop"                                      -> prop_sort
      | "Type"                                      -> type_sort
      | "Sort" INT                                  -> sort_n
@@ -91,7 +91,7 @@ class _ToAst(Transformer[Token, Any]):
         return Sort(level=children[0])
 
     def tactic(self, children: list[Token]) -> ElabTactic:
-        return ElabTactic(name=str(children[0]))
+        return ElabTactic(name=str(children[0]), args=[str(c) for c in children[1:]])
 
     def typed_binder(self, children: list[Any]) -> tuple[str, Term]:
         # Matches: "(" NAME ":" term ")"

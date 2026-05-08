@@ -20,6 +20,12 @@ output = ""
 
 
 def process_problem(dirpath: str, filename: str):
+    if (
+        not filename.endswith(".lean")
+        or filename == "__output.lean"
+        or dirpath.startswith("problems/.lake/")
+    ):
+        return
     global output
     full_path = os.path.join(dirpath, filename)
     print(f"Processing {full_path}")
@@ -62,7 +68,7 @@ def traverse_folder(root_dir: str):
 
 
 traverse_folder("problems")
-with open("output.lean", "w", encoding="utf-8") as f:
+with open("problems/__output.lean", "w", encoding="utf-8") as f:
     _ = f.write(output)
 
-print("\nProofs saved to problems/output.lean\nBYE")
+print("\nProofs saved to problems/__output.lean\nBYE")

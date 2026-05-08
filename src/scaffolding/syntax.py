@@ -71,6 +71,9 @@ class Sort(TermBase):
 @dataclass(frozen=True)
 class ElabTactic(TermBase):
     name: str  # "sorry" or "grind"
+    args: list[str] | None = (
+        None  # raw strings inside parentheses, e.g. "instances := 2000"
+    )
 
 
 # use this type for all signatures

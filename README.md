@@ -40,7 +40,9 @@ We assume that this phase might take a good amount of time, but after that, the 
 
 There are several possible extensions to the solver, there are surely edge cases of phase 2 that need more attention, we can fine-tune the performance more and find bigger problem sets to benchmark the prover. Additionally, more lemmas could be added or more nested problems be attempted. Finally, we might integrate satellite theory solvers.
 
+## Setup
 
+This project is managed by `uv`, install it and handle run `uv sync`for setup, then use `uv run main.py` to execute the main script. The lean files within `problems/` can be inspected with the lean InfoView (enable the VS Code Plugin)
 
 
 
