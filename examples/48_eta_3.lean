@@ -1,2 +1,0 @@
-def eta_transport : (A : Type) -> (B : Type) -> (Fam : (A -> B) -> Type) -> (f : A -> B) -> Fam f -> Fam (fun (x : A) => f x) :=
-  fun (A : Type) (B : Type) (Fam : (A -> B) -> Type) (f : A -> B) (h : Fam f) => h

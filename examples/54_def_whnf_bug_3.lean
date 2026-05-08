@@ -1,1 +1,0 @@
-def test3 : (Prop : (Type : Sort 2)) := True

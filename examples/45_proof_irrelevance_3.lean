@@ -1,2 +1,0 @@
-def example_3 : (A : Type) -> (x : A) -> (eq_proof : @Eq A x x) -> (Motive : @Eq A x x -> Type) -> (val : Motive (@Eq.refl A x)) -> Motive eq_proof :=
-  fun (A : Type) (x : A) (eq_proof : @Eq A x x) (Motive : @Eq A x x -> Type) (val : Motive (@Eq.refl A x)) => val

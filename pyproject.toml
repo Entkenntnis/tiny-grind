@@ -1,10 +1,11 @@
 [project]
-name = "micro-grind-explorer"
+name = "tiny-grind"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
     "lark",
 ]
+
 
 [tool.basedpyright]
 # The core strictness level. 
@@ -14,7 +15,7 @@ typeCheckingMode = "all"
 # PROJECT SETTINGS
 # ----------------
 # Tells basedpyright where your code is
-include = ["src"]
+include = ["src", "main.py"]
 # Exclude folders you don't want checked (standard defaults usually work)
 exclude = ["**/node_modules", "**/__pycache__", ".venv"]
 

@@ -1,2 +1,0 @@
-def eta_dep : (A : Type) -> (B : A -> Type) -> (f : (x : A) -> B x) -> @Eq ((x : A) -> B x) (fun (x : A) => f x) f :=
-  fun (A : Type) (B : A -> Type) (f : (x : A) -> B x) => @Eq.refl ((x : A) -> B x) f
