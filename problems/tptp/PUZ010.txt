@@ -1,0 +1,233 @@
+-- OK, this problem is just toooooo big for grind
+-- might be ok to leave it out for the beginning
+
+def zebra_puzzle :
+    (Person : Type) ->
+    (House : Type) ->
+    (Drink : Type) ->
+    (Car : Type) ->
+    (Animal : Type) ->
+    (Color : Type) ->
+    -- people
+    (english : Person) ->
+    (spaniard : Person) ->
+    (norwegian : Person) ->
+    (ukranian : Person) ->
+    (japanese : Person) ->
+    -- houses
+    (house_1 : House) ->
+    (house_2 : House) ->
+    (house_3 : House) ->
+    (house_4 : House) ->
+    (house_5 : House) ->
+    -- drinks
+    (orange : Drink) ->
+    (coffee : Drink) ->
+    (tea : Drink) ->
+    (milk : Drink) ->
+    (water : Drink) ->
+    -- cars
+    (masserati : Car) ->
+    (saab : Car) ->
+    (porsche : Car) ->
+    (honda : Car) ->
+    (jaguar : Car) ->
+    -- animals
+    (dog : Animal) ->
+    (snails : Animal) ->
+    (horse : Animal) ->
+    (fox : Animal) ->
+    (zebra : Animal) ->
+    -- colors
+    (red : Color) ->
+    (yellow : Color) ->
+    (blue : Color) ->
+    (green : Color) ->
+    (ivory : Color) ->
+    -- predicates
+    (person : Person -> Prop) ->
+    (house : House -> Prop) ->
+    (drink : Drink -> Prop) ->
+    (car : Car -> Prop) ->
+    (animal : Animal -> Prop) ->
+    (color : Color -> Prop) ->
+    (lives : Person -> House -> Prop) ->
+    (drinks : Person -> Drink -> Prop) ->
+    (drives : Person -> Car -> Prop) ->
+    (owns : Person -> Animal -> Prop) ->
+    (is_color : House -> Color -> Prop) ->
+    (next_to : House -> House -> Prop) ->
+    (left_of : House -> House -> Prop) ->
+    -- people are persons
+    (p_english : person english) ->
+    (p_spaniard : person spaniard) ->
+    (p_norwegian : person norwegian) ->
+    (p_ukranian : person ukranian) ->
+    (p_japanese : person japanese) ->
+    -- houses are houses
+    (h1_house : house house_1) ->
+    (h2_house : house house_2) ->
+    (h3_house : house house_3) ->
+    (h4_house : house house_4) ->
+    (h5_house : house house_5) ->
+    -- drinks are drinks
+    (d_tea : drink tea) ->
+    (d_orange : drink orange) ->
+    (d_water : drink water) ->
+    (d_milk : drink milk) ->
+    (d_coffee : drink coffee) ->
+    -- cars are cars
+    (c_jaguar : car jaguar) ->
+    (c_honda : car honda) ->
+    (c_masserati : car masserati) ->
+    (c_porsche : car porsche) ->
+    (c_saab : car saab) ->
+    -- animals are animals
+    (a_dog : animal dog) ->
+    (a_zebra : animal zebra) ->
+    (a_snails : animal snails) ->
+    (a_horse : animal horse) ->
+    (a_fox : animal fox) ->
+    -- colors are colors
+    (col_red : color red) ->
+    (col_green : color green) ->
+    (col_yellow : color yellow) ->
+    (col_ivory : color ivory) ->
+    (col_blue : color blue) ->
+    -- every person lives in some house (disjunction)
+    (live_somewhere : forall (P : Person), person P -> Or (lives P house_1) (Or (lives P house_2) (Or (lives P house_3) (Or (lives P house_4) (lives P house_5))))) ->
+    -- uniqueness: no two different people share a house
+    (live_apart_eng_spa : forall (H : House), house H -> lives english H -> Not (lives spaniard H)) ->
+    (live_apart_eng_nor : forall (H : House), house H -> lives english H -> Not (lives norwegian H)) ->
+    (live_apart_eng_ukr : forall (H : House), house H -> lives english H -> Not (lives ukranian H)) ->
+    (live_apart_eng_jap : forall (H : House), house H -> lives english H -> Not (lives japanese H)) ->
+    (live_apart_spa_nor : forall (H : House), house H -> lives spaniard H -> Not (lives norwegian H)) ->
+    (live_apart_spa_ukr : forall (H : House), house H -> lives spaniard H -> Not (lives ukranian H)) ->
+    (live_apart_spa_jap : forall (H : House), house H -> lives spaniard H -> Not (lives japanese H)) ->
+    (live_apart_nor_ukr : forall (H : House), house H -> lives norwegian H -> Not (lives ukranian H)) ->
+    (live_apart_nor_jap : forall (H : House), house H -> lives norwegian H -> Not (lives japanese H)) ->
+    (live_apart_ukr_jap : forall (H : House), house H -> lives ukranian H -> Not (lives japanese H)) ->
+    -- every person drinks something
+    (drink_something : forall (P : Person), person P -> Or (drinks P orange) (Or (drinks P coffee) (Or (drinks P tea) (Or (drinks P milk) (drinks P water))))) ->
+    -- drink uniqueness
+    (drink_apart_eng_spa : forall (D : Drink), drink D -> drinks english D -> Not (drinks spaniard D)) ->
+    (drink_apart_eng_nor : forall (D : Drink), drink D -> drinks english D -> Not (drinks norwegian D)) ->
+    (drink_apart_eng_ukr : forall (D : Drink), drink D -> drinks english D -> Not (drinks ukranian D)) ->
+    (drink_apart_eng_jap : forall (D : Drink), drink D -> drinks english D -> Not (drinks japanese D)) ->
+    (drink_apart_spa_nor : forall (D : Drink), drink D -> drinks spaniard D -> Not (drinks norwegian D)) ->
+    (drink_apart_spa_ukr : forall (D : Drink), drink D -> drinks spaniard D -> Not (drinks ukranian D)) ->
+    (drink_apart_spa_jap : forall (D : Drink), drink D -> drinks spaniard D -> Not (drinks japanese D)) ->
+    (drink_apart_nor_ukr : forall (D : Drink), drink D -> drinks norwegian D -> Not (drinks ukranian D)) ->
+    (drink_apart_nor_jap : forall (D : Drink), drink D -> drinks norwegian D -> Not (drinks japanese D)) ->
+    (drink_apart_ukr_jap : forall (D : Drink), drink D -> drinks ukranian D -> Not (drinks japanese D)) ->
+    -- every person drives something
+    (drive_something : forall (P : Person), person P -> Or (drives P masserati) (Or (drives P saab) (Or (drives P porsche) (Or (drives P honda) (drives P jaguar))))) ->
+    -- drive uniqueness
+    (drive_apart_eng_spa : forall (C : Car), car C -> drives english C -> Not (drives spaniard C)) ->
+    (drive_apart_eng_nor : forall (C : Car), car C -> drives english C -> Not (drives norwegian C)) ->
+    (drive_apart_eng_ukr : forall (C : Car), car C -> drives english C -> Not (drives ukranian C)) ->
+    (drive_apart_eng_jap : forall (C : Car), car C -> drives english C -> Not (drives japanese C)) ->
+    (drive_apart_spa_nor : forall (C : Car), car C -> drives spaniard C -> Not (drives norwegian C)) ->
+    (drive_apart_spa_ukr : forall (C : Car), car C -> drives spaniard C -> Not (drives ukranian C)) ->
+    (drive_apart_spa_jap : forall (C : Car), car C -> drives spaniard C -> Not (drives japanese C)) ->
+    (drive_apart_nor_ukr : forall (C : Car), car C -> drives norwegian C -> Not (drives ukranian C)) ->
+    (drive_apart_nor_jap : forall (C : Car), car C -> drives norwegian C -> Not (drives japanese C)) ->
+    (drive_apart_ukr_jap : forall (C : Car), car C -> drives ukranian C -> Not (drives japanese C)) ->
+    -- every person owns an animal
+    (own_a_pet : forall (P : Person), person P -> Or (owns P dog) (Or (owns P snails) (Or (owns P horse) (Or (owns P fox) (owns P zebra))))) ->
+    -- pet uniqueness
+    (pet_apart_eng_spa : forall (A : Animal), animal A -> owns english A -> Not (owns spaniard A)) ->
+    (pet_apart_eng_nor : forall (A : Animal), animal A -> owns english A -> Not (owns norwegian A)) ->
+    (pet_apart_eng_ukr : forall (A : Animal), animal A -> owns english A -> Not (owns ukranian A)) ->
+    (pet_apart_eng_jap : forall (A : Animal), animal A -> owns english A -> Not (owns japanese A)) ->
+    (pet_apart_spa_nor : forall (A : Animal), animal A -> owns spaniard A -> Not (owns norwegian A)) ->
+    (pet_apart_spa_ukr : forall (A : Animal), animal A -> owns spaniard A -> Not (owns ukranian A)) ->
+    (pet_apart_spa_jap : forall (A : Animal), animal A -> owns spaniard A -> Not (owns japanese A)) ->
+    (pet_apart_nor_ukr : forall (A : Animal), animal A -> owns norwegian A -> Not (owns ukranian A)) ->
+    (pet_apart_nor_jap : forall (A : Animal), animal A -> owns norwegian A -> Not (owns japanese A)) ->
+    (pet_apart_ukr_jap : forall (A : Animal), animal A -> owns ukranian A -> Not (owns japanese A)) ->
+    -- every house has a color
+    (house_coloured : forall (H : House), house H -> Or (is_color H red) (Or (is_color H yellow) (Or (is_color H blue) (Or (is_color H green) (is_color H ivory))))) ->
+    -- color uniqueness across houses
+    (color_apart_1_2 : forall (C : Color), color C -> is_color house_1 C -> Not (is_color house_2 C)) ->
+    (color_apart_1_3 : forall (C : Color), color C -> is_color house_1 C -> Not (is_color house_3 C)) ->
+    (color_apart_1_4 : forall (C : Color), color C -> is_color house_1 C -> Not (is_color house_4 C)) ->
+    (color_apart_1_5 : forall (C : Color), color C -> is_color house_1 C -> Not (is_color house_5 C)) ->
+    (color_apart_2_3 : forall (C : Color), color C -> is_color house_2 C -> Not (is_color house_3 C)) ->
+    (color_apart_2_4 : forall (C : Color), color C -> is_color house_2 C -> Not (is_color house_4 C)) ->
+    (color_apart_2_5 : forall (C : Color), color C -> is_color house_2 C -> Not (is_color house_5 C)) ->
+    (color_apart_3_4 : forall (C : Color), color C -> is_color house_3 C -> Not (is_color house_4 C)) ->
+    (color_apart_3_5 : forall (C : Color), color C -> is_color house_3 C -> Not (is_color house_5 C)) ->
+    (color_apart_4_5 : forall (C : Color), color C -> is_color house_4 C -> Not (is_color house_5 C)) ->
+    -- constraints
+    (english_in_red : forall (H : House), house H -> lives english H -> is_color H red) ->
+    (spaniard_owns_dog : owns spaniard dog) ->
+    (norwegian_in_1 : lives norwegian house_1) ->
+    (masserati_in_yellow : forall (H : House) (P : Person), house H -> person P -> drives P masserati -> lives P H -> is_color H yellow) ->
+    (saab_with_fox : forall (H1 H2 : House) (P1 P2 : Person), house H1 -> house H2 -> person P1 -> person P2 -> owns P1 fox -> lives P1 H1 -> drives P2 saab -> lives P2 H2 -> next_to H1 H2) ->
+    (norwegian_blue_neighbor : forall (H1 H2 : House), house H1 -> house H2 -> lives norwegian H1 -> next_to H1 H2 -> is_color H2 blue) ->
+    (porsche_snails : forall (P : Person), person P -> drives P porsche -> owns P snails) ->
+    (honda_orange : forall (P : Person), person P -> drives P honda -> drinks P orange) ->
+    (ukranian_tea : drinks ukranian tea) ->
+    (japanese_jaguar : drives japanese jaguar) ->
+    (masserati_horse_next : forall (H1 H2 : House) (P1 P2 : Person), house H1 -> house H2 -> person P1 -> person P2 -> drives P1 masserati -> lives P1 H1 -> owns P2 horse -> lives P2 H2 -> next_to H1 H2) ->
+    (coffee_green : forall (H : House) (P : Person), house H -> person P -> drinks P coffee -> lives P H -> is_color H green) ->
+    (green_right_ivory : forall (H1 H2 : House), house H1 -> house H2 -> is_color H1 green -> is_color H2 ivory -> left_of H2 H1) ->
+    (milk_middle : forall (P : Person), person P -> drinks P milk -> lives P house_3) ->
+    -- left_of / next_to axioms
+    (left_means_next : forall (X Y : House), left_of X Y -> next_to X Y) ->
+    (right_means_next : forall (X Y : House), left_of Y X -> next_to X Y) ->
+    (next_to_implies : forall (X Y : House), next_to X Y -> Or (left_of X Y) (left_of Y X)) ->
+    (left_1_2 : left_of house_1 house_2) ->
+    (left_2_3 : left_of house_2 house_3) ->
+    (left_3_4 : left_of house_3 house_4) ->
+    (left_4_5 : left_of house_4 house_5) ->
+    (not_left_1_1 : Not (left_of house_1 house_1)) ->
+    (not_left_2_1 : Not (left_of house_2 house_1)) ->
+    (not_left_3_1 : Not (left_of house_3 house_1)) ->
+    (not_left_4_1 : Not (left_of house_4 house_1)) ->
+    (not_left_5_1 : Not (left_of house_5 house_1)) ->
+    (not_left_2_2 : Not (left_of house_2 house_2)) ->
+    (not_left_3_2 : Not (left_of house_3 house_2)) ->
+    (not_left_4_2 : Not (left_of house_4 house_2)) ->
+    (not_left_5_2 : Not (left_of house_5 house_2)) ->
+    (not_left_1_3 : Not (left_of house_1 house_3)) ->
+    (not_left_3_3 : Not (left_of house_3 house_3)) ->
+    (not_left_4_3 : Not (left_of house_4 house_3)) ->
+    (not_left_5_3 : Not (left_of house_5 house_3)) ->
+    (not_left_1_4 : Not (left_of house_1 house_4)) ->
+    (not_left_2_4 : Not (left_of house_2 house_4)) ->
+    (not_left_4_4 : Not (left_of house_4 house_4)) ->
+    (not_left_5_4 : Not (left_of house_5 house_4)) ->
+    (not_left_1_5 : Not (left_of house_1 house_5)) ->
+    (not_left_2_5 : Not (left_of house_2 house_5)) ->
+    (not_left_3_5 : Not (left_of house_3 house_5)) ->
+    (not_left_5_5 : Not (left_of house_5 house_5)) ->
+    -- Conclusion: the known solution
+    And (drinks norwegian water)
+        (And (drinks ukranian tea)
+        (And (drinks japanese coffee)
+        (And (drinks english milk)
+        (And (drinks spaniard orange)
+        (And (owns norwegian fox)
+        (And (owns ukranian horse)
+        (And (owns japanese zebra)
+        (And (owns english snails)
+        (And (owns spaniard dog)
+        (And (drives norwegian masserati)
+        (And (drives ukranian saab)
+        (And (drives japanese jaguar)
+        (And (drives english porsche)
+        (And (drives spaniard honda)
+        (And (lives norwegian house_1)
+        (And (lives ukranian house_2)
+        (And (lives japanese house_5)
+        (And (lives english house_3)
+        (And (lives spaniard house_4)
+        (And (is_color house_1 yellow)
+        (And (is_color house_2 blue)
+        (And (is_color house_3 red)
+        (And (is_color house_4 ivory)
+        (is_color house_5 green))))))))))))))))))))))))
+:= by
+  grind (instances := 2000) (splits := 15)
