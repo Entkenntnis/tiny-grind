@@ -1,41 +1,23 @@
 # tiny-grind
 
-An educational best-effort reimplmenetation of the grind tactic in Python.
+An educational best-effort reimplementation of the `grind` tactic in Python.
 
 ## Introduction
 
-Let's assume 
+Let's look at this set of equalities/inequalities with constants $a$, $b$, $c$, $d$ and unary functions $f$, $g$, $h$ (all operating on variables of the same type):
 
+- $a = f(b)$
+- $f(b) = g(c)$
+- $g(c) = h(d)$
+- $d = a$
+- $g(f(h(a))) \neq g(f(g(c)))$
 
+By rewriting the terms and using congruence rules, you can derive a contradiction. Many mathematical problems can be expressed as such sets of equalities, and automated theorem provers aim to solve them automatically.
 
+One could, for example, define a term ordering and apply superposition to derive the empty clause. Another approach is to construct an *E-graph* and perform congruence closure on it; a contradiction is found when `True` and `False` land in the same equivalence class. This latter approach is taken by `grind`, and our project will build a proof generator that can prove theorems, create a suitable context (proof by contradiction), construct the E-graph, and finally generate a Lean proof for the theorem.
 
+### Superposition vs. E-graphs
 
-An educational best-effort reimplementation of the grind tactic in Python within a tiny LEAN kernel.
+There is no “better” – both approaches have their unique strengths and weaknesses. Superposition has a stronger theoretical foundation, and high-performance implementations exist, although doing superposition right is hard because the number of clauses can grow very large when the selection is not optimal. Congruence closure on E-graphs, on the other hand, is simpler to implement. Because an E-graph represents an exponential number of possible equalities in a compact way, it often avoids state explosion; even naive implementations tend to be reasonably stable for congruence closure. E-graphs are also more modular: additional elements like logical operators, quantifiers, or inductive types can be added with their respective saturation rules and treated as “modules”, following the architecture of SMT solvers. In contrast, superposition always works within the resolution framework, which assumes that problems are decomposed into CNF already. During this process much of the intuition from the original context is lost – E-graphs can retain that context and operate on it, e.g. through E-matching.
 
-> **The Programmers' Credo:**
-> "We do these things not because they are easy, but because we thought they were going to be easy."
-> — *Maciej Cegłowski*
-
-How hard can it be, haha?
-
-## Scope
-
-I would like to introduce tactics mode into the syntax. Next, I need an interface to read the context and pass this information to the grind module. The grind module should manage an E-graph (how exactly would it look like?), I'm settling on four operations for the start:
-
-- congruence closure
-- E-matching
-- constraint propagation
-- some basic case analysis
-
-## Coming soon
-
-Stub for grind is available, now it's time to get an overview of how the solver handles inputs and outputs and setup the necesesary axioms.
-
-## Limitations
-
-Main omissions from the kernel:
-
-- No `inductive` keyword, constructors are hardcoded as axioms, recursors implemented in python where necessary. Stick to LEAN implementation for soundness, avoids a lot of headaches in the kernel.
-- No universe polymorphism, so category theory will be pain, stick to the parts of mathematics that are intended for mortals.
-
-Most syntactical sugar (implicit arguments, shorthands, match, case, recursion) is omitted, as this is not impacting the theoretical expressiveness, it can be added ad-hoc. Use the raw notation after elaboration.
+For standalone, fully automated provers, superposition is a tried-and-tested approach. Within interactive theorem provers that work alongside human-written theorems, keeping the context and having a modular design are strengths of E-graphs, which may explain the success of a tactic like `grind`. We find this aspect intriguing, and to learn more about how it works in practice and how one can structure such a prover, we will attempt to rebuild `grind`.
