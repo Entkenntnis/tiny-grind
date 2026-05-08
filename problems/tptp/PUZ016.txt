@@ -1,0 +1,1 @@
+-- Another checkerboard puzzle, not that interesting actually, right?
