@@ -1,7 +1,11 @@
+import Duper.Tactic
+
+set_option maxHeartbeats 10000000
+
 -- OK, this problem is just toooooo big for grind
 -- might be ok to leave it out for the beginning
 
-def zebra_puzzle :
+theorem zebra_puzzle :
     (Person : Type) ->
     (House : Type) ->
     (Drink : Type) ->
@@ -230,4 +234,4 @@ def zebra_puzzle :
         (And (is_color house_4 ivory)
         (is_color house_5 green))))))))))))))))))))))))
 := by
-  grind (instances := 2000) (splits := 15)
+  duper [*]

@@ -51,9 +51,9 @@ def process_problem(dirpath: str, filename: str):
     # print(decls)
     # print(print_program(decls))
     output += f"-- {full_path}\n"
-    output += print_program(decls)
+    output += "theorem " + print_program(decls)[4:]
     output += "\n\n"
-    output += print_program([proof_def])
+    output += "theorem " + print_program([proof_def])[4:]
 
     output += "\n\n\n"
 
