@@ -12,9 +12,4 @@ maxSynthPendingDepth = 3
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
-rev = "v4.29.0"
-
-[[require]]
-name = "Duper"
-git = "https://github.com/leanprover-community/duper.git"
-rev = "v4.29.0"
+rev = "v4.30.0-rc2"

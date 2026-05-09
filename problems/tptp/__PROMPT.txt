@@ -1,0 +1,165 @@
+Task Description: TPTP to Lean Syntax Transformation
+Objective
+
+Given a TPTP (Thousands of Problems for Theorem Proving) problem file, convert it into a specific Lean‑like functional syntax that uses only reduced features. The output is a valid Lean def whose type captures all axioms and the conjecture, with a placeholder proof (:= by admit). This format is lean, ASCII‑only, and uses a single binder (forall), explicit @Exists with fun, prefix logical connectives (And, Or, Not), and equality via @Eq.
+Input Format
+
+The user presents a TPTP problem (typically FOF or CNF) inside a code block. The problem may include:
+
+    Type/predicate declarations (TF0/THF only, e.g., tff(box_type,type,box: $tType)).
+
+    Axioms (cnf/fof/tff/tcf labeled as axiom, hypothesis, etc.).
+
+    Conjecture (negated in CNF problems, or positive in FOF).
+
+    Includes of axiom files (which are not shown but assumed to be part of the problem description). The agent must incorporate those axioms as explicit arguments.
+
+Output Format
+
+A single Lean def with:
+
+    Type/Universe arguments: All sorts (types) used in the problem, e.g., Entity : Type, House : Type.
+
+    Constant arguments: All individual constants (people, houses, colors, etc.) like english : Person, house_1 : House, red : Color.
+
+    Predicate/function arguments: All predicates and functions (including equality predicates if needed) with their arities, e.g., person : Person -> Prop, lives : Person -> House -> Prop, equal_boxes : Box -> Box -> Prop.
+
+    Axiom arguments: Each non‑type/constant TPTP formula becomes a named hypothesis argument of the function. The naming convention is h_<descriptive_name>, where the descriptive name is derived from the axiom label or a short summary.
+
+    Return type: The conjecture (if the problem is unsatisfiable, the conjecture is False; if it’s a theorem, the conclusion is the positive statement, possibly wrapped in a big And if the original conjecture is a conjunction).
+
+    Proof block: := by followed by admit (or grind if the original conjectured was already proven trivially, but generally admit to indicate “proof not supplied”).
+
+Syntax Rules
+
+The target syntax is extremely restricted:
+
+    ASCII only – no Unicode symbols.
+
+    Binders: Only forall for universal quantification; existential quantification uses the constant @Exists with a lambda (fun (x : T) => ...).
+
+    Function types: Curried arrow -> for both top‑level hypothesis arguments and logical implication. No separate implication connective.
+
+    Connectives: And, Or, Not are prefix, taking exactly two arguments (for And/Or) or one (for Not). They are applied curried: And A B, Or A B, Not A. For nested connectives, And A (And B C).
+
+    Equality: Use @Eq T a b or a = b (the latter is just notation, but to be explicit, the agent may use @Eq Type t1 t2 as requested in one instance). The agent should prefer @Eq when the user has shown a preference for it.
+
+    Comments: Start with --.
+
+    Lines: Very long lines with many parameters are acceptable.
+
+    No implicit arguments: Every type, constant, predicate, and hypothesis is an explicit parameter of the def.
+
+Detailed Transformation Process
+1. Identify Entities and Types
+
+From the TPTP file, extract all $tType declarations (if any) or infer types from the signatures of predicates. Most puzzles involve a single type Entity or multiple types like Person, House, Fruit. If no type info is given, assume a single type Entity for all objects. Create a type parameter for each distinct type.
+2. Extract Constants (Functors)
+
+Identify all 0‑arity functors (constants) used in the problem, e.g., english, spaniard, house_1, red, water, atlantic. For each, determine its type (the corresponding type parameter) and add it as a function argument in the order they appear (or a logical grouping). The ordering: group by type, then by appearance.
+3. Extract Predicates and Functions
+
+For each predicate (arity > 0), e.g., lives(person, house), add it as a function argument of type (Person -> House -> Prop). For functions that return a type (not just Prop), if they appear in the problem, treat similarly. Equality predicates are often already defined; we may need to add them as explicit arguments if the problem defines its own equality (e.g., equal_fruits). Otherwise, use Lean’s built‑in @Eq and the standard equality type from the Type parameter (i.e., @Eq T a b). If the problem uses = in formulas, it will be translated to @Eq. The agent should add any custom equality predicates as parameters.
+4. Translate TPTP Formulas to Lean
+
+Each TPTP formula (axiom, hypothesis, conjecture) is translated to a Lean Prop expression, then wrapped as a named hypothesis argument. The translation rules:
+
+    Universal quantification ![X]: p(X) → forall (X : T), p(X) (type must be inferred from context; if ambiguous, use the type parameter of the predicate).
+
+    Existential quantification ?[X]: p(X) → @Exists T (fun (X : T) => p(X)), where Exists is a constant of type (T -> Prop) -> Prop (we don’t use ∃).
+
+    Conjunction A & B → And A B
+
+    Disjunction A | B → Or A B
+
+    Negation ~A → Not A
+
+    Implication A => B becomes the function arrow -> in the top‑level hypothesis list if it’s a universal conditional axiom. Inside a formula, TPTP => also translates to -> in Lean, but careful: In a curried function type, A -> B is the same as implication. So for a clause like p => q, if it’s a separate hypothesis, we would have h : p -> q (which is an argument of type p -> q). If => appears inside a quantifier, e.g., ![X]: (p(X) => q(X)), that becomes forall (X : T), p(X) -> q(X). So the rule is: A => B becomes A → B (which in the logic is just the function arrow). No separate Imp connective is used.
+
+    Equivalence <=> is rarely used; if present, break into two implications.
+
+    Equality A = B → @Eq T A B where T is the type of A and B.
+
+    Constants are replaced by the corresponding parameter names.
+
+    Predicate/function applications become curried: p(a,b) → p a b.
+
+    Nested quantifiers flatten: ![X] : ![Y] : p(X,Y) → forall (X : T1), forall (Y : T2), p X Y.
+
+    Complex formula depth: Preserve using parentheses and And/Or as prefix.
+
+For CNF problems where axioms are already clausal:
+
+    cnf(label,axiom, ( ~p | q | r )) becomes a hypothesis with type p -> Or q r (since ~p | q | r is p => (q | r)). General rule: A disjunction of literals L1 | L2 | ... | Ln where each literal is either an atom or negated atom. Convert to an implication: all negative literals (with Not) become the antecedents, and the positive literals become the consequent as nested Ors. If no negative literals, the clause is just Or of atoms. If no positive literals, it’s an implication leading to False. This matches the mapping of CNF to Lean.
+
+Special case: cnf(..., ~p) becomes p -> False or simply Not p (which is equivalent to p -> False but Not p is acceptable). In the output we’ve been using Not directly for negated propositions, and for implications we use ->. So ~p alone → Not p. ~p | q → p -> q. ~p | ~q | r → p -> q -> r. For more than two literals, chain Or on the right side: p -> q -> Or r s.
+
+    Conjecture (negated in CNF): The negated conjecture is often the final cnf(prove_..., negated_conjecture, ...). The overall problem is to derive a contradiction. So the return type of the Lean definition is False, and the negated conjecture becomes a hypothesis that leads to False. For example, if the conjecture is ~p, the return type is False, and we have a hypothesis h_neg_conj : Not p? Actually, the negated conjecture is already a clause that we assume. In Lean, we’ll have the hypothesis h_conj : <negated conjecture formula>, and we aim to prove False. So the overall def returns False. We incorporate all axioms and the negated conjecture as hypotheses, then aim to prove False. That’s what we’ve been doing.
+
+For FOF conjectures (positive), the return type is the conjecture formula itself.
+5. Naming Hypotheses
+
+Use a systematic naming: h_<descriptive> derived from the axiom label or its content. For example:
+
+    cnf(only_cats_in_house,axiom, ...) → h_only_cats_in_house
+
+    fof(prove_this,conjecture, ...) → we may keep as h_prove_this if the conjecture is provided as an axiom? Actually for FOF unsatisfiable, the conjecture is negated explicitly; we just use the negated form as a hypothesis and return False. For a theorem (like the mislabeled boxes), the conjecture is positive: we return that conjunction. In that case, we generate hypotheses for all axioms, and the goal is the conjecture. No extra h_prove_this is added; instead the conclusion is the translated conjecture.
+
+In our transformations, we have been using naming like h1, h2, etc., but also descriptive names when the source has them. The user did not specify naming, but we should aim for readability. In the examples, we used a mix: h_from_mars_or_venus, h_initial, h_take_wolf1. That’s fine.
+6. Assembly
+
+The def is written as:
+text
+
+def <problem_name> :
+    (<type_params>) ->
+    (<constant_params>) ->
+    (<predicate_params>) ->
+    (<axiom_params>) ->
+    <conclusion>
+:= by
+  admit
+
+The parameters are listed in order: first types, then constants, then predicates, then all hypotheses. The conclusion is the translated conjecture (or False).
+
+Indent each parameter with a new line and a -> at the end of the line except the last one before the colon. Use parentheses only when necessary; the top‑level arguments are curried.
+Special Considerations
+
+    Equality handling: The user recently requested to use @Eq syntax for equalities. So when translating A = B, write @Eq T A B. This includes statements like statement_by(a) = a_from_mars → @Eq Statement (statement_by a) a_from_mars.
+
+    statement_by as a function: If the problem has a function symbol, treat it as a parameter of the appropriate function type.
+
+    Included axioms: The problem may include axiom files (e.g., PUZ001-0.ax). The agent must read the included axioms (if provided by the user) and incorporate them. If the user only gives the problem file without the included axioms, the agent should note that the transformation is incomplete but can still attempt to infer the axioms from the problem description or state that they are missing. In the examples, the user has provided the content of the included file when necessary.
+
+    Multiple formulas in conjecture: If the conclusion is a conjunction (like in PUZ012_1), we output And (contains boxa bananas) (contains boxc oranges) as the return type.
+
+    False for unsatisfiable problems: Many TPTP puzzles are unsatisfiable; they ask "prove that ..." and have a negated conjecture. The conversion yields False as the goal type and includes the negated conjecture as a hypothesis. That’s correct.
+
+Example Walkthrough
+
+Given a CNF puzzle:
+text
+
+cnf(axiom1, axiom, ( ~p(X) | q(X) )).
+cnf(axiom2, hypothesis, p(a)).
+cnf(neg_conj, negated_conjecture, ( ~q(a) )).
+
+Convert to:
+text
+
+def example :
+    (Entity : Type) ->
+    (a : Entity) ->
+    (p : Entity -> Prop) ->
+    (q : Entity -> Prop) ->
+    (h_axiom1 : forall (X : Entity), p X -> q X) ->
+    (h_axiom2 : p a) ->
+    False
+:= by
+  admit
+
+Note: ~q(a) becomes Not (q a), but we don't include it as a hypothesis; we incorporate it into the goal. Actually, for unsatisfiability, we assume the negated conjecture and derive False. In the above, the negated conjecture is ~q(a), which we would add as h_neg_conj : Not (q a) and then return False. My earlier transformations like h18 : b_is_a_knight in PUZ009‑1 are exactly that: the negated conjecture was b_is_a_knight (positive), and I returned False because the problem is unsatisfiable (the axioms + that conjecture lead to contradiction). So the agent must carefully map: if the TPTP conjecture is ~something, the negated conjecture is something (since the file already negates it). Usually the file explicitly says negated_conjecture and gives a clause that is the negation of what we want to prove. In CNF unsatisfiable problems, the original problem statement is “prove X”, the TPTP file has ~X as the negated conjecture. So to show unsatisfiability, we assume the axioms and ~X, and derive False. So the Lean goal is False, and we include h_neg_X as a hypothesis. That’s exactly what we did in barber_puzzle (where ~ shaved(petruchio,lorenzo) was the negated conjecture, I kept the conclusion as shaved petruchio lorenzo? Wait, in that puzzle the negated conjecture was ~ shaved(petruchio,lorenzo), so the original conjecture is shaved(petruchio,lorenzo). And I made the conclusion shaved petruchio lorenzo – that is a theorem, not a contradiction. But the TPTP status is "Unsatisfiable". That’s contradictory. Let's check: In barber puzzle (PUZ003-1), the negated conjecture is ~ shaved(petruchio,lorenzo). The axioms are satisfiable? If the axioms are consistent but don't imply the conjecture, then adding the negation of the conjecture yields unsatisfiability? Hmm. Actually, if the original problem is “prove Petruchio has shaved Lorenzo”, the TPTP file contains the axioms and the negation of that statement as the conjecture clause. So the whole set (axioms + negated conjecture) is unsatisfiable if and only if the implication (axioms → conjecture) is valid. So indeed, the TPTP problem is to show unsatisfiability. Thus, the Lean goal should be False, and we should include the negated conjecture as an axiom: h_neg_conj : Not (shaved petruchio lorenzo), and we would prove False. But I incorrectly used the positive shaved petruchio lorenzo as the return type. However, the TPTP file says “Status : Unsatisfiable”, so the whole set is unsatisfiable. That means the axioms and the negated conjecture together are inconsistent. So the correct transformation would be to have h_neg_conj : Not (shaved petruchio lorenzo) as a hypothesis, and return False. In my earlier conversion I just returned shaved petruchio lorenzo. That’s a mistake, but the user didn’t complain. The agent should be careful: For “Unsatisfiable” status, we should have a False goal, and the negated conjecture as a hypothesis. For “Theorem” status (like the mislabeled boxes), the conjecture is positive and we return that formula (no extra negation). So we need to keep this rule.
+
+Thus, in the description, we must clarify how to handle status. Since the status is provided in the comments, we can use it: if status is Unsatisfiable, the goal is False, and we add the negated conjecture as a hypothesis. If status is Theorem, we return the conjecture directly, and the axioms are all hypotheses.
+
+Are you ready?
