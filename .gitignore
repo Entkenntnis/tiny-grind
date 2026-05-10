@@ -2,3 +2,4 @@ __pycache__
 .venv
 .vscode
 .lake
+_tptp_raw
