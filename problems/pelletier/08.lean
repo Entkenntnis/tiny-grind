@@ -1,4 +1,4 @@
-theorem pelletier_8 :
+theorem pelletier_08 :
     (P : Prop) ->
     (Q : Prop) ->
     ((P -> Q) -> P) ->

@@ -24,6 +24,7 @@ def process_problem(dirpath: str, filename: str):
         not filename.endswith(".lean")
         or filename == "__output.lean"
         or dirpath.startswith("problems/.lake/")
+        or filename.startswith("__")
     ):
         return
     global output

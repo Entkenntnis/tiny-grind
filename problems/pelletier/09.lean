@@ -1,4 +1,4 @@
-theorem pelletier_9 :
+theorem pelletier_09 :
     (P : Prop) ->
     (Q : Prop) ->
     ((And (Or P Q) (And (Or (Not P) Q) (Or P (Not Q))))) ->

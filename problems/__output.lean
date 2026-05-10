@@ -30,75 +30,147 @@ theorem deeper_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) ->
   by sorry
 
 
--- problems/pelletier/1.lean
-theorem pelletier_1 : (P : Prop) -> (Q : Prop) -> Iff (P -> Q) (Not Q -> Not P) :=
+-- problems/pelletier/01.lean
+theorem pelletier_01 : (P : Prop) -> (Q : Prop) -> Iff (P -> Q) (Not Q -> Not P) :=
   by grind
 
-theorem pelletier_1_proof : (P : Prop) -> (Q : Prop) -> Iff (P -> Q) (Not Q -> Not P) :=
+theorem pelletier_01_proof : (P : Prop) -> (Q : Prop) -> Iff (P -> Q) (Not Q -> Not P) :=
   by sorry
 
 
--- problems/pelletier/2.lean
-theorem pelletier_2 : (P : Prop) -> Iff (Not (Not P)) P :=
+-- problems/pelletier/02.lean
+theorem pelletier_02 : (P : Prop) -> Iff (Not (Not P)) P :=
   by grind
 
-theorem pelletier_2_proof : (P : Prop) -> Iff (Not (Not P)) P :=
+theorem pelletier_02_proof : (P : Prop) -> Iff (Not (Not P)) P :=
   by sorry
 
 
--- problems/pelletier/3.lean
-theorem pelletier_3 : (P : Prop) -> (Q : Prop) -> Not (P -> Q) -> Q -> P :=
+-- problems/pelletier/03.lean
+theorem pelletier_03 : (P : Prop) -> (Q : Prop) -> Not (P -> Q) -> Q -> P :=
   by grind
 
-theorem pelletier_3_proof : (P : Prop) -> (Q : Prop) -> Not (P -> Q) -> Q -> P :=
+theorem pelletier_03_proof : (P : Prop) -> (Q : Prop) -> Not (P -> Q) -> Q -> P :=
   by sorry
 
 
--- problems/pelletier/4.lean
-theorem pelletier_4 : (P : Prop) -> (Q : Prop) -> Iff (Not P -> Q) (Not Q -> P) :=
+-- problems/pelletier/04.lean
+theorem pelletier_04 : (P : Prop) -> (Q : Prop) -> Iff (Not P -> Q) (Not Q -> P) :=
   by grind
 
-theorem pelletier_4_proof : (P : Prop) -> (Q : Prop) -> Iff (Not P -> Q) (Not Q -> P) :=
+theorem pelletier_04_proof : (P : Prop) -> (Q : Prop) -> Iff (Not P -> Q) (Not Q -> P) :=
   by sorry
 
 
--- problems/pelletier/5.lean
-theorem pelletier_5 : (P : Prop) -> (Q : Prop) -> (R : Prop) -> (Or P Q -> Or P R) -> Or P (Q -> R) :=
+-- problems/pelletier/05.lean
+theorem pelletier_05 : (P : Prop) -> (Q : Prop) -> (R : Prop) -> (Or P Q -> Or P R) -> Or P (Q -> R) :=
   by grind
 
-theorem pelletier_5_proof : (P : Prop) -> (Q : Prop) -> (R : Prop) -> (Or P Q -> Or P R) -> Or P (Q -> R) :=
+theorem pelletier_05_proof : (P : Prop) -> (Q : Prop) -> (R : Prop) -> (Or P Q -> Or P R) -> Or P (Q -> R) :=
   by sorry
 
 
--- problems/pelletier/6.lean
-theorem pelletier_6 : (P : Prop) -> Or P (Not P) :=
+-- problems/pelletier/06.lean
+theorem pelletier_06 : (P : Prop) -> Or P (Not P) :=
   by grind
 
-theorem pelletier_6_proof : (P : Prop) -> Or P (Not P) :=
+theorem pelletier_06_proof : (P : Prop) -> Or P (Not P) :=
   by sorry
 
 
--- problems/pelletier/7.lean
-theorem pelletier_7 : (P : Prop) -> Or P (Not (Not (Not P))) :=
+-- problems/pelletier/07.lean
+theorem pelletier_07 : (P : Prop) -> Or P (Not (Not (Not P))) :=
   by grind
 
-theorem pelletier_7_proof : (P : Prop) -> Or P (Not (Not (Not P))) :=
+theorem pelletier_07_proof : (P : Prop) -> Or P (Not (Not (Not P))) :=
   by sorry
 
 
--- problems/pelletier/8.lean
-theorem pelletier_8 : (P : Prop) -> (Q : Prop) -> ((P -> Q) -> P) -> P :=
+-- problems/pelletier/08.lean
+theorem pelletier_08 : (P : Prop) -> (Q : Prop) -> ((P -> Q) -> P) -> P :=
   by grind
 
-theorem pelletier_8_proof : (P : Prop) -> (Q : Prop) -> ((P -> Q) -> P) -> P :=
+theorem pelletier_08_proof : (P : Prop) -> (Q : Prop) -> ((P -> Q) -> P) -> P :=
   by sorry
 
 
--- problems/pelletier/9.lean
-theorem pelletier_9 : (P : Prop) -> (Q : Prop) -> And (Or P Q) (And (Or (Not P) Q) (Or P (Not Q))) -> Not (Or (Not P) (Not Q)) :=
+-- problems/pelletier/09.lean
+theorem pelletier_09 : (P : Prop) -> (Q : Prop) -> And (Or P Q) (And (Or (Not P) Q) (Or P (Not Q))) -> Not (Or (Not P) (Not Q)) :=
   by grind
 
-theorem pelletier_9_proof : (P : Prop) -> (Q : Prop) -> And (Or P Q) (And (Or (Not P) Q) (Or P (Not Q))) -> Not (Or (Not P) (Not Q)) :=
+theorem pelletier_09_proof : (P : Prop) -> (Q : Prop) -> And (Or P Q) (And (Or (Not P) Q) (Or P (Not Q))) -> Not (Or (Not P) (Not Q)) :=
+  by sorry
+
+
+-- problems/pelletier/10.lean
+theorem pelletier_10 : (P : Prop) -> (Q : Prop) -> (R : Prop) -> (Q -> R) -> (R -> And P Q) -> (P -> Or Q R) -> Iff P Q :=
+  by grind
+
+theorem pelletier_10_proof : (P : Prop) -> (Q : Prop) -> (R : Prop) -> (Q -> R) -> (R -> And P Q) -> (P -> Or Q R) -> Iff P Q :=
+  by sorry
+
+
+-- problems/pelletier/11.lean
+theorem pelletier_11 : (P : Prop) -> Iff P P :=
+  by grind
+
+theorem pelletier_11_proof : (P : Prop) -> Iff P P :=
+  by sorry
+
+
+-- problems/pelletier/12.lean
+theorem pelletier_12 : (P : Prop) -> (Q : Prop) -> (R : Prop) -> Iff (Iff (Iff P Q) R) (Iff P (Iff Q R)) :=
+  by grind
+
+theorem pelletier_12_proof : (P : Prop) -> (Q : Prop) -> (R : Prop) -> Iff (Iff (Iff P Q) R) (Iff P (Iff Q R)) :=
+  by sorry
+
+
+-- problems/pelletier/13.lean
+theorem pelletier_13 : (P : Prop) -> (Q : Prop) -> (R : Prop) -> Iff (Or P (And Q R)) (And (Or P Q) (Or P R)) :=
+  by grind
+
+theorem pelletier_13_proof : (P : Prop) -> (Q : Prop) -> (R : Prop) -> Iff (Or P (And Q R)) (And (Or P Q) (Or P R)) :=
+  by sorry
+
+
+-- problems/pelletier/14.lean
+theorem pelletier_14 : (P : Prop) -> (Q : Prop) -> Iff (Iff P Q) (And (Or Q (Not P)) (Or (Not Q) P)) :=
+  by grind
+
+theorem pelletier_14_proof : (P : Prop) -> (Q : Prop) -> Iff (Iff P Q) (And (Or Q (Not P)) (Or (Not Q) P)) :=
+  by sorry
+
+
+-- problems/pelletier/15.lean
+theorem pelletier_15 : (P : Prop) -> (Q : Prop) -> Iff (P -> Q) (Or (Not P) Q) :=
+  by grind
+
+theorem pelletier_15_proof : (P : Prop) -> (Q : Prop) -> Iff (P -> Q) (Or (Not P) Q) :=
+  by sorry
+
+
+-- problems/pelletier/16.lean
+theorem pelletier_16 : (P : Prop) -> (Q : Prop) -> Or (P -> Q) (Q -> P) :=
+  by grind
+
+theorem pelletier_16_proof : (P : Prop) -> (Q : Prop) -> Or (P -> Q) (Q -> P) :=
+  by sorry
+
+
+-- problems/pelletier/17.lean
+theorem pelletier_17 : (P : Prop) -> (Q : Prop) -> (R : Prop) -> (S : Prop) -> Iff (And P (Q -> R) -> S) (And (Or (Not P) (Or Q S)) (Or (Not P) (Or (Not R) S))) :=
+  by grind
+
+theorem pelletier_17_proof : (P : Prop) -> (Q : Prop) -> (R : Prop) -> (S : Prop) -> Iff (And P (Q -> R) -> S) (And (Or (Not P) (Or Q S)) (Or (Not P) (Or (Not R) S))) :=
+  by sorry
+
+
+-- problems/pelletier/18.lean
+theorem pelletier_18 : (A : Type) -> (F : A -> Prop) -> (g : A -> A) -> (some : A) -> ((y : A) -> F y) -> ((z : A) -> Not (F (g z))) -> F some -> Not (F (g some)) -> False :=
+  by grind
+
+theorem pelletier_18_proof : (A : Type) -> (F : A -> Prop) -> (g : A -> A) -> (some : A) -> ((y : A) -> F y) -> ((z : A) -> Not (F (g z))) -> F some -> Not (F (g some)) -> False :=
   by sorry
 
 

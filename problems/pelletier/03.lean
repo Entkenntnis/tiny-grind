@@ -1,4 +1,4 @@
-theorem pelletier_3 :
+theorem pelletier_03 :
     (P : Prop) ->
     (Q : Prop) ->
     Not (P -> Q) ->

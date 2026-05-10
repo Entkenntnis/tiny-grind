@@ -1,4 +1,4 @@
-theorem pelletier_5 :
+theorem pelletier_05 :
     (P : Prop) ->
     (Q : Prop) ->
     (R : Prop) ->
