@@ -1,4 +1,4 @@
-def mixed_couple_puzzle :
+theorem mixed_couple_puzzle :
     (Person : Type) ->
     (Statement : Type) ->
     (from_mars : Person -> Prop) ->

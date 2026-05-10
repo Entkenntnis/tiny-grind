@@ -30,6 +30,78 @@ theorem deeper_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) ->
   by sorry
 
 
+-- problems/pelletier/1.lean
+theorem pelletier_1 : (P : Prop) -> (Q : Prop) -> Iff (P -> Q) (Not Q -> Not P) :=
+  by grind
+
+theorem pelletier_1_proof : (P : Prop) -> (Q : Prop) -> Iff (P -> Q) (Not Q -> Not P) :=
+  by sorry
+
+
+-- problems/pelletier/2.lean
+theorem pelletier_2 : (P : Prop) -> Iff (Not (Not P)) P :=
+  by grind
+
+theorem pelletier_2_proof : (P : Prop) -> Iff (Not (Not P)) P :=
+  by sorry
+
+
+-- problems/pelletier/3.lean
+theorem pelletier_3 : (P : Prop) -> (Q : Prop) -> Not (P -> Q) -> Q -> P :=
+  by grind
+
+theorem pelletier_3_proof : (P : Prop) -> (Q : Prop) -> Not (P -> Q) -> Q -> P :=
+  by sorry
+
+
+-- problems/pelletier/4.lean
+theorem pelletier_4 : (P : Prop) -> (Q : Prop) -> Iff (Not P -> Q) (Not Q -> P) :=
+  by grind
+
+theorem pelletier_4_proof : (P : Prop) -> (Q : Prop) -> Iff (Not P -> Q) (Not Q -> P) :=
+  by sorry
+
+
+-- problems/pelletier/5.lean
+theorem pelletier_5 : (P : Prop) -> (Q : Prop) -> (R : Prop) -> (Or P Q -> Or P R) -> Or P (Q -> R) :=
+  by grind
+
+theorem pelletier_5_proof : (P : Prop) -> (Q : Prop) -> (R : Prop) -> (Or P Q -> Or P R) -> Or P (Q -> R) :=
+  by sorry
+
+
+-- problems/pelletier/6.lean
+theorem pelletier_6 : (P : Prop) -> Or P (Not P) :=
+  by grind
+
+theorem pelletier_6_proof : (P : Prop) -> Or P (Not P) :=
+  by sorry
+
+
+-- problems/pelletier/7.lean
+theorem pelletier_7 : (P : Prop) -> Or P (Not (Not (Not P))) :=
+  by grind
+
+theorem pelletier_7_proof : (P : Prop) -> Or P (Not (Not (Not P))) :=
+  by sorry
+
+
+-- problems/pelletier/8.lean
+theorem pelletier_8 : (P : Prop) -> (Q : Prop) -> ((P -> Q) -> P) -> P :=
+  by grind
+
+theorem pelletier_8_proof : (P : Prop) -> (Q : Prop) -> ((P -> Q) -> P) -> P :=
+  by sorry
+
+
+-- problems/pelletier/9.lean
+theorem pelletier_9 : (P : Prop) -> (Q : Prop) -> And (Or P Q) (And (Or (Not P) Q) (Or P (Not Q))) -> Not (Or (Not P) (Not Q)) :=
+  by grind
+
+theorem pelletier_9_proof : (P : Prop) -> (Q : Prop) -> And (Or P Q) (And (Or (Not P) Q) (Or P (Not Q))) -> Not (Or (Not P) (Not Q)) :=
+  by sorry
+
+
 -- problems/tptp/PUZ001.lean
 theorem dreadbury_mansion : (D : Type) -> (agatha : D) -> (butler : D) -> (charles : D) -> (lives : D -> Prop) -> (killed : D -> D -> Prop) -> (hates : D -> D -> Prop) -> (richer : D -> D -> Prop) -> (h_exists : @Exists D (fun (x : D) => And (lives x) (killed x agatha))) -> (h_only_residents : (x : D) -> lives x -> Or (@Eq D x agatha) (Or (@Eq D x butler) (@Eq D x charles))) -> (h_killer_hates : (x : D) -> (y : D) -> killed x y -> hates x y) -> (h_killer_not_richer : (x : D) -> (y : D) -> killed x y -> Not (richer x y)) -> (h_charles_hates_no_one_agatha_hates : (x : D) -> hates agatha x -> Not (hates charles x)) -> (h_agatha_hates_except_butler : (x : D) -> Not (@Eq D x butler) -> hates agatha x) -> (h_butler_hates_non_richer_than_agatha : (x : D) -> Not (richer x agatha) -> hates butler x) -> (h_butler_hates_agatha_hates : (x : D) -> hates agatha x -> hates butler x) -> (h_noone_hates_everyone : (x : D) -> @Exists D (fun (y : D) => Not (hates x y))) -> (h_noone_hates_everyone_agatha : @Exists D (fun (y : D) => Not (hates agatha y))) -> (h_noone_hates_everyone_butler : @Exists D (fun (y : D) => Not (hates butler y))) -> (h_noone_hates_everyone_charles : @Exists D (fun (y : D) => Not (hates charles y))) -> (h_agatha_not_butler : Not (@Eq D agatha butler)) -> killed agatha agatha :=
   by grind
@@ -139,6 +211,14 @@ theorem interns_problem : (day : Type) -> (person : Type) -> (a : person) -> (b 
   by grind (instances := 4000)
 
 theorem interns_problem_proof : (day : Type) -> (person : Type) -> (a : person) -> (b : person) -> (c : person) -> (monday : day) -> (tuesday : day) -> (wednesday : day) -> (thursday : day) -> (friday : day) -> (sunday : day) -> (saturday : day) -> (all_on : day -> Prop) -> (on : person -> day -> Prop) -> (consecutive : day -> day -> Prop) -> (same_day : day -> day -> Prop) -> (same_person : person -> person -> Prop) -> (h_all_on_a_on : (X : day) -> all_on X -> on a X) -> (h_all_on_b_on : (X : day) -> all_on X -> on b X) -> (h_all_on_c_on : (X : day) -> all_on X -> on c X) -> (h_all_on_cond : (X : day) -> And (on a X) (And (on b X) (on c X)) -> all_on X) -> (h_all_on_well_defined : (X : day) -> (Y : day) -> And (all_on X) (all_on Y) -> same_day X Y) -> (h_consecutive_sunday_monday : consecutive sunday monday) -> (h_consecutive_monday_tuesday : consecutive monday tuesday) -> (h_consecutive_tuesday_wednesday : consecutive tuesday wednesday) -> (h_consecutive_wednesday_thursday : consecutive wednesday thursday) -> (h_consecutive_thursday_friday : consecutive thursday friday) -> (h_consecutive_friday_saturday : consecutive friday saturday) -> (h_consecutive_saturday_sunday : consecutive saturday sunday) -> (h_same_person_refl : (X : person) -> same_person X X) -> (h_a_not_b : Not (same_person a b)) -> (h_a_not_c : Not (same_person a c)) -> (h_b_not_c : Not (same_person b c)) -> (h_same_day_refl : (X : day) -> same_day X X) -> (h_sunday_not_monday : Not (same_day sunday monday)) -> (h_sunday_not_tuesday : Not (same_day sunday tuesday)) -> (h_sunday_not_wednesday : Not (same_day sunday wednesday)) -> (h_sunday_not_thursday : Not (same_day sunday thursday)) -> (h_sunday_not_friday : Not (same_day sunday friday)) -> (h_sunday_not_saturday : Not (same_day sunday saturday)) -> (h_monday_not_tuesday : Not (same_day monday tuesday)) -> (h_monday_not_wednesday : Not (same_day monday wednesday)) -> (h_monday_not_thursday : Not (same_day monday thursday)) -> (h_monday_not_friday : Not (same_day monday friday)) -> (h_monday_not_saturday : Not (same_day monday saturday)) -> (h_tuesday_not_wednesday : Not (same_day tuesday wednesday)) -> (h_tuesday_not_thursday : Not (same_day tuesday thursday)) -> (h_tuesday_not_friday : Not (same_day tuesday friday)) -> (h_tuesday_not_saturday : Not (same_day tuesday saturday)) -> (h_wednesday_not_thursday : Not (same_day wednesday thursday)) -> (h_wednesday_not_friday : Not (same_day wednesday friday)) -> (h_wednesday_not_saturday : Not (same_day wednesday saturday)) -> (h_thursday_not_friday : Not (same_day thursday friday)) -> (h_thursday_not_saturday : Not (same_day thursday saturday)) -> (h_friday_not_saturday : Not (same_day friday saturday)) -> (h_all_on_one_day : Or (all_on sunday) (Or (all_on monday) (Or (all_on tuesday) (Or (all_on wednesday) (Or (all_on thursday) (Or (all_on friday) (all_on saturday))))))) -> (h_not_on_for_3_days : (X : day) -> (Y : day) -> (Z : day) -> (W : day) -> (U : person) -> Not (And (consecutive X Y) (And (consecutive Y Z) (And (consecutive Z W) (And (on U X) (And (on U Y) (on U Z))))))) -> (h_no_two_off_twice_together : (X : person) -> (Y : day) -> (Z : day) -> (W : person) -> Or (on X Y) (Or (on X Z) (Or (on W Y) (Or (on W Z) (Or (same_person X W) (same_day Y Z)))))) -> (h_a_off_sunday : Not (on a sunday)) -> (h_a_off_tuesday : Not (on a tuesday)) -> (h_a_off_thursday : Not (on a thursday)) -> (h_b_off_thursday : Not (on b thursday)) -> (h_b_off_saturday : Not (on b saturday)) -> (h_c_off_sunday : Not (on c sunday)) -> all_on friday :=
+  by sorry
+
+
+-- problems/tptp/PUZ020.lean
+theorem prove_knight_husband : (U : Type) -> (person : U -> Prop) -> (knight : U -> Prop) -> (knave : U -> Prop) -> (say : U -> U -> Prop) -> (a_truth : U -> Prop) -> (statement_by : U -> U) -> (husband : U) -> (wife : U) -> (h_everyone_a_knight_or_knave : (x : U) -> person x -> Or (knight x) (knave x)) -> (h_not_both_a_knight_or_knave : (x : U) -> person x -> knight x -> knave x -> False) -> (h_statements_are_true_or_false : (x : U) -> (y : U) -> Or (Not (say x y)) (Or (a_truth y) (Not (a_truth y)))) -> (h_people_do_not_equal_their_statements1 : (x : U) -> (y : U) -> say x y -> Not (@Eq U x y)) -> (h_peoples_statements : (x : U) -> (y : U) -> say x y -> @Eq U y (statement_by x)) -> (h_people_do_not_equal_their_statements2 : (x : U) -> (y : U) -> person x -> Not (@Eq U x (statement_by y))) -> (h_knights_make_true_statements : (x : U) -> person x -> a_truth (statement_by x) -> knight x) -> (h_knaves_make_false_statements : (x : U) -> person x -> Or (a_truth (statement_by x)) (knave x)) -> (h_knights_say_the_truth : (x : U) -> (y : U) -> knight x -> say x y -> a_truth y) -> (h_knaves_do_not_say_the_truth : (x : U) -> (y : U) -> knave x -> say x y -> Not (a_truth y)) -> (h_husband_person : person husband) -> (h_wife_person : person wife) -> (h_husband_not_wife : Not (@Eq U husband wife)) -> (h_husband_makes_statements : say husband (statement_by husband)) -> (h_truthful_knight_husband_means_knight_wife : a_truth (statement_by husband) -> knight husband -> knight wife) -> (h_knight_husband_makes_true_statements : knight husband -> a_truth (statement_by husband)) -> (h_knight_wife_or_truthful_husband : Or (a_truth (statement_by husband)) (knight wife)) -> (h_knight_wife_means_truthful_husband : knight wife -> a_truth (statement_by husband)) -> knight husband :=
+  by grind
+
+theorem prove_knight_husband_proof : (U : Type) -> (person : U -> Prop) -> (knight : U -> Prop) -> (knave : U -> Prop) -> (say : U -> U -> Prop) -> (a_truth : U -> Prop) -> (statement_by : U -> U) -> (husband : U) -> (wife : U) -> (h_everyone_a_knight_or_knave : (x : U) -> person x -> Or (knight x) (knave x)) -> (h_not_both_a_knight_or_knave : (x : U) -> person x -> knight x -> knave x -> False) -> (h_statements_are_true_or_false : (x : U) -> (y : U) -> Or (Not (say x y)) (Or (a_truth y) (Not (a_truth y)))) -> (h_people_do_not_equal_their_statements1 : (x : U) -> (y : U) -> say x y -> Not (@Eq U x y)) -> (h_peoples_statements : (x : U) -> (y : U) -> say x y -> @Eq U y (statement_by x)) -> (h_people_do_not_equal_their_statements2 : (x : U) -> (y : U) -> person x -> Not (@Eq U x (statement_by y))) -> (h_knights_make_true_statements : (x : U) -> person x -> a_truth (statement_by x) -> knight x) -> (h_knaves_make_false_statements : (x : U) -> person x -> Or (a_truth (statement_by x)) (knave x)) -> (h_knights_say_the_truth : (x : U) -> (y : U) -> knight x -> say x y -> a_truth y) -> (h_knaves_do_not_say_the_truth : (x : U) -> (y : U) -> knave x -> say x y -> Not (a_truth y)) -> (h_husband_person : person husband) -> (h_wife_person : person wife) -> (h_husband_not_wife : Not (@Eq U husband wife)) -> (h_husband_makes_statements : say husband (statement_by husband)) -> (h_truthful_knight_husband_means_knight_wife : a_truth (statement_by husband) -> knight husband -> knight wife) -> (h_knight_husband_makes_true_statements : knight husband -> a_truth (statement_by husband)) -> (h_knight_wife_or_truthful_husband : Or (a_truth (statement_by husband)) (knight wife)) -> (h_knight_wife_means_truthful_husband : knight wife -> a_truth (statement_by husband)) -> knight husband :=
   by sorry
 
 

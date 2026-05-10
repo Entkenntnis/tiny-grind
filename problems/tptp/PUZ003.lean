@@ -1,4 +1,4 @@
-def barber_puzzle :
+theorem barber_puzzle :
     (Entity : Type) ->
     (member : Entity -> Prop) ->
     (shaved : Entity -> Entity -> Prop) ->

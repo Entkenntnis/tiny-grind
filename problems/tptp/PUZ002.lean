@@ -1,4 +1,4 @@
-def animals_puzzle :
+theorem animals_puzzle :
     (Entity : Type) ->
     (in_house : Entity -> Prop) ->
     (cat : Entity -> Prop) ->

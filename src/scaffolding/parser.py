@@ -26,7 +26,7 @@ from scaffolding.syntax import (
 _GRAMMAR = r"""
 start: (definition | axiom)*
 
-definition: "def" NAME ":" term ":=" term             -> definition
+definition: ("def" | "theorem") NAME ":" term ":=" term             -> definition
 axiom: "axiom" NAME ":" term                          -> axiom
 
 ?term: let_term

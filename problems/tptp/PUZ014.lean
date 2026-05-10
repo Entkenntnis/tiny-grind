@@ -1,4 +1,4 @@
-def school_boys_all_monitors_awake :
+theorem school_boys_all_monitors_awake :
     (some_english_sing : Prop) ->
     (some_english_sing_not : Prop) ->
     (some_germans_play : Prop) ->

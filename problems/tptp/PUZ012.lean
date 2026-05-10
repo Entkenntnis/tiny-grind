@@ -1,4 +1,4 @@
-def mislabeled_boxes :
+theorem mislabeled_boxes :
     (Box : Type) ->
     (Fruit : Type) ->
     (boxa : Box) ->

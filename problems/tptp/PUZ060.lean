@@ -1,4 +1,4 @@
-def food_problem :
+theorem food_problem :
     (Entity : Type) ->
     (food : Entity -> Prop) ->
     (likes : Entity -> Entity -> Prop) ->

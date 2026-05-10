@@ -1,4 +1,4 @@
-def mars_venus_puzzle :
+theorem mars_venus_puzzle :
     (Person : Type) ->
     (Statement : Type) ->
     (from_mars : Person -> Prop) ->

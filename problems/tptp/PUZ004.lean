@@ -1,4 +1,4 @@
-def letters_puzzle :
+theorem letters_puzzle :
     (dated : Prop) ->
     (on_blue_paper : Prop) ->
     (in_third_person : Prop) ->

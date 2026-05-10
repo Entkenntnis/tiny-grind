@@ -1,4 +1,4 @@
-def lion_and_unicorn :
+theorem lion_and_unicorn :
     -- domain and constants
     (Day : Type) ->
     (a_monday : Day) ->

@@ -1,4 +1,4 @@
-def common_ocean :
+theorem common_ocean :
     (Entity : Type) ->
     (ocean : Entity -> Prop) ->
     (borders : Entity -> Entity -> Prop) ->

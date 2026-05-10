@@ -1,4 +1,4 @@
-def wolf_goat_cabbage :
+theorem wolf_goat_cabbage :
     (Bank : Type) ->
     (south : Bank) ->
     (north : Bank) ->

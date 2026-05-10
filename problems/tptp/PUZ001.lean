@@ -2,7 +2,7 @@
 --    h_noone_hates_everyone : ∀ x, ∃ y, ¬ hates x y
 -- we pre-specialize the hypothesis to each of the suspects, this should not change the difficulty
 
-def dreadbury_mansion : (D : Type) -> (agatha : D) -> (butler : D) -> (charles : D) ->
+theorem dreadbury_mansion : (D : Type) -> (agatha : D) -> (butler : D) -> (charles : D) ->
     (lives : D -> Prop) -> (killed : D -> D -> Prop) -> (hates : D -> D -> Prop) -> (richer : D -> D -> Prop) ->
     (h_exists : @Exists D (fun (x : D) => And (lives x) (killed x agatha))) ->
     (h_only_residents : forall (x : D), lives x -> Or (@Eq D x agatha) (Or (@Eq D x butler) (@Eq D x charles))) ->

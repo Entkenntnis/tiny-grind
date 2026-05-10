@@ -1,4 +1,4 @@
-def missionaries_and_cannibals :
+theorem missionaries_and_cannibals :
     (Num : Type) ->
     (n0 : Num) ->
     (n1 : Num) ->

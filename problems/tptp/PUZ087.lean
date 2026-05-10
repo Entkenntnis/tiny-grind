@@ -4,7 +4,7 @@
 -- If everyone likes Bruce, and Lyle likes everyone who likes someone,
 -- then someone likes everyone.
 
-def puzzle :
+theorem puzzle :
     (People : Type) ->
     (Likes : People -> People -> Prop) ->
     (bruce : People) ->

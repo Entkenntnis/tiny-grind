@@ -1,4 +1,4 @@
-def prove_knight_husband :
+theorem prove_knight_husband :
     (U : Type) ->
     (person : U -> Prop) ->
     (knight : U -> Prop) ->

@@ -2,7 +2,7 @@
 -- this works quite nicely
 -- the model encoding stuff is seriously crazy and fancy
 
-def can_convince :
+theorem can_convince :
     (Person : Type) ->
     (me : Person) ->
     (Stmt : Type) ->

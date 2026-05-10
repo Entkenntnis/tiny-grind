@@ -1,4 +1,4 @@
-def school_boys :
+theorem school_boys :
     (some_english_sing : Prop) ->
     (some_english_sing_not : Prop) ->
     (some_germans_play : Prop) ->

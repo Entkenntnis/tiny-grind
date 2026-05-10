@@ -1,4 +1,4 @@
-def schubert_steamroller :
+theorem schubert_steamroller :
     (Entity : Type) ->
     (wolf : Entity -> Prop) ->
     (fox : Entity -> Prop) ->

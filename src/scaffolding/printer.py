@@ -81,7 +81,7 @@ def print_term(term: Term, prec: int = 0) -> str:
 def print_definition(defn: Definition) -> str:
     """Prints a full definition in a Lean-like syntax."""
     return (
-        f"def {defn.name} : {print_term(defn.type, 0)} :=\n"
+        f"theorem {defn.name} : {print_term(defn.type, 0)} :=\n"
         f"  {print_term(defn.value, 0)}"
     )
 

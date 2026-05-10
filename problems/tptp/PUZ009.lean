@@ -1,4 +1,4 @@
-def oona_puzzle :
+theorem oona_puzzle :
     (a_is_a_knight : Prop) ->
     (b_is_a_knight : Prop) ->
     (c_is_a_knight : Prop) ->

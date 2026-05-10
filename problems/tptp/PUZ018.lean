@@ -1,4 +1,4 @@
-def interns_problem :
+theorem interns_problem :
     (day : Type) ->
     (person : Type) ->
     (a : person) ->

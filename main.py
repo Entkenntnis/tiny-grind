@@ -32,6 +32,9 @@ def process_problem(dirpath: str, filename: str):
     with open(full_path, "r", encoding="utf-8") as f:
         content = f.read()
 
+    if len(content.strip()) == 0:
+        return
+
     # might make this more clever by explicitly looking for "by grind" and operating on it
     # but hey, for now, this should be fine
     decls = parse_declarations(content)
@@ -51,9 +54,9 @@ def process_problem(dirpath: str, filename: str):
     # print(decls)
     # print(print_program(decls))
     output += f"-- {full_path}\n"
-    output += "theorem " + print_program(decls)[4:]
+    output += print_program(decls)
     output += "\n\n"
-    output += "theorem " + print_program([proof_def])[4:]
+    output += print_program([proof_def])
 
     output += "\n\n\n"
 
