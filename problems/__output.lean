@@ -174,6 +174,14 @@ theorem pelletier_18_proof : (A : Type) -> (F : A -> Prop) -> (g : A -> A) -> (s
   by sorry
 
 
+-- problems/pelletier/19.lean
+theorem pelletier_19 : (A : Type) -> (P : A -> Prop) -> (Q : A -> Prop) -> (f : A -> A) -> (g : A -> A) -> ((x : A) -> Or (Not (P (f x))) (Q (g x))) -> ((x : A) -> P x) -> ((x : A) -> Not (Q x)) -> (some : A) -> Or (Not (P (f some))) (Q (g some)) -> P some -> Not (Q some) -> False :=
+  by grind
+
+theorem pelletier_19_proof : (A : Type) -> (P : A -> Prop) -> (Q : A -> Prop) -> (f : A -> A) -> (g : A -> A) -> ((x : A) -> Or (Not (P (f x))) (Q (g x))) -> ((x : A) -> P x) -> ((x : A) -> Not (Q x)) -> (some : A) -> Or (Not (P (f some))) (Q (g some)) -> P some -> Not (Q some) -> False :=
+  by sorry
+
+
 -- problems/tptp/PUZ001.lean
 theorem dreadbury_mansion : (D : Type) -> (agatha : D) -> (butler : D) -> (charles : D) -> (lives : D -> Prop) -> (killed : D -> D -> Prop) -> (hates : D -> D -> Prop) -> (richer : D -> D -> Prop) -> (h_exists : @Exists D (fun (x : D) => And (lives x) (killed x agatha))) -> (h_only_residents : (x : D) -> lives x -> Or (@Eq D x agatha) (Or (@Eq D x butler) (@Eq D x charles))) -> (h_killer_hates : (x : D) -> (y : D) -> killed x y -> hates x y) -> (h_killer_not_richer : (x : D) -> (y : D) -> killed x y -> Not (richer x y)) -> (h_charles_hates_no_one_agatha_hates : (x : D) -> hates agatha x -> Not (hates charles x)) -> (h_agatha_hates_except_butler : (x : D) -> Not (@Eq D x butler) -> hates agatha x) -> (h_butler_hates_non_richer_than_agatha : (x : D) -> Not (richer x agatha) -> hates butler x) -> (h_butler_hates_agatha_hates : (x : D) -> hates agatha x -> hates butler x) -> (h_noone_hates_everyone : (x : D) -> @Exists D (fun (y : D) => Not (hates x y))) -> (h_noone_hates_everyone_agatha : @Exists D (fun (y : D) => Not (hates agatha y))) -> (h_noone_hates_everyone_butler : @Exists D (fun (y : D) => Not (hates butler y))) -> (h_noone_hates_everyone_charles : @Exists D (fun (y : D) => Not (hates charles y))) -> (h_agatha_not_butler : Not (@Eq D agatha butler)) -> killed agatha agatha :=
   by grind
