@@ -3,3 +3,4 @@ __pycache__
 .vscode
 .lake
 _tptp_raw
+output.txt
