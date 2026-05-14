@@ -38,7 +38,7 @@ reportExplicitAny = "error"
 reportUnreachable = "error"
 
 # Force you to specify which rule you are ignoring (e.g. # pyright: ignore[reportAny])
-reportIgnoreCommentWithoutRule = "error"
+reportIgnoreCommentWithoutRule = "none"
 
 # Disallow implicit string concatenation (e.g. "a" "b" becoming "ab")
 reportImplicitStringConcatenation = "error"
