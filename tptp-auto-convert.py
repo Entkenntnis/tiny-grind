@@ -9,7 +9,6 @@ sys.path.insert(0, str(ROOT / "src"))
 # =====================================================
 
 from dataclasses import dataclass
-from typing import cast
 from scaffolding.syntax import (
     App,
     Axiom,
@@ -262,56 +261,39 @@ class TptpFofTransformer:
             raise ValueError(f"Unknown term node: {data}")
 
 
-# def mk_or(lits: list[Term]) -> Term:
-#     if not lits:
-#         return Var("False")
-#     if len(lits) == 1:
-#         return lits[0]
-#     return App(App(Var("Or"), lits[0]), mk_or(lits[1:]))
+def mk_pred_type(arity: int) -> Term:
+    body = Sort(0)
+    for _ in range(arity):
+        body = Pi(None, Var("_U"), body)
+    return body
 
 
-# def clause_to_hyp_type(clause: Clause) -> Term:
-#     body = mk_or(clause.literals)
-#     for v in reversed(clause.free_vars):
-#         body = Pi(v, Var("_U"), body)
-#     return body
+def mk_func_type(arity: int) -> Term:
+    body = Var("_U")
+    for _ in range(arity):
+        body = Pi(None, Var("_U"), body)
+    return body
 
 
-# def mk_pred_type(arity: int) -> Term:
-#     body = Sort(0)
-#     for _ in range(arity):
-#         body = Pi(None, Var("_U"), body)
-#     return body
+def build_theorem_type(problem: TptpFofProblem) -> Term:
+    ty = problem.conjecture
+
+    for ax in reversed(problem.axioms):
+        ty = Pi(ax.name, ax.type, ty)
+
+    for pred in reversed(problem.predicates):
+        ty = Pi(pred.full_name, mk_pred_type(pred.arity), ty)
+    for func in reversed(problem.functions):
+        ty = Pi(func.full_name, mk_func_type(func.arity), ty)
+
+    ty = Pi("_U", Sort(1), ty)
+    return ty
 
 
-# def mk_func_type(arity: int) -> Term:
-#     body = Var("_U")
-#     for _ in range(arity):
-#         body = Pi(None, Var("_U"), body)
-#     return body
-
-
-# def build_theorem_type(problem: TptpCnfProblem) -> Term:
-#     ty = Var("False")
-
-#     for clause in reversed(problem.clauses):
-#         hyp_name = f"h_{clause.name}"
-#         hyp_type = clause_to_hyp_type(clause)
-#         ty = Pi(hyp_name, hyp_type, ty)
-
-#     for pred in reversed(problem.predicates):
-#         ty = Pi(pred.full_name, mk_pred_type(pred.arity), ty)
-#     for func in reversed(problem.functions):
-#         ty = Pi(func.full_name, mk_func_type(func.arity), ty)
-
-#     ty = Pi("_U", Sort(1), ty)
-#     return ty
-
-
-# def problem_to_lean_definition(
-#     problem: TptpCnfProblem, theorem_name: str
-# ) -> Definition:
-#     return Definition(theorem_name, build_theorem_type(problem), ElabTactic("grind"))
+def problem_to_lean_definition(
+    problem: TptpFofProblem, theorem_name: str
+) -> Definition:
+    return Definition(theorem_name, build_theorem_type(problem), ElabTactic("grind"))
 
 
 # main program
@@ -336,13 +318,18 @@ for path in directory.rglob("*.p"):
 
     okCounter += 1
 
-    print(content)
-    print(tree)
+    # print(content)
+    # print(tree)
 
     transformer = TptpFofTransformer(tree)
     problem = transformer.transform()
 
-    print(problem)
+    # print(problem)
+    # print("axioms")
+    # for ax in problem.axioms:
+    #     print(f"  {print_axiom(ax)}")
+
+    # print(f"  Goal: {print_term(problem.conjecture)}")
 
     # print(content)
     # print(tree)
@@ -353,19 +340,19 @@ for path in directory.rglob("*.p"):
     #     for lit in clause.literals:
     #         print(f"    {print_term(lit)}")
 
-    # theorem_name = path.stem
-    # theorem_name = (
-    #     theorem_name.replace("-", "_minus_")
-    #     .replace("^", "_caret_")
-    #     .replace("+", "_plus_")
-    #     .replace(".", "_dot_")
-    # )
-    # definition = problem_to_lean_definition(problem, theorem_name)
-    # print(print_definition(definition))
+    theorem_name = path.stem
+    theorem_name = (
+        theorem_name.replace("-", "_minus_")
+        .replace("^", "_caret_")
+        .replace("+", "_plus_")
+        .replace(".", "_dot_")
+    )
+    definition = problem_to_lean_definition(problem, theorem_name)
+    print(print_definition(definition))
 
-    # print("\n\n")
+    print("\n\n")
 
     # if okCounter > 100:
     #     sys.exit()
 
-print(f"{okCounter} parsed correctly")
+# print(f"{okCounter} parsed correctly")
