@@ -14,6 +14,8 @@ disjunction: literal
 literal: "~"? atom                   -> literal
 atom: NAME "(" term ("," term)* ")"          -> pred_app
      | NAME                       -> zero_arity_pred
+     | term "=" term           -> eq_atom
+     | term "!=" term          -> neq_atom
 
 term: VARIABLE -> var
     | NAME "(" term ("," term)* ")" -> func
@@ -29,6 +31,9 @@ COMMENT: /%[^\n]*/
 %ignore COMMENT
 
 """
+
+# ignore axiom imports, ignore $true/$false (rarely used), ignore quoted names (also rarely used)
+# 1995 problems are passing, I'm happy with this
 
 parser = Lark(grammar, start="start", parser="lalr")
 
