@@ -9,8 +9,9 @@ sys.path.insert(0, str(ROOT / "src"))
 # =====================================================
 
 from dataclasses import dataclass
-from scaffolding.syntax import Term
-from lark import Lark, Token, Tree
+from scaffolding.syntax import App, Term, Var
+from scaffolding.printer import print_term
+from lark import Lark, ParseTree, Token, Tree
 import re
 
 grammar = r"""
@@ -88,12 +89,21 @@ class TptpCnfProblem:
 # Transformer
 
 
+def extractName(tree: ParseTree, position: int) -> str:
+    name = "<?>"
+    if len(tree.children) > position:
+        child = tree.children[position]
+        if isinstance(child, Token):
+            name = child.value  # pyright: ignore
+    return name
+
+
 class TptpTransformer:
     def __init__(self, parse_tree: Tree[Token]):
         self.tree: Tree[Token] = parse_tree
         self.func_map: dict[tuple[str, int], str] = {}  # (name, arity) -> full name
         self.pred_map: dict[tuple[str, int], str] = {}
-        self.var_oder: list[str] = []  # within clause
+        self.var_order: list[str] = []  # within clause
 
     def transform(self) -> TptpCnfProblem:
         problem = TptpCnfProblem([], [], [])
@@ -109,18 +119,17 @@ class TptpTransformer:
         for p in problem.predicates:
             self.pred_map[(p.original_name, p.arity)] = p.full_name
 
-        # TODO: second pass
+        for child in self.tree.children:
+            if isinstance(child, Tree) and child.data == "cnf_entry":
+                clause = self._build_clause(child)
+                problem.clauses.append(clause)
 
         return problem
 
     def _collect_symbols(self, tree: Tree[Token]):
         if isinstance(tree, Token):
             return
-        name = "<?>"
-        if len(tree.children) > 0:
-            child = tree.children[0]
-            if isinstance(tree.children[0], Token):
-                name = child.value  # pyright: ignore
+        name = extractName(tree, 0)
         if tree.data == "func":
             arity = len(tree.children) - 1
             self.func_map[(name, arity)] = ""  # placeholder
@@ -136,6 +145,75 @@ class TptpTransformer:
             if isinstance(child, Tree):
                 self._collect_symbols(child)
 
+    def _build_clause(self, cnf_entry: ParseTree) -> Clause:
+        role = extractName(cnf_entry, 1)
+        name = extractName(cnf_entry, 0)
+        formula = cnf_entry.children[2]
+
+        lit_trees = self._extract_literals(formula.children[0])  # pyright: ignore
+        self.var_order.clear()
+        lit_terms = [self._transform_literal(lt) for lt in lit_trees]
+
+        return Clause(role, name, list(self.var_order), lit_terms)
+
+    def _extract_literals(self, disj: ParseTree) -> list[ParseTree]:
+        if disj.data == "literal":
+            return [disj]
+        return [c for c in disj.children if isinstance(c, Tree) and c.data == "literal"]
+
+    def _transform_literal(self, lit: ParseTree) -> Term:
+        negated = lit.children[0] == "~"  # pyright: ignore
+        atom_tree = lit.children[-1]
+        atom = self._transform_atom(atom_tree)  # pyright: ignore
+        return App(Var("Not"), atom) if negated else atom
+
+    def _transform_atom(self, atom: ParseTree) -> Term:
+        data = atom.data
+        if data == "pred_app":
+            name = extractName(atom, 0)
+            args = atom.children[1:]
+            full = self.pred_map[name, len(args)]
+            head = Var(full)
+            for a in args:
+                head = App(head, self._transform_term(a))  # pyright: ignore
+            return head
+        elif data == "zero_arity_pred":
+            name = extractName(atom, 0)
+            return Var(self.pred_map[(name, 0)])
+        elif data == "eq_atom":
+            left = self._transform_term(atom.children[0])  # pyright: ignore
+            right = self._transform_term(atom.children[1])  # pyright: ignore
+            return App(App(App(Var("@Eq"), Var("U")), left), right)
+        elif data == "neq_atom":
+            left = self._transform_term(atom.children[0])  # pyright: ignore
+            right = self._transform_term(atom.children[1])  # pyright: ignore
+            eq = App(App(App(Var("@Eq"), Var("U")), left), right)
+            return App(Var("Not"), eq)
+        else:
+            raise ValueError(f"Unknown atom type: {data}")
+
+    def _transform_term(self, node: ParseTree) -> Term:
+        data = node.data
+        if data == "var":
+            v = extractName(node, 0)
+            if v not in self.var_order:
+                self.var_order.append(v)
+            return Var(v)
+        elif data == "func":
+            name = extractName(node, 0)
+            args = node.children[1:]
+            full = self.func_map[name, len(args)]
+            head = Var(full)
+            for a in args:
+                head = App(head, self._transform_term(a))  # pyright: ignore
+            return head
+        elif data == "constant":
+            name = extractName(node, 0)
+            full = self.func_map[(name, 0)]
+            return Var(full)
+        else:
+            raise ValueError(f"Unknown term node: {data}")
+
 
 # main program
 
@@ -145,29 +223,36 @@ okCounter = 0
 directory = Path("_tptp_raw/TPTP-v9.2.1/Problems")
 for path in directory.rglob("*.p"):
     # print(path)
+    # try:
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read()
+    # print(content)
+    if len(content) > 10000:  # this should be a solid subset
+        # print("skip due to length")
+        continue
+    if not re.search(r"% SPC\s+: CNF_UNS_", content):
+        # print(f"skip due to not being CNF UNSAT {path}")
+        continue
+
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            content = f.read()
-        # print(content)
-        if len(content) > 10000:  # this should be a solid subset
-            # print("skip due to length")
-            continue
-        if not re.search(r"% SPC\s+: CNF_UNS_", content):
-            # print(f"skip due to not being CNF UNSAT {path}")
-            continue
-
         tree = parser.parse(content)  # pyright: ignore
-        transformer = TptpTransformer(tree)
-        problem = transformer.transform()
+    except:
+        continue
+    # print(tree)
 
-        okCounter += 1
-        print(content)
-        print(tree)
-        print(problem)
-        if okCounter > 5:
-            sys.exit()
-    except Exception as e:
-        # print(f"-> failed to parse: {e}")
-        pass
+    transformer = TptpTransformer(tree)
+    problem = transformer.transform()
+
+    okCounter += 1
+    print(content)
+    # print(tree)
+    # print(problem)
+    print("intermediate structure:")
+    for clause in problem.clauses:
+        print(f"  clause: {clause.name} ({clause.free_vars})")
+        for lit in clause.literals:
+            print(f"    {print_term(lit)}")
+    # if okCounter > 5:
+    #     sys.exit()
 
 print(f"{okCounter} parsed correctly")
