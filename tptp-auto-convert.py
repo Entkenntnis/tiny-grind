@@ -9,8 +9,8 @@ sys.path.insert(0, str(ROOT / "src"))
 # =====================================================
 
 from dataclasses import dataclass
-from scaffolding.syntax import App, Term, Var
-from scaffolding.printer import print_term
+from scaffolding.syntax import App, Definition, ElabTactic, Pi, Sort, Term, Var
+from scaffolding.printer import print_definition, print_term
 from lark import Lark, ParseTree, Token, Tree
 import re
 
@@ -183,11 +183,11 @@ class TptpTransformer:
         elif data == "eq_atom":
             left = self._transform_term(atom.children[0])  # pyright: ignore
             right = self._transform_term(atom.children[1])  # pyright: ignore
-            return App(App(App(Var("@Eq"), Var("U")), left), right)
+            return App(App(App(Var("@Eq"), Var("_U")), left), right)
         elif data == "neq_atom":
             left = self._transform_term(atom.children[0])  # pyright: ignore
             right = self._transform_term(atom.children[1])  # pyright: ignore
-            eq = App(App(App(Var("@Eq"), Var("U")), left), right)
+            eq = App(App(App(Var("@Eq"), Var("_U")), left), right)
             return App(Var("Not"), eq)
         else:
             raise ValueError(f"Unknown atom type: {data}")
@@ -213,6 +213,58 @@ class TptpTransformer:
             return Var(full)
         else:
             raise ValueError(f"Unknown term node: {data}")
+
+
+def mk_or(lits: list[Term]) -> Term:
+    if not lits:
+        return Var("False")
+    if len(lits) == 1:
+        return lits[0]
+    return App(App(Var("Or"), lits[0]), mk_or(lits[1:]))
+
+
+def clause_to_hyp_type(clause: Clause) -> Term:
+    body = mk_or(clause.literals)
+    for v in reversed(clause.free_vars):
+        body = Pi(v, Var("_U"), body)
+    return body
+
+
+def mk_pred_type(arity: int) -> Term:
+    body = Sort(0)
+    for _ in range(arity):
+        body = Pi(None, Var("_U"), body)
+    return body
+
+
+def mk_func_type(arity: int) -> Term:
+    body = Var("_U")
+    for _ in range(arity):
+        body = Pi(None, Var("_U"), body)
+    return body
+
+
+def build_theorem_type(problem: TptpCnfProblem) -> Term:
+    ty = Var("False")
+
+    for clause in reversed(problem.clauses):
+        hyp_name = f"h_{clause.name}"
+        hyp_type = clause_to_hyp_type(clause)
+        ty = Pi(hyp_name, hyp_type, ty)
+
+    for pred in reversed(problem.predicates):
+        ty = Pi(pred.full_name, mk_pred_type(pred.arity), ty)
+    for func in reversed(problem.functions):
+        ty = Pi(func.full_name, mk_func_type(func.arity), ty)
+
+    ty = Pi("_U", Sort(1), ty)
+    return ty
+
+
+def problem_to_lean_definition(
+    problem: TptpCnfProblem, theorem_name: str
+) -> Definition:
+    return Definition(theorem_name, build_theorem_type(problem), ElabTactic("grind"))
 
 
 # main program
@@ -244,15 +296,28 @@ for path in directory.rglob("*.p"):
     problem = transformer.transform()
 
     okCounter += 1
-    print(content)
+    # print(content)
     # print(tree)
     # print(problem)
-    print("intermediate structure:")
-    for clause in problem.clauses:
-        print(f"  clause: {clause.name} ({clause.free_vars})")
-        for lit in clause.literals:
-            print(f"    {print_term(lit)}")
-    # if okCounter > 5:
+    # print("intermediate structure:")
+    # for clause in problem.clauses:
+    #     print(f"  clause: {clause.name} ({clause.free_vars})")
+    #     for lit in clause.literals:
+    #         print(f"    {print_term(lit)}")
+
+    theorem_name = path.stem
+    theorem_name = (
+        theorem_name.replace("-", "_minus_")
+        .replace("^", "_caret_")
+        .replace("+", "_plus_")
+        .replace(".", "_dot_")
+    )
+    definition = problem_to_lean_definition(problem, theorem_name)
+    print(print_definition(definition))
+
+    print("\n\n")
+
+    # if okCounter > 100:
     #     sys.exit()
 
 print(f"{okCounter} parsed correctly")
