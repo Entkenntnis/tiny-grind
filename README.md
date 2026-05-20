@@ -44,6 +44,11 @@ There are several possible extensions to the solver, there are surely edge cases
 
 This project is managed by `uv`, install it and handle run `uv sync`for setup, then use `uv run main.py` to execute the main script. The lean files within `problems/` can be inspected with the lean InfoView (enable the VS Code Plugin)
 
+## Sources
 
+Documentation for grind: https://lean-lang.org/doc/reference/latest/The--grind--tactic/
 
+Congruence Closure in Intensional Type Theory: https://link.springer.com/chapter/10.1007/978-3-319-40229-1_8
+
+Simplify: A Theorem Prover for Program Checking (E-matching): https://doi.org/10.1145/1066100.1066102
 
