@@ -1,0 +1,3 @@
+theorem KRS130_plus_1 : (_U : Type) -> (p_cowlThing_1 : _U -> Prop) -> (p_cowlNothing_1 : _U -> Prop) -> (p_xsd_string_1 : _U -> Prop) -> (p_xsd_integer_1 : _U -> Prop) -> (p_cNothing_1 : _U -> Prop) -> (p_rp_2 : _U -> _U -> Prop) -> (axiom_0 : (X : _U) -> And (p_cowlThing_1 X) (Not (p_cowlNothing_1 X))) -> (axiom_1 : (X : _U) -> Iff (p_xsd_string_1 X) (Not (p_xsd_integer_1 X))) -> (axiom_2 : (X : _U) -> p_cNothing_1 X -> Not (@Exists _U (fun (Y : _U) => p_rp_2 X Y))) -> (axiom_3 : (X : _U) -> p_cNothing_1 X -> @Exists _U (fun (Y0 : _U) => p_rp_2 X Y0)) -> (X : _U) -> And (And (p_cowlThing_1 X) (Not (p_cowlNothing_1 X))) ((X : _U) -> And (Iff (p_xsd_string_1 X) (Not (p_xsd_integer_1 X))) ((X : _U) -> Iff (p_cNothing_1 X) (p_cowlNothing_1 X))) :=
+  by grind
+

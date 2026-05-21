@@ -1,0 +1,3 @@
+theorem LCL414_plus_1 : (_U : Type) -> (f_implies_2 : _U -> _U -> _U) -> (f_not_1 : _U -> _U) -> (p_a_truth_1 : _U -> Prop) -> Not ((P : _U) -> (Q : _U) -> And (Or (Or (Not (p_a_truth_1 (f_implies_2 P Q))) (Not (p_a_truth_1 P))) (p_a_truth_1 Q)) ((P : _U) -> (Q : _U) -> And (p_a_truth_1 (f_implies_2 P (f_implies_2 Q P))) ((P : _U) -> (Q : _U) -> (R : _U) -> And (p_a_truth_1 (f_implies_2 (f_implies_2 P (f_implies_2 Q R)) (f_implies_2 (f_implies_2 P Q) (f_implies_2 P R)))) ((P : _U) -> (Q : _U) -> And (p_a_truth_1 (f_implies_2 (f_implies_2 (f_not_1 P) (f_not_1 Q)) (f_implies_2 Q P))) (@Exists _U (fun (A : _U) => Not (p_a_truth_1 (f_implies_2 A A)))))))) :=
+  by grind
+

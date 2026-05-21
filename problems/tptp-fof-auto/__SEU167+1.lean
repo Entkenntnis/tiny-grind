@@ -1,0 +1,3 @@
+theorem SEU167_plus_1 : (_U : Type) -> (f_cartesian_product2_2 : _U -> _U -> _U) -> (p_subset_2 : _U -> _U -> Prop) -> (dt_k2_zfmisc_1 : True) -> (reflexivity_r1_tarski : (A : _U) -> (B : _U) -> p_subset_2 A A) -> (t118_zfmisc_1 : (A : _U) -> (B : _U) -> (C : _U) -> p_subset_2 A B -> And (p_subset_2 (f_cartesian_product2_2 A C) (f_cartesian_product2_2 B C)) (p_subset_2 (f_cartesian_product2_2 C A) (f_cartesian_product2_2 C B))) -> (t1_xboole_1 : (A : _U) -> (B : _U) -> (C : _U) -> And (p_subset_2 A B) (p_subset_2 B C) -> p_subset_2 A C) -> (A : _U) -> (B : _U) -> (C : _U) -> (D : _U) -> And (p_subset_2 A B) (p_subset_2 C D) -> p_subset_2 (f_cartesian_product2_2 A C) (f_cartesian_product2_2 B D) :=
+  by grind
+

@@ -1,0 +1,3 @@
+theorem SET900_plus_1 : (_U : Type) -> (f_empty_set_0 : _U) -> (f_singleton_1 : _U -> _U) -> (p_in_2 : _U -> _U -> Prop) -> (p_empty_1 : _U -> Prop) -> (antisymmetry_r2_hidden : (A : _U) -> (B : _U) -> p_in_2 A B -> Not (p_in_2 B A)) -> (fc1_xboole_0 : p_empty_1 f_empty_set_0) -> (rc1_xboole_0 : @Exists _U (fun (A : _U) => p_empty_1 A)) -> (rc2_xboole_0 : @Exists _U (fun (A : _U) => Not (p_empty_1 A))) -> (l45_zfmisc_1 : (A : _U) -> (B : _U) -> Not (And (And (Not (@Eq _U A (f_singleton_1 B))) (Not (@Eq _U A f_empty_set_0))) ((C : _U) -> Not (And (p_in_2 C A) (Not (@Eq _U C B)))))) -> (A : _U) -> (B : _U) -> Not (And (And (Not (@Eq _U A (f_singleton_1 B))) (Not (@Eq _U A f_empty_set_0))) ((C : _U) -> Not (And (p_in_2 C A) (Not (@Eq _U C B))))) :=
+  by grind
+

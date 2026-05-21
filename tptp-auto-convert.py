@@ -32,8 +32,8 @@ fof_entry: "fof" "(" NAME "," NAME "," formula  ")" "."
 
 ?formula: iff_formula
 
-?iff_formula: impl_formula ("<=>" impl_formula)*
-?impl_formula: or_formula ("=>" or_formula)*
+?iff_formula: impl_formula ("<=>" impl_formula)?
+?impl_formula: or_formula ("=>" or_formula)?
 ?or_formula: and_formula ("|" and_formula)*
 ?and_formula: unary_formula ("&" unary_formula)*
 ?unary_formula: "~" unary_formula -> negation
@@ -191,11 +191,21 @@ class TptpFofTransformer:
         elif data == "or_formula":
             left = self._translate_formula(extractChild(tree, 0))
             right = self._translate_formula(extractChild(tree, 1))
-            return App(App(Var("Or"), left), right)
+            head = App(App(Var("Or"), left), right)
+            more_children = len(tree.children) - 2
+            for i in range(more_children):
+                child = self._translate_formula(extractChild(tree, i + 2))
+                head = App(App(Var("Or"), head), child)
+            return head
         elif data == "and_formula":
             left = self._translate_formula(extractChild(tree, 0))
             right = self._translate_formula(extractChild(tree, 1))
-            return App(App(Var("And"), left), right)
+            head = App(App(Var("And"), left), right)
+            more_children = len(tree.children) - 2
+            for i in range(more_children):
+                child = self._translate_formula(extractChild(tree, i + 2))
+                head = App(App(Var("And"), head), child)
+            return head
         elif data == "negation":
             sub = self._translate_formula(extractChild(tree, 0))
             return App(Var("Not"), sub)
@@ -300,6 +310,8 @@ def problem_to_lean_definition(
 
 okCounter = 0
 
+OUTPUT_DIR = Path("problems/tptp-fof-auto")
+
 directory = Path("_tptp_raw/TPTP-v9.2.1/Problems")
 for path in directory.rglob("*.p"):
     with open(path, "r", encoding="utf-8") as f:
@@ -317,6 +329,9 @@ for path in directory.rglob("*.p"):
         continue
 
     okCounter += 1
+
+    # if path.stem != "ALG014+1":
+    #     continue
 
     # print(content)
     # print(tree)
@@ -347,12 +362,16 @@ for path in directory.rglob("*.p"):
         .replace("+", "_plus_")
         .replace(".", "_dot_")
     )
-    definition = problem_to_lean_definition(problem, theorem_name)
-    print(print_definition(definition))
+    filename = OUTPUT_DIR / f"__{path.stem}.lean"
+    current_outfile = open(filename, "w", encoding="utf-8")
 
-    print("\n\n")
+    definition = problem_to_lean_definition(problem, theorem_name)
+    _ = current_outfile.write(print_definition(definition) + "\n\n")
+
+    # sys.exit()
 
     # if okCounter > 100:
     #     sys.exit()
 
-# print(f"{okCounter} parsed correctly")
+
+print(f"{okCounter} parsed correctly")

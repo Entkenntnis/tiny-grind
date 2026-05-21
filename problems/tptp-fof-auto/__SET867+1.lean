@@ -1,0 +1,3 @@
+theorem SET867_plus_1 : (_U : Type) -> (f_empty_set_0 : _U) -> (f_union_1 : _U -> _U) -> (p_in_2 : _U -> _U -> Prop) -> (p_empty_1 : _U -> Prop) -> (antisymmetry_r2_hidden : (A : _U) -> (B : _U) -> p_in_2 A B -> Not (p_in_2 B A)) -> (d1_xboole_0 : (A : _U) -> Iff (@Eq _U A f_empty_set_0) ((B : _U) -> Not (p_in_2 B A))) -> (d4_tarski : (A : _U) -> (B : _U) -> Iff (@Eq _U B (f_union_1 A)) ((C : _U) -> Iff (p_in_2 C B) (@Exists _U (fun (D : _U) => And (p_in_2 C D) (p_in_2 D A))))) -> (fc1_xboole_0 : p_empty_1 f_empty_set_0) -> (rc1_xboole_0 : @Exists _U (fun (A : _U) => p_empty_1 A)) -> (rc2_xboole_0 : @Exists _U (fun (A : _U) => Not (p_empty_1 A))) -> @Eq _U (f_union_1 f_empty_set_0) f_empty_set_0 :=
+  by grind
+

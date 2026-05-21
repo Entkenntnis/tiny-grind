@@ -1,0 +1,3 @@
+theorem LCL983_plus_1 : (_U : Type) -> (f_implies_2 : _U -> _U -> _U) -> (f_not_1 : _U -> _U) -> (p_is_a_theorem_1 : _U -> Prop) -> (condensed_detachment : (X : _U) -> (Y : _U) -> Or (Or (Not (p_is_a_theorem_1 (f_implies_2 X Y))) (Not (p_is_a_theorem_1 X))) (p_is_a_theorem_1 Y)) -> (a6 : (A : _U) -> (B : _U) -> (C : _U) -> (D : _U) -> (E : _U) -> p_is_a_theorem_1 (f_implies_2 (f_implies_2 (f_implies_2 A B) (f_implies_2 (f_implies_2 (f_implies_2 (f_not_1 C) (f_not_1 D)) C) E)) (f_implies_2 (f_implies_2 E A) (f_implies_2 D A)))) -> (A : _U) -> (B : _U) -> (C : _U) -> p_is_a_theorem_1 (f_implies_2 (f_implies_2 A B) (f_implies_2 (f_implies_2 B C) (f_implies_2 A C))) :=
+  by grind
+

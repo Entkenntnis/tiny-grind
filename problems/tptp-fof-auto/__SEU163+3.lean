@@ -1,0 +1,3 @@
+theorem SEU163_plus_3 : (_U : Type) -> (f_union_1 : _U -> _U) -> (p_subset_2 : _U -> _U -> Prop) -> (p_in_2 : _U -> _U -> Prop) -> (p_empty_1 : _U -> Prop) -> (reflexivity_r1_tarski : (A : _U) -> (B : _U) -> p_subset_2 A A) -> (antisymmetry_r2_hidden : (A : _U) -> (B : _U) -> p_in_2 A B -> Not (p_in_2 B A)) -> (rc1_xboole_0 : @Exists _U (fun (A : _U) => p_empty_1 A)) -> (rc2_xboole_0 : @Exists _U (fun (A : _U) => Not (p_empty_1 A))) -> (l50_zfmisc_1 : (A : _U) -> (B : _U) -> p_in_2 A B -> p_subset_2 A (f_union_1 B)) -> (A : _U) -> (B : _U) -> p_in_2 A B -> p_subset_2 A (f_union_1 B) :=
+  by grind
+

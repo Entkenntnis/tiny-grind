@@ -1,0 +1,3 @@
+theorem GRP660_plus_3 : (_U : Type) -> (f_mult_2 : _U -> _U -> _U) -> (f_ld_2 : _U -> _U -> _U) -> (f_rd_2 : _U -> _U -> _U) -> (f01 : (B : _U) -> (A : _U) -> @Eq _U (f_mult_2 A (f_ld_2 A B)) B) -> (f02 : (B : _U) -> (A : _U) -> @Eq _U (f_ld_2 A (f_mult_2 A B)) B) -> (f03 : (B : _U) -> (A : _U) -> @Eq _U (f_mult_2 (f_rd_2 A B) B) A) -> (f04 : (B : _U) -> (A : _U) -> @Eq _U (f_rd_2 (f_mult_2 A B) B) A) -> (f05 : (C : _U) -> (B : _U) -> (A : _U) -> @Eq _U (f_mult_2 (f_mult_2 (f_mult_2 A B) C) A) (f_mult_2 A (f_mult_2 B (f_mult_2 C A)))) -> (X0 : _U) -> (X1 : _U) -> And (@Eq _U (f_mult_2 X0 (f_ld_2 X1 X1)) X0) (@Eq _U (f_mult_2 (f_ld_2 X1 X1) X0) X0) :=
+  by grind
+

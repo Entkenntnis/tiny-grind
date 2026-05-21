@@ -1,0 +1,3 @@
+theorem SEU151_plus_1 : (_U : Type) -> (f_unordered_pair_2 : _U -> _U -> _U) -> (p_in_2 : _U -> _U -> Prop) -> (antisymmetry_r2_hidden : (A : _U) -> (B : _U) -> p_in_2 A B -> Not (p_in_2 B A)) -> (commutativity_k2_tarski : (A : _U) -> (B : _U) -> @Eq _U (f_unordered_pair_2 A B) (f_unordered_pair_2 B A)) -> (d2_tarski : (A : _U) -> (B : _U) -> (C : _U) -> Iff (@Eq _U C (f_unordered_pair_2 A B)) ((D : _U) -> Iff (p_in_2 D C) (Or (@Eq _U D A) (@Eq _U D B)))) -> (dt_k2_tarski : True) -> (A : _U) -> (B : _U) -> (C : _U) -> (D : _U) -> Not (And (And (@Eq _U (f_unordered_pair_2 A B) (f_unordered_pair_2 C D)) (Not (@Eq _U A C))) (Not (@Eq _U A D))) :=
+  by grind
+

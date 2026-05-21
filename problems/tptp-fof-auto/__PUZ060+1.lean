@@ -1,0 +1,3 @@
+theorem PUZ060_plus_1 : (_U : Type) -> (p_food_1 : _U -> Prop) -> (p_likes_2 : _U -> _U -> Prop) -> (p_eats_2 : _U -> _U -> Prop) -> (p_not_killed_by_2 : _U -> _U -> Prop) -> (p_alive_1 : _U -> Prop) -> (Peanuts : _U) -> (John : _U) -> (Bill : _U) -> (Sue : _U) -> (Apples : _U) -> (Chicken : _U) -> ((X : _U) -> And (And (And (p_food_1 X -> p_likes_2 John X) (p_food_1 Apples)) (p_food_1 Chicken)) ((X : _U) -> And (And (And (@Exists _U (fun (Y : _U) => And (p_eats_2 Y X) (p_not_killed_by_2 Y X) -> p_food_1 X)) (p_eats_2 Bill Peanuts)) (p_alive_1 Bill)) ((X : _U) -> And (p_eats_2 Bill X -> p_eats_2 Sue X) ((Y : _U) -> p_alive_1 Y -> (X : _U) -> p_not_killed_by_2 Y X)))) -> p_likes_2 John Peanuts :=
+  by grind
+

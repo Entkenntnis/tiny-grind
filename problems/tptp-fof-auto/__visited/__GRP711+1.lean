@@ -1,0 +1,3 @@
+theorem GRP711_plus_1 : (_U : Type) -> (f_mult_2 : _U -> _U -> _U) -> (f_unit_0 : _U) -> (f_i_1 : _U -> _U) -> (f01 : (A : _U) -> @Eq _U (f_mult_2 A f_unit_0) A) -> (f02 : (A : _U) -> @Eq _U (f_mult_2 f_unit_0 A) A) -> (f03 : (C : _U) -> (B : _U) -> (A : _U) -> @Eq _U (f_mult_2 A (f_mult_2 B (f_mult_2 B C))) (f_mult_2 (f_mult_2 (f_mult_2 A B) B) C)) -> (f04 : (A : _U) -> @Eq _U (f_mult_2 A (f_i_1 A)) f_unit_0) -> (f05 : (A : _U) -> @Eq _U (f_mult_2 (f_i_1 A) A) f_unit_0) -> (X6 : _U) -> (X7 : _U) -> (X8 : _U) -> And (@Eq _U (f_mult_2 X6 X7) (f_mult_2 X6 X8) -> @Eq _U X7 X8) (@Eq _U (f_mult_2 X7 X6) (f_mult_2 X8 X6) -> @Eq _U X7 X8) :=
+  by grind
+

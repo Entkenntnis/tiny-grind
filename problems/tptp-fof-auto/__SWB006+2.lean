@@ -1,0 +1,3 @@
+theorem SWB006_plus_2 : (_U : Type) -> (f_uri_owl_sameAs_0 : _U) -> (f_uri_ex_u_0 : _U) -> (f_uri_ex_w_0 : _U) -> (f_literal_plain_1 : _U -> _U) -> (f_dat_str_abc_0 : _U) -> (p_iext_3 : _U -> _U -> _U -> Prop) -> (owl_eqdis_sameas : (X : _U) -> (Y : _U) -> Iff (p_iext_3 f_uri_owl_sameAs_0 X Y) (@Eq _U X Y)) -> (testcase_premise_fullish_006_Literal_Values_represented_by_URIs_and_Blank_Nodes : @Exists _U (fun (BNODE_x : _U) => And (And (p_iext_3 f_uri_owl_sameAs_0 f_uri_ex_u_0 (f_literal_plain_1 f_dat_str_abc_0)) (p_iext_3 f_uri_owl_sameAs_0 BNODE_x (f_literal_plain_1 f_dat_str_abc_0))) (p_iext_3 f_uri_owl_sameAs_0 BNODE_x f_uri_ex_w_0))) -> p_iext_3 f_uri_owl_sameAs_0 f_uri_ex_u_0 f_uri_ex_w_0 :=
+  by grind
+
