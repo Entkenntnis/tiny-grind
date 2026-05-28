@@ -20,7 +20,8 @@ from scaffolding.syntax import (
     Term,
     Var,
 )
-from scaffolding.printer import print_definition
+
+# from scaffolding.printer import print_definition
 from lark import Lark, ParseTree, Token, Tree
 import re
 
@@ -28,11 +29,13 @@ grammar = r"""
 
 start: fof_entry*
 
-fof_entry: "fof" "(" NAME "," NAME "," formula  ")" "."
+fof_entry: "fof" "(" name_token "," NAME "," formula  ")" "."
 
 ?formula: iff_formula
 
-?iff_formula: impl_formula ("<=>" impl_formula)?
+?iff_formula: iff_not_formula ("<=>" iff_not_formula)?
+?iff_not_formula: impl_rev_formula ("<~>" impl_rev_formula)?
+?impl_rev_formula: impl_formula ("<=" impl_formula)?
 ?impl_formula: or_formula ("=>" or_formula)?
 ?or_formula: and_formula ("|" and_formula)*
 ?and_formula: unary_formula ("&" unary_formula)*
@@ -46,19 +49,23 @@ quant_formula: "!" "[" VARIABLE ("," VARIABLE)* "]" ":" formula -> forall
 ?atomic_formula: "(" formula ")"
     | atom
 
-?atom: NAME "(" term ("," term)* ")"          -> pred_app
-     | NAME                       -> zero_arity_pred
+?atom: name_token "(" term ("," term)* ")"          -> pred_app
+     | name_token                       -> zero_arity_pred
      | term "=" term          -> eq_atom
      | term "!=" term          -> neq_atom
      | "$true"                                 -> true_const
      | "$false"                                -> false_const
 
 term: VARIABLE -> var
-    | NAME "(" term ("," term)* ")" -> func
-    | NAME -> constant
+    | name_token "(" term ("," term)* ")" -> func
+    | name_token -> constant
+
+?name_token: NAME | QUOTED_NAME | QUOTED_NAME_2
 
 VARIABLE: /[A-Z][A-Za-z0-9_]*/
 NAME: /[a-z][A-Za-z0-9_]*/
+QUOTED_NAME: /'[^']*'/
+QUOTED_NAME_2: /"[^']*"/
 
 COMMENT: /%[^\n]*/
 
@@ -143,7 +150,7 @@ class TptpFofTransformer:
 
         for child in self.tree.children:
             if isinstance(child, Tree) and child.data == "fof_entry":
-                name = extractName(child, 0)
+                name = make_name_safe(extractName(child, 0))
                 role = extractName(child, 1)
                 formula_tree = extractChild(child, 2)
                 formula_term = self._translate_formula(formula_tree)
@@ -183,10 +190,19 @@ class TptpFofTransformer:
         if data == "iff_formula":
             left = self._translate_formula(extractChild(tree, 0))
             right = self._translate_formula(extractChild(tree, 1))
+            iff = App(App(Var("Iff"), left), right)
+            return App(Var("Not"), iff)
+        if data == "iff_not_formula":
+            left = self._translate_formula(extractChild(tree, 0))
+            right = self._translate_formula(extractChild(tree, 1))
             return App(App(Var("Iff"), left), right)
         elif data == "impl_formula":
             left = self._translate_formula(extractChild(tree, 0))
             right = self._translate_formula(extractChild(tree, 1))
+            return Pi(None, left, right)
+        elif data == "impl_rev_formula":
+            left = self._translate_formula(extractChild(tree, 1))
+            right = self._translate_formula(extractChild(tree, 0))
             return Pi(None, left, right)
         elif data == "or_formula":
             left = self._translate_formula(extractChild(tree, 0))
@@ -310,25 +326,60 @@ def problem_to_lean_definition(
 
 okCounter = 0
 
-OUTPUT_DIR = Path("problems/tptp-fof-auto")
+OUTPUT_DIR = Path("problems/casc-30")
+AXIOMS_DIR = Path("_tptp_raw/TPTP-v9.2.1")
 
-directory = Path("_tptp_raw/TPTP-v9.2.1/Problems")
+
+def make_name_safe(name: str) -> str:
+    return (
+        name.replace("-", "_minus_")
+        .replace("^", "_caret_")
+        .replace("+", "_plus_")
+        .replace(".", "_dot_")
+    )
+
+
+def process_includes(content: str) -> str:
+    pattern = re.compile(r"include\('([^']+)'\)\.")
+
+    def replace(match: re.Match[str]):
+        rel_path = match.group(1)
+        full_path = AXIOMS_DIR / rel_path
+
+        included_content = full_path.read_text(encoding="utf-8")
+        print(rel_path)
+
+        return process_includes(included_content)
+
+    return pattern.sub(replace, content)
+
+
+directory = Path("casc-30/FOF")
 for path in directory.rglob("*.p"):
     with open(path, "r", encoding="utf-8") as f:
-        content = f.read()
-    if len(content) > 15000:  # this should be a solid subset
-        continue
-    if not re.search(r"% SPC\s+: FOF_THM_", content):
-        continue
-    if "include('Axioms/" in content:
-        continue
+        content = process_includes(f.read())
+    # if len(content) > 15000:  # this should be a solid subset
+    # continue
+    # if not re.search(r"% SPC\s+: FOF_THM_", content):
+    # continue
+    # if "include('Axioms/" in content:
+    # continue
 
+    print(path)
+    # print(content)
     try:
         tree = parser.parse(content)  # pyright: ignore
-    except:
-        continue
+    except Exception as e:
+        print("FAIL")
+        print(path)
+        print(content)
+        print(e)
+        sys.exit()
+        # continue
 
     okCounter += 1
+
+    continue
 
     # if path.stem != "ALG014+1":
     #     continue
@@ -336,37 +387,37 @@ for path in directory.rglob("*.p"):
     # print(content)
     # print(tree)
 
-    transformer = TptpFofTransformer(tree)
-    problem = transformer.transform()
+    # transformer = TptpFofTransformer(tree)
+    # problem = transformer.transform()
 
-    # print(problem)
-    # print("axioms")
-    # for ax in problem.axioms:
-    #     print(f"  {print_axiom(ax)}")
+    # # print(problem)
+    # # print("axioms")
+    # # for ax in problem.axioms:
+    # #     print(f"  {print_axiom(ax)}")
 
-    # print(f"  Goal: {print_term(problem.conjecture)}")
+    # # print(f"  Goal: {print_term(problem.conjecture)}")
 
-    # print(content)
-    # print(tree)
-    # print(problem)
-    # print("intermediate structure:")
-    # for clause in problem.clauses:
-    #     print(f"  clause: {clause.name} ({clause.free_vars})")
-    #     for lit in clause.literals:
-    #         print(f"    {print_term(lit)}")
+    # # print(content)
+    # # print(tree)
+    # # print(problem)
+    # # print("intermediate structure:")
+    # # for clause in problem.clauses:
+    # #     print(f"  clause: {clause.name} ({clause.free_vars})")
+    # #     for lit in clause.literals:
+    # #         print(f"    {print_term(lit)}")
 
-    theorem_name = path.stem
-    theorem_name = (
-        theorem_name.replace("-", "_minus_")
-        .replace("^", "_caret_")
-        .replace("+", "_plus_")
-        .replace(".", "_dot_")
-    )
-    filename = OUTPUT_DIR / f"__{path.stem}.lean"
-    current_outfile = open(filename, "w", encoding="utf-8")
+    # theorem_name = path.stem
+    # theorem_name = (
+    #     theorem_name.replace("-", "_minus_")
+    #     .replace("^", "_caret_")
+    #     .replace("+", "_plus_")
+    #     .replace(".", "_dot_")
+    # )
+    # filename = OUTPUT_DIR / f"__{path.stem}.lean"
+    # current_outfile = open(filename, "w", encoding="utf-8")
 
-    definition = problem_to_lean_definition(problem, theorem_name)
-    _ = current_outfile.write(print_definition(definition) + "\n\n")
+    # definition = problem_to_lean_definition(problem, theorem_name)
+    # _ = current_outfile.write(print_definition(definition) + "\n\n")
 
     # sys.exit()
 
