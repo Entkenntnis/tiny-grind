@@ -6,6 +6,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
 
+sys.setrecursionlimit(10000)
+
 # =====================================================
 
 from dataclasses import dataclass
@@ -21,7 +23,7 @@ from scaffolding.syntax import (
     Var,
 )
 
-# from scaffolding.printer import print_definition
+from scaffolding.printer import print_definition
 from lark import Lark, ParseTree, Token, Tree
 import re
 
@@ -60,12 +62,12 @@ term: VARIABLE -> var
     | name_token "(" term ("," term)* ")" -> func
     | name_token -> constant
 
-?name_token: NAME | QUOTED_NAME | QUOTED_NAME_2
+?name_token: NAME | QUOTED_NAME_2 | QUOTED_NAME
 
 VARIABLE: /[A-Z][A-Za-z0-9_]*/
 NAME: /[a-z][A-Za-z0-9_]*/
 QUOTED_NAME: /'[^']*'/
-QUOTED_NAME_2: /"[^']*"/
+QUOTED_NAME_2: /"[^"]*"/
 
 COMMENT: /%[^\n]*/
 
@@ -326,7 +328,7 @@ def problem_to_lean_definition(
 
 okCounter = 0
 
-OUTPUT_DIR = Path("problems/casc-30")
+OUTPUT_DIR = Path("problems/casc-30-auto")
 AXIOMS_DIR = Path("_tptp_raw/TPTP-v9.2.1")
 
 
@@ -336,6 +338,10 @@ def make_name_safe(name: str) -> str:
         .replace("^", "_caret_")
         .replace("+", "_plus_")
         .replace(".", "_dot_")
+        .replace(" ", "_space_")
+        .replace("'", "_quote_")
+        .replace('"', "_dquote_")
+        .replace("axiom", "_kw_axiom_")
     )
 
 
@@ -365,30 +371,43 @@ for path in directory.rglob("*.p"):
     # if "include('Axioms/" in content:
     # continue
 
-    print(path)
     # print(content)
     try:
+        filename = OUTPUT_DIR / f"__{path.stem}.lean"
+        # if filename.is_file():
+        #     continue
+        # if path.stem != "COM125+1":
+        #     continue
+
+        print(path)
         tree = parser.parse(content)  # pyright: ignore
+
+        transformer = TptpFofTransformer(tree)
+        problem = transformer.transform()
+
+        theorem_name = make_name_safe(path.stem)
+
+        current_outfile = open(filename, "w", encoding="utf-8")
+
+        definition = problem_to_lean_definition(problem, theorem_name)
+        _ = current_outfile.write(print_definition(definition) + "\n\n")
     except Exception as e:
         print("FAIL")
         print(path)
         print(content)
         print(e)
-        sys.exit()
-        # continue
+        # sys.exit()
+        continue
 
     okCounter += 1
 
-    continue
+    # continue
 
     # if path.stem != "ALG014+1":
     #     continue
 
     # print(content)
     # print(tree)
-
-    # transformer = TptpFofTransformer(tree)
-    # problem = transformer.transform()
 
     # # print(problem)
     # # print("axioms")
@@ -406,23 +425,10 @@ for path in directory.rglob("*.p"):
     # #     for lit in clause.literals:
     # #         print(f"    {print_term(lit)}")
 
-    # theorem_name = path.stem
-    # theorem_name = (
-    #     theorem_name.replace("-", "_minus_")
-    #     .replace("^", "_caret_")
-    #     .replace("+", "_plus_")
-    #     .replace(".", "_dot_")
-    # )
-    # filename = OUTPUT_DIR / f"__{path.stem}.lean"
-    # current_outfile = open(filename, "w", encoding="utf-8")
-
-    # definition = problem_to_lean_definition(problem, theorem_name)
-    # _ = current_outfile.write(print_definition(definition) + "\n\n")
-
     # sys.exit()
 
     # if okCounter > 100:
     #     sys.exit()
 
 
-print(f"{okCounter} parsed correctly")
+print(f"{okCounter} converted correctly")
