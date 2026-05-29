@@ -192,12 +192,12 @@ class TptpFofTransformer:
         if data == "iff_formula":
             left = self._translate_formula(extractChild(tree, 0))
             right = self._translate_formula(extractChild(tree, 1))
-            iff = App(App(Var("Iff"), left), right)
-            return App(Var("Not"), iff)
+            return App(App(Var("Iff"), left), right)
         if data == "iff_not_formula":
             left = self._translate_formula(extractChild(tree, 0))
             right = self._translate_formula(extractChild(tree, 1))
-            return App(App(Var("Iff"), left), right)
+            iff = App(App(Var("Iff"), left), right)
+            return App(Var("Not"), iff)
         elif data == "impl_formula":
             left = self._translate_formula(extractChild(tree, 0))
             right = self._translate_formula(extractChild(tree, 1))
