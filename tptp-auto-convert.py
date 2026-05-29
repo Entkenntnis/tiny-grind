@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
 
-sys.setrecursionlimit(10000)
+sys.setrecursionlimit(100000)
 
 # =====================================================
 
@@ -45,8 +45,8 @@ fof_entry: "fof" "(" name_token "," NAME "," formula  ")" "."
     | quant_formula
     | atomic_formula
 
-quant_formula: "!" "[" VARIABLE ("," VARIABLE)* "]" ":" formula -> forall
-    | "?" "[" VARIABLE ("," VARIABLE)* "]" ":" formula -> exists
+quant_formula: "!" "[" VARIABLE ("," VARIABLE)* "]" ":" unary_formula -> forall
+    | "?" "[" VARIABLE ("," VARIABLE)* "]" ":" unary_formula -> exists
 
 ?atomic_formula: "(" formula ")"
     | atom
