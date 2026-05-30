@@ -1,3 +1,0 @@
-theorem SET627_plus_3 : (_U : Type) -> (f_empty_set_0 : _U) -> (p_member_2 : _U -> _U -> Prop) -> (p_intersect_2 : _U -> _U -> Prop) -> (p_disjoint_2 : _U -> _U -> Prop) -> (p_empty_1 : _U -> Prop) -> (empty_set_defn : (B : _U) -> Not (p_member_2 B f_empty_set_0)) -> (intersect_defn : (B : _U) -> (C : _U) -> Iff (p_intersect_2 B C) (@Exists _U (fun (D : _U) => And (p_member_2 D B) (p_member_2 D C)))) -> (disjoint_defn : (B : _U) -> (C : _U) -> Iff (p_disjoint_2 B C) (Not (p_intersect_2 B C))) -> (symmetry_of_intersect : (B : _U) -> (C : _U) -> p_intersect_2 B C -> p_intersect_2 C B) -> (empty_defn : (B : _U) -> Iff (p_empty_1 B) ((C : _U) -> Not (p_member_2 C B))) -> (B : _U) -> p_disjoint_2 B f_empty_set_0 :=
-  by grind
-

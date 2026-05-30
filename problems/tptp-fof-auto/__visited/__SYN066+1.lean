@@ -1,3 +1,0 @@
-theorem SYN066_plus_1 : (_U : Type) -> (p_big_p_2 : _U -> _U -> Prop) -> (p_big_q_2 : _U -> _U -> Prop) -> (p_big_r_2 : _U -> _U -> Prop) -> (pel37_1 : (Z : _U) -> @Exists _U (fun (W : _U) => (X : _U) -> @Exists _U (fun (Y : _U) => And (And (p_big_p_2 X Z -> p_big_p_2 Y W) (p_big_p_2 Y Z)) (p_big_p_2 Y W -> @Exists _U (fun (U : _U) => p_big_q_2 U W))))) -> (pel37_2 : (X : _U) -> (Z : _U) -> Not (p_big_p_2 X Z) -> @Exists _U (fun (Y : _U) => p_big_q_2 Y Z)) -> (pel37_3 : @Exists _U (fun (X : _U) => @Exists _U (fun (Y : _U) => p_big_q_2 X Y -> (Z : _U) -> p_big_r_2 Z Z))) -> (X : _U) -> @Exists _U (fun (Y : _U) => p_big_r_2 X Y) :=
-  by grind
-

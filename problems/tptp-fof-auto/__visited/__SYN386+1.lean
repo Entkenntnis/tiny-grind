@@ -1,3 +1,0 @@
-theorem SYN386_plus_1 : (_U : Type) -> (p_big_f_2 : _U -> _U -> Prop) -> (p_big_s_2 : _U -> _U -> Prop) -> (p_big_d_3 : _U -> _U -> _U -> Prop) -> ((X : _U) -> @Exists _U (fun (Y : _U) => And (p_big_f_2 X Y) (@Exists _U (fun (X : _U) => (E : _U) -> @Exists _U (fun (N : _U) => (W : _U) -> And (p_big_s_2 N W -> p_big_d_3 W X E) ((E : _U) -> @Exists _U (fun (D : _U) => (A : _U) -> (B : _U) -> p_big_d_3 A B D -> (Y : _U) -> (Z : _U) -> And (p_big_f_2 A Y) (p_big_f_2 B Z) -> p_big_d_3 Y Z E))))))) -> @Exists _U (fun (Y : _U) => (E : _U) -> @Exists _U (fun (M : _U) => (W : _U) -> p_big_s_2 M W -> (Z : _U) -> p_big_f_2 W Z -> p_big_d_3 Z Y E)) :=
-  by grind
-

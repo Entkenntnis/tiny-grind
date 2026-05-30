@@ -1,3 +1,0 @@
-theorem SEU144_plus_1 : (_U : Type) -> (f_singleton_1 : _U -> _U) -> (p_in_2 : _U -> _U -> Prop) -> (p_subset_2 : _U -> _U -> Prop) -> (antisymmetry_r2_hidden : (A : _U) -> (B : _U) -> p_in_2 A B -> Not (p_in_2 B A)) -> (d1_tarski : (A : _U) -> (B : _U) -> Iff (@Eq _U B (f_singleton_1 A)) ((C : _U) -> Iff (p_in_2 C B) (@Eq _U C A))) -> (d3_tarski : (A : _U) -> (B : _U) -> Iff (p_subset_2 A B) ((C : _U) -> p_in_2 C A -> p_in_2 C B)) -> (dt_k1_tarski : True) -> (reflexivity_r1_tarski : (A : _U) -> (B : _U) -> p_subset_2 A A) -> (A : _U) -> (B : _U) -> Iff (p_subset_2 (f_singleton_1 A) B) (p_in_2 A B) :=
-  by grind
-

@@ -1,3 +1,0 @@
-theorem SYN353_plus_1 : (_U : Type) -> (p_big_f_3 : _U -> _U -> _U -> Prop) -> (X : _U) -> @Exists _U (fun (Y1 : _U) => @Exists _U (fun (Y2 : _U) => @Exists _U (fun (Y3 : _U) => (Z : _U) -> (p_big_f_3 Y1 Y2 Y3 -> p_big_f_3 X X Z -> Or (p_big_f_3 Y2 Y3 Y1) (p_big_f_3 Y3 Y1 Y2)) -> Iff (p_big_f_3 Y3 Y1 Y2 -> And (p_big_f_3 Y1 Y2 Y3) (p_big_f_3 Y2 Y3 Y1)) (p_big_f_3 Y2 Y1 Z) -> Iff (p_big_f_3 Y2 Y3 Y1 -> And (p_big_f_3 Y1 Y2 Y3) (p_big_f_3 Y3 Y1 Y2)) (p_big_f_3 Y1 Z Y2) -> Iff ((p_big_f_3 Y3 Y1 Y2 -> Not (p_big_f_3 Y2 Y3 Y1)) -> p_big_f_3 Y1 Y2 Y3) (p_big_f_3 Z Y2 Y1) -> Iff (And (And (p_big_f_3 Y1 Y2 Y3) (p_big_f_3 Y2 Y3 Y1)) (p_big_f_3 Y3 Y1 Y2)) (p_big_f_3 Z Z Z)))) :=
-  by grind
-
