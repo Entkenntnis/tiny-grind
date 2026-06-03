@@ -20,9 +20,6 @@ from src.tinygrind.egraph import (
     FunctionApplication,
     PredicateApplication,
     Equals,
-    TrueTerm,
-    FalseTerm,
-    NodeKind,
 )
 
 class EGraphTests(unittest.TestCase):
@@ -36,10 +33,10 @@ class EGraphTests(unittest.TestCase):
         
         a = Constant("a")
         b = Constant("b")
-        f= FunctionSymbol("f")
+        f= FunctionSymbol("f", 1)
 
-        fa = FunctionApplication(f, a)
-        fb = FunctionApplication(f, b)
+        fa = FunctionApplication(f, (a,))
+        fb = FunctionApplication(f, (b,))
 
         ab = Equals(a, b)
         fafb = Equals(fa, fb)
@@ -67,10 +64,10 @@ class EGraphTests(unittest.TestCase):
         
         a = Constant("a")
         b = Constant("b")
-        f= FunctionSymbol("f")
+        f= FunctionSymbol("f", 1)
 
-        fa = FunctionApplication(f, a)
-        fb = FunctionApplication(f, b)
+        fa = FunctionApplication(f, (a,))
+        fb = FunctionApplication(f, (b,))
 
         fafb = Equals(fa, fb)
 
@@ -97,10 +94,10 @@ class EGraphTests(unittest.TestCase):
         a = Constant("a")
         b = Constant("b")
         c = Constant("c")
-        f= FunctionSymbol("f")
+        f= FunctionSymbol("f", 1)
 
-        fa = FunctionApplication(f, a)
-        fb = FunctionApplication(f, b)
+        fa = FunctionApplication(f, (a,))
+        fb = FunctionApplication(f, (b,))
 
         bc = Equals(b, c)
         fafb = Equals(fa, fb)
@@ -130,10 +127,10 @@ class EGraphTests(unittest.TestCase):
         a = Constant("a")
         b = Constant("b")
         c = Constant("c")
-        f= FunctionSymbol("f")
+        f= FunctionSymbol("f", 1)
 
-        fa = FunctionApplication(f, a)
-        fc = FunctionApplication(f, c)
+        fa = FunctionApplication(f, (a,))
+        fc = FunctionApplication(f, (c,))
 
         ab = Equals(a, b)
         bc = Equals(b, c)
@@ -164,10 +161,10 @@ class EGraphTests(unittest.TestCase):
         a = Constant("a")
         b = Constant("b")
         c = Constant("c")
-        f= FunctionSymbol("f")
+        f= FunctionSymbol("f", 1)
 
-        fa = FunctionApplication(f, a)
-        fb = FunctionApplication(f, b)
+        fa = FunctionApplication(f, (a,))
+        fb = FunctionApplication(f, (b,))
 
         ab = Equals(a, b)
         bc = Equals(b, c)
@@ -203,23 +200,23 @@ class EGraphTests(unittest.TestCase):
         d = Constant("d")
 
         #function symbols
-        f = FunctionSymbol("f")
-        g = FunctionSymbol("g")
-        h = FunctionSymbol("h")
+        f = FunctionSymbol("f", 1)
+        g = FunctionSymbol("g", 1)
+        h = FunctionSymbol("h", 1)
 
         #first application
-        fb = FunctionApplication(f, b)
-        gc = FunctionApplication(g, c)
-        hd = FunctionApplication(h, d)
-        ha = FunctionApplication(h, a)
+        fb = FunctionApplication(f, (b,))
+        gc = FunctionApplication(g, (c,))
+        hd = FunctionApplication(h, (d,))
+        ha = FunctionApplication(h, (a,))
 
         #second application (application to application)
-        fha = FunctionApplication(f,ha)
-        fgc = FunctionApplication(f, gc)
+        fha = FunctionApplication(f,(ha,))
+        fgc = FunctionApplication(f, (gc,))
 
         #second application (application to application to application)
-        gfha = FunctionApplication(g, fha)
-        gfgc = FunctionApplication(g, fgc)
+        gfha = FunctionApplication(g, (fha,))
+        gfgc = FunctionApplication(g, (fgc,))
 
         #equalities
         afb = Equals(a, fb)
@@ -264,24 +261,24 @@ class EGraphTests(unittest.TestCase):
         d = Constant("d")
 
         #function symbols
-        f = FunctionSymbol("f")
-        g = FunctionSymbol("g")
-        h = FunctionSymbol("h")
+        f = FunctionSymbol("f", 1)
+        g = FunctionSymbol("g", 1)
+        h = FunctionSymbol("h", 1)
 
         #first application
-        fb = FunctionApplication(f, b)
-        gc = FunctionApplication(g, c)
-        gb = FunctionApplication(g, b)
-        hd = FunctionApplication(h, d)
-        ha = FunctionApplication(h, a)
+        fb = FunctionApplication(f, (b,))
+        gc = FunctionApplication(g, (c,))
+        gb = FunctionApplication(g, (b,))
+        hd = FunctionApplication(h, (d,))
+        ha = FunctionApplication(h, (a,))
 
         #second application (application to application)
-        fha = FunctionApplication(f,ha)
-        fgb = FunctionApplication(f, gb)
+        fha = FunctionApplication(f,(ha,))
+        fgb = FunctionApplication(f, (gb,))
 
         #second application (application to application to application)
-        gfha = FunctionApplication(g, fha)
-        gfgb = FunctionApplication(g, fgb)
+        gfha = FunctionApplication(g, (fha,))
+        gfgb = FunctionApplication(g, (fgb,))
 
         #equalities
         afb = Equals(a, fb)
@@ -320,12 +317,12 @@ class EGraphTests(unittest.TestCase):
         """
         graph = EGraph()
         
-        p = PredicateSymbol("P")
+        p = PredicateSymbol("P", 1)
         a = Constant("a")
         b = Constant("b")
 
-        pa = PredicateApplication(p, a)
-        pb = PredicateApplication(p, b)
+        pa = PredicateApplication(p, (a,))
+        pb = PredicateApplication(p, (b,))
 
         ab = Equals(a, b)
 

@@ -18,20 +18,22 @@ class Constant:
 @dataclass(frozen=True)
 class FunctionSymbol:
     name: str
+    arity: int
 
 @dataclass(frozen=True)
 class PredicateSymbol:
     name: str
+    arity: int
 
 @dataclass(frozen=True)
 class FunctionApplication:
     function: FunctionSymbol
-    argument: ValueTerm
+    arguments: tuple[ValueTerm, ...]
 
 @dataclass(frozen=True)
 class PredicateApplication:
     predicate: PredicateSymbol
-    argument: ValueTerm
+    arguments: tuple[ValueTerm, ...]
 
 @dataclass(frozen=True)
 class Equals:
@@ -114,20 +116,22 @@ class _ConstantNode:
 @dataclass(frozen=True)
 class _FunctionSymbolNode:
     name: str
+    arity: int
 
 @dataclass(frozen=True)
 class _PredicateSymbolNode:
     name: str
+    arity: int
 
 @dataclass(frozen=True)
 class _FunctionApplicationNode:
     function: Node
-    argument: Node
+    arguments: tuple[Node, ...]
 
 @dataclass(frozen=True)
 class _PredicateApplicationNode:
     predicate: Node
-    argument: Node
+    arguments: tuple[Node, ...]
 
 @dataclass(frozen=True)
 class _EqualsNode:
@@ -153,12 +157,12 @@ type _CongruenceKey = (
 @dataclass(frozen=True)
 class _FunctionApplicationClassKey:
     function_class: int
-    argument_class: int
+    argument_classes: tuple[int, ...]
 
 @dataclass(frozen=True)
 class _PredicateApplicationClassKey:
     predicate_class: int
-    argument_class: int
+    argument_classes: tuple[int, ...]
 
 @dataclass(frozen=True)
 class _EqualsClassKey:
@@ -200,6 +204,8 @@ class EGraph:
     def addTerm(self, term: Term) -> Node:
         """Calling the private add functions, or returning the existing True/False Node
         """
+        self._validate_term(term)
+
         if isinstance(term, Constant):
             return self._add_constant_term(term)
         
@@ -213,7 +219,7 @@ class EGraph:
             return self._add_function_application_term(term)
         
         if isinstance(term, PredicateApplication):
-            return self.addPredicateApplication(term.predicate, term.argument)
+            return self.addPredicateApplication(term.predicate, term.arguments)
         
         if isinstance(term, Equals):
             return self._add_true_equality_term(term)
@@ -230,6 +236,8 @@ class EGraph:
         raise TypeError(f"Unknown term type: {term!r}")
     
     def addGoal(self, prop: PropTerm) -> Node: # the prop term is not negated, we negate it in here
+        self._validate_term(prop)
+
         prop_node = self._add_prop_term(prop)
         _ = self._union_nodes(prop_node, self._false_node)
         return prop_node
@@ -237,23 +245,29 @@ class EGraph:
     def addNewConstant(self, name: str) -> Node:
         return self._add_constant_term(Constant(name))
     
-    def addNewFunctionSymbol(self, name: str) -> Node:
-        return self._add_function_symbol_term(FunctionSymbol(name))
+    def addNewFunctionSymbol(self, name: str, arity: int) -> Node:
+        return self._add_function_symbol_term(FunctionSymbol(name, arity))
     
-    def addNewPredicateSymbol(self, name: str) -> Node:
-        return self._add_predicate_symbol_term(PredicateSymbol(name))
+    def addNewPredicateSymbol(self, name: str, arity: int) -> Node:
+        return self._add_predicate_symbol_term(PredicateSymbol(name, arity))
     
     def addEquation(self, left: Term, right: Term) -> Node:
+        self._validate_term(left)
+        self._validate_term(right)
+
         return self._add_true_equality_term(Equals(left, right))
     
     def addPredicateApplication(
-        self, predicate: PredicateSymbol, argument: ValueTerm
+        self, predicate: PredicateSymbol, arguments: tuple[ValueTerm, ...]
     ) -> Node:
         """Adds a Predicate Application and unions it with True
             Returns: The Node
         """
+        for arg in arguments:
+            self._validate_term(arg)
+
         prop_node = self._add_predicate_application_term(
-            PredicateApplication(predicate, argument)
+            PredicateApplication(predicate, arguments)
         )
 
         _ = self._union_nodes(prop_node, self._true_node)
@@ -305,6 +319,47 @@ class EGraph:
     def isBottom(self) -> bool:
         return self.findBottom().found
 
+    def _validate_term(self, term: Term) -> None:
+        """Validate a term is well-formed for this graph.
+    
+        - Equals sides must be value terms
+        - Applications must match their symbol's arity
+        - All arguments are recursively validated
+        """
+        if isinstance(term, Constant):
+            # Constants are always valid
+            pass
+        elif isinstance(term, FunctionSymbol):
+            # Symbols themselves are valid
+            pass
+        elif isinstance(term, PredicateSymbol):
+            # Symbols themselves are valid
+            pass
+        elif isinstance(term, FunctionApplication):
+            # Validate arity matches
+            if len(term.arguments) != term.function.arity:
+                raise TypeError(
+                    f"Function {term.function.name}/{term.function.arity} got {len(term.arguments)} arguments, expected {term.function.arity}"
+                )
+            # Recursively validate all arguments (must be value terms)
+            for _, arg in enumerate(term.arguments):
+                self._validate_term(arg)
+        elif isinstance(term, PredicateApplication):
+            if len(term.arguments) != term.predicate.arity:
+                raise TypeError(
+                    f"Predicate {term.predicate.name}/{term.predicate.arity} got {len(term.arguments)} arguments, expected {term.predicate.arity}"
+                )
+            for _, arg in enumerate(term.arguments):
+                self._validate_term(arg)
+        elif isinstance(term, Equals):
+            self._validate_term(term.left)
+            self._validate_term(term.right)
+        elif isinstance(term, TrueTerm):
+            pass
+
+
+
+
     def _add_constant_term(self, term: Constant) -> Node:
         """Adds a node for this constant term
             Returns: this node
@@ -317,7 +372,7 @@ class EGraph:
         """
         return self._add_node(
             term,
-            _FunctionSymbolNode(term.name),
+            _FunctionSymbolNode(term.name, term.arity),
             NodeKind.HIGHER_ORDER
         )
     
@@ -327,13 +382,13 @@ class EGraph:
         """
         return self._add_node(
             term,
-            _PredicateSymbolNode(term.name),
+            _PredicateSymbolNode(term.name, term.arity),
             NodeKind.HIGHER_ORDER
         )
     
     def _add_function_application_term(self, term: FunctionApplication) -> Node:
         """Adds a node for this function application by:
-            - Adding its FunctionSymbol and its Argument 
+            - Adding its FunctionSymbol and its Arguments 
             - Creating a FunctionApplicationNode
             - Adding this Node to the list of _congruence_nodes
             - Rebuilding the graph, trying to find new congruence closures
@@ -341,8 +396,13 @@ class EGraph:
             Returns: this node
         """
         function_node = self._add_function_symbol_term(term.function)
-        argument_node = self._add_value_term(term.argument)
-        node_term = _FunctionApplicationNode(function_node, argument_node)
+
+        argument_nodes: list[Node] = []
+        for arg in term.arguments:
+            arg_node = self._add_value_term(arg)
+            argument_nodes.append(arg_node)
+
+        node_term = _FunctionApplicationNode(function_node, tuple(argument_nodes))
         node = self._add_node(term, node_term, NodeKind.VALUE)
         self._congruence_nodes.add(node)
         self._rebuild()
@@ -351,7 +411,7 @@ class EGraph:
     
     def _add_predicate_application_term(self, term: PredicateApplication) -> Node:
         """Adds a node for this predicate application by:
-            - Adding its PredicateSymbol and its Argument 
+            - Adding its PredicateSymbol and its Arguments 
             - Creating a PredicateApplicationNode
             - Adding this Node to the list of _congruence_nodes
             - Rebuilding the graph, trying to find new congruence closures
@@ -359,8 +419,11 @@ class EGraph:
             Returns: this node
         """
         predicate_node = self._add_predicate_symbol_term(term.predicate)
-        argument_node = self._add_value_term(term.argument)
-        node_term = _PredicateApplicationNode(predicate_node, argument_node)
+        argument_nodes: list[Node] = []
+        for arg in term.arguments:
+            arg_node = self._add_value_term(arg)
+            argument_nodes.append(arg_node)
+        node_term = _PredicateApplicationNode(predicate_node, tuple(argument_nodes))
         node = self._add_node(term, node_term, NodeKind.PROP)
         self._congruence_nodes.add(node)
         self._rebuild()
@@ -609,15 +672,21 @@ class EGraph:
         node_term: _NodeTerm = self._node_terms[self._node_index(node)]
 
         if isinstance(node_term, _FunctionApplicationNode):
+            argument_classes = tuple(
+                self._find_index(self._node_index(arg)) for arg in node_term.arguments
+            )
             return _FunctionApplicationClassKey(
                 function_class=self._find_index(node_id=self._node_index(node=node_term.function)),
-                argument_class=self._find_index(node_id=self._node_index(node=node_term.argument))
+                argument_classes=argument_classes
             )
 
         if isinstance(node_term, _PredicateApplicationNode):
+            argument_classes = tuple(
+                self._find_index(self._node_index(arg)) for arg in node_term.arguments
+            )
             return _PredicateApplicationClassKey(
-                self._find_index(self._node_index(node_term.predicate)),
-                self._find_index(self._node_index(node_term.argument)),
+                predicate_class=self._find_index(self._node_index(node_term.predicate)),
+                argument_classes=argument_classes,
             )
 
         if isinstance(node_term, _EqualsNode):
