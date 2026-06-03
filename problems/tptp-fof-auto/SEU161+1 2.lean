@@ -1,0 +1,3 @@
+theorem SEU161_plus_1 : (_U : Type) -> (f_set_union2_2 : _U -> _U -> _U) -> (f_singleton_1 : _U -> _U) -> (p_in_2 : _U -> _U -> Prop) -> (commutativity_k2_xboole_0 : (A : _U) -> (B : _U) -> @Eq _U (f_set_union2_2 A B) (f_set_union2_2 B A)) -> (idempotence_k2_xboole_0 : (A : _U) -> (B : _U) -> @Eq _U (f_set_union2_2 A A) A) -> (antisymmetry_r2_hidden : (A : _U) -> (B : _U) -> p_in_2 A B -> Not (p_in_2 B A)) -> (dt_k1_tarski : True) -> (dt_k2_xboole_0 : True) -> (l23_zfmisc_1 : (A : _U) -> (B : _U) -> p_in_2 A B -> @Eq _U (f_set_union2_2 (f_singleton_1 A) B) B) -> (A : _U) -> (B : _U) -> p_in_2 A B -> @Eq _U (f_set_union2_2 (f_singleton_1 A) B) B :=
+  by grind
+
