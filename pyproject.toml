@@ -49,4 +49,5 @@ reportMissingTypeArgument = "error"
 [dependency-groups]
 dev = [
     "basedpyright>=1.39.2",
+    "pytest>=7.0",
 ]
