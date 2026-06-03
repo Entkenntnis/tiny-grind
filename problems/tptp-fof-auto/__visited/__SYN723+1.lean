@@ -1,3 +1,0 @@
-theorem SYN723_plus_1 : (_U : Type) -> (p_p_1 : _U -> Prop) -> (p_q_1 : _U -> Prop) -> (p_r_1 : _U -> Prop) -> (p_s_1 : _U -> Prop) -> @Exists _U (fun (X : _U) => (Y : _U) -> Iff (Iff (p_p_1 X) (p_p_1 Y)) (Iff (@Exists _U (fun (X : _U) => Iff (p_q_1 X) ((Y : _U) -> p_r_1 Y))) (Iff (@Exists _U (fun (X : _U) => (Y : _U) -> Iff (Iff (p_q_1 X) (p_q_1 Y)) (@Exists _U (fun (X : _U) => Iff (p_r_1 X) ((Y : _U) -> p_s_1 Y))))) (@Exists _U (fun (X : _U) => (Y : _U) -> Iff (Iff (p_r_1 X) (p_r_1 Y)) (Iff (@Exists _U (fun (X : _U) => Iff (p_s_1 X) ((Y : _U) -> p_p_1 Y))) (@Exists _U (fun (X : _U) => (Y : _U) -> Iff (Iff (p_s_1 X) (p_s_1 Y)) (@Exists _U (fun (X : _U) => Iff (p_p_1 X) ((Y : _U) -> p_q_1 Y))))))))))) :=
-  by grind
-

@@ -1,3 +1,0 @@
-theorem SYN550_plus_1 : (_U : Type) -> (f_initial_world_0 : _U) -> (p_reachable_2 : _U -> _U -> Prop) -> (p_p_1 : _U -> Prop) -> (reflexivity_of_reachable : (X : _U) -> p_reachable_2 X X) -> (transitivity_of_reachable : (X : _U) -> (Y : _U) -> (Z : _U) -> And (p_reachable_2 X Y) (p_reachable_2 Y Z) -> p_reachable_2 X Z) -> @Exists _U (fun (X : _U) => Iff (And (p_reachable_2 f_initial_world_0 X) ((Y : _U) -> p_reachable_2 X Y -> p_p_1 Y)) (@Exists _U (fun (X : _U) => And (p_reachable_2 f_initial_world_0 X) ((Y : _U) -> p_reachable_2 X Y -> @Exists _U (fun (Z : _U) => And (p_reachable_2 Y Z) ((W : _U) -> p_reachable_2 Z W -> p_p_1 W)))))) :=
-  by grind
-

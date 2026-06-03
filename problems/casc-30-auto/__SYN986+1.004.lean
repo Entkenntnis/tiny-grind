@@ -1,0 +1,3 @@
+theorem SYN986_plus_1_dot_004 : (_U : Type) -> (f_zero_0 : _U) -> (f_succ_1 : _U -> _U) -> (p_r_3 : _U -> _U -> _U -> Prop) -> (hyp1 : (Y : _U) -> p_r_3 Y f_zero_0 (f_succ_1 Y)) -> (hyp2 : (Y : _U) -> (X : _U) -> (Z : _U) -> (Z1 : _U) -> p_r_3 Y X Z -> p_r_3 Z X Z1 -> p_r_3 Y (f_succ_1 X) Z1) -> @Exists _U (fun (Z4 : _U) => @Exists _U (fun (Z3 : _U) => @Exists _U (fun (Z2 : _U) => @Exists _U (fun (Z1 : _U) => @Exists _U (fun (Z0 : _U) => And (And (And (And (p_r_3 f_zero_0 f_zero_0 Z4) (p_r_3 f_zero_0 Z3 Z2)) (p_r_3 f_zero_0 Z1 Z0)) (p_r_3 f_zero_0 Z2 Z1)) (p_r_3 f_zero_0 Z4 Z3)))))) :=
+  by grind
+

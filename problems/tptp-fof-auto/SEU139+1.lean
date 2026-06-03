@@ -1,3 +1,0 @@
-theorem SEU139_plus_1 : (_U : Type) -> (p_proper_subset_2 : _U -> _U -> Prop) -> (p_subset_2 : _U -> _U -> Prop) -> (antisymmetry_r2_xboole_0 : (A : _U) -> (B : _U) -> p_proper_subset_2 A B -> Not (p_proper_subset_2 B A)) -> (d10_xboole_0 : (A : _U) -> (B : _U) -> Iff (@Eq _U A B) (And (p_subset_2 A B) (p_subset_2 B A))) -> (d8_xboole_0 : (A : _U) -> (B : _U) -> Iff (p_proper_subset_2 A B) (And (p_subset_2 A B) (Not (@Eq _U A B)))) -> (irreflexivity_r2_xboole_0 : (A : _U) -> (B : _U) -> Not (p_proper_subset_2 A A)) -> (reflexivity_r1_tarski : (A : _U) -> (B : _U) -> p_subset_2 A A) -> (A : _U) -> (B : _U) -> Not (And (p_subset_2 A B) (p_proper_subset_2 B A)) :=
-  by grind
-

@@ -1,3 +1,0 @@
-theorem SYN007_plus_1_dot_014 : (_U : Type) -> (p_p_1_0 : Prop) -> (p_p_2_0 : Prop) -> (p_p_3_0 : Prop) -> (p_p_4_0 : Prop) -> (p_p_5_0 : Prop) -> (p_p_6_0 : Prop) -> (p_p_7_0 : Prop) -> (p_p_8_0 : Prop) -> (p_p_9_0 : Prop) -> (p_p_10_0 : Prop) -> (p_p_11_0 : Prop) -> (p_p_12_0 : Prop) -> (p_p_13_0 : Prop) -> (p_p_14_0 : Prop) -> Iff p_p_1_0 (Iff p_p_2_0 (Iff p_p_3_0 (Iff p_p_4_0 (Iff p_p_5_0 (Iff p_p_6_0 (Iff p_p_7_0 (Iff p_p_8_0 (Iff p_p_9_0 (Iff p_p_10_0 (Iff p_p_11_0 (Iff p_p_12_0 (Iff p_p_13_0 (Iff p_p_14_0 (Iff p_p_1_0 (Iff p_p_2_0 (Iff p_p_3_0 (Iff p_p_4_0 (Iff p_p_5_0 (Iff p_p_6_0 (Iff p_p_7_0 (Iff p_p_8_0 (Iff p_p_9_0 (Iff p_p_10_0 (Iff p_p_11_0 (Iff p_p_12_0 (Iff p_p_13_0 p_p_14_0)))))))))))))))))))))))))) :=
-  by grind
-

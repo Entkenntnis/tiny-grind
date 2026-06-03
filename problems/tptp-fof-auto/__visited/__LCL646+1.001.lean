@@ -1,3 +1,0 @@
-theorem LCL646_plus_1_dot_001 : (_U : Type) -> (p_r1_2 : _U -> _U -> Prop) -> (p_p6_1 : _U -> Prop) -> (p_p2_1 : _U -> Prop) -> (p_p4_1 : _U -> Prop) -> (p_p5_1 : _U -> Prop) -> (p_p3_1 : _U -> Prop) -> (p_p1_1 : _U -> Prop) -> Not (@Exists _U (fun (X : _U) => Not (Not ((Y : _U) -> Or (Or (Not (p_r1_2 X Y)) (p_p6_1 Y)) (Not ((Y : _U) -> Or (Or (Not (p_r1_2 X Y)) (p_p2_1 Y)) (Not ((Y : _U) -> Or (Or (Not (p_r1_2 X Y)) (p_p4_1 Y)) (Not ((Y : _U) -> Or (Or (Not (p_r1_2 X Y)) (p_p2_1 Y)) ((Y : _U) -> Or (Or (Not (p_r1_2 X Y)) (p_p5_1 Y)) ((Y : _U) -> Or (Or (Not (p_r1_2 X Y)) (p_p3_1 Y)) ((Y : _U) -> Or (Or (Not (p_r1_2 X Y)) (p_p2_1 Y)) ((Y : _U) -> Or (Not (p_r1_2 X Y)) (p_p1_1 Y))))))))))))))) :=
-  by grind
-

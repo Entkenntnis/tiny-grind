@@ -1,3 +1,0 @@
-theorem SET879_plus_1 : (_U : Type) -> (f_singleton_1 : _U -> _U) -> (f_set_difference_2 : _U -> _U -> _U) -> (p_in_2 : _U -> _U -> Prop) -> (p_empty_1 : _U -> Prop) -> (antisymmetry_r2_hidden : (A : _U) -> (B : _U) -> p_in_2 A B -> Not (p_in_2 B A)) -> (d1_tarski : (A : _U) -> (B : _U) -> Iff (@Eq _U B (f_singleton_1 A)) ((C : _U) -> Iff (p_in_2 C B) (@Eq _U C A))) -> (l34_zfmisc_1 : (A : _U) -> (B : _U) -> Iff (@Eq _U (f_set_difference_2 (f_singleton_1 A) B) (f_singleton_1 A)) (Not (p_in_2 A B))) -> (rc1_xboole_0 : @Exists _U (fun (A : _U) => p_empty_1 A)) -> (rc2_xboole_0 : @Exists _U (fun (A : _U) => Not (p_empty_1 A))) -> (A : _U) -> (B : _U) -> Iff (@Eq _U (f_set_difference_2 (f_singleton_1 A) (f_singleton_1 B)) (f_singleton_1 A)) (Not (@Eq _U A B)) :=
-  by grind
-

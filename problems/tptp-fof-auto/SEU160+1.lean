@@ -1,3 +1,0 @@
-theorem SEU160_plus_1 : (_U : Type) -> (f_empty_set_0 : _U) -> (f_singleton_1 : _U -> _U) -> (p_empty_1 : _U -> Prop) -> (p_subset_2 : _U -> _U -> Prop) -> (rc1_xboole_0 : @Exists _U (fun (A : _U) => p_empty_1 A)) -> (rc2_xboole_0 : @Exists _U (fun (A : _U) => Not (p_empty_1 A))) -> (reflexivity_r1_tarski : (A : _U) -> (B : _U) -> p_subset_2 A A) -> (dt_k1_tarski : True) -> (dt_k1_xboole_0 : True) -> (fc1_xboole_0 : p_empty_1 f_empty_set_0) -> (l4_zfmisc_1 : (A : _U) -> (B : _U) -> Iff (p_subset_2 A (f_singleton_1 B)) (Or (@Eq _U A f_empty_set_0) (@Eq _U A (f_singleton_1 B)))) -> (A : _U) -> (B : _U) -> Iff (p_subset_2 A (f_singleton_1 B)) (Or (@Eq _U A f_empty_set_0) (@Eq _U A (f_singleton_1 B))) :=
-  by grind
-
