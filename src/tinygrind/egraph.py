@@ -210,18 +210,24 @@ class EGraph:
             return self._add_predicate_symbol_term(term)
         
         if isinstance(term, FunctionApplication):
-            return self.addPredicateApplication(term.predicate, term.argument)
+            return self._add_function_application_term(term)
         
         if isinstance(term, PredicateApplication):
-            return self._add_predicate_application_term(term)
+            return self.addPredicateApplication(term.predicate, term.argument)
         
         if isinstance(term, Equals):
             return self._add_true_equality_term(term)
         
         if isinstance(term, TrueTerm):
+            _ = self._union_nodes(self._true_node, self._true_node)
             return self._true_node
         
-        return self._false_node
+        #if we add a false term e get an immediate contradiction
+        if isinstance(term, FalseTerm):
+            _ = self._union_nodes(self._false_node, self._true_node)
+            return self._false_node
+        
+        raise TypeError(f"Unknown term type: {term!r}")
     
     def addGoal(self, prop: PropTerm) -> Node: # the prop term is not negated, we negate it in here
         prop_node = self._add_prop_term(prop)
@@ -392,6 +398,7 @@ class EGraph:
         node_term = _EqualsNode(left_node, right_node)
         node = self._add_node(term, node_term, NodeKind.PROP)
         self._congruence_nodes.add(node)
+        self._equality_nodes.add(node)
         self._rebuild()
 
         return node
@@ -462,10 +469,178 @@ class EGraph:
         return node.id.value  #TODO: is this necessary? Should this be a property of the node class?    
 
     def _union_nodes(self, left: Node, right: Node) -> bool:
-        changed = self._union_nodes_without_rebuild(left, right)
+        changed: bool = self._union_nodes_without_rebuild(left, right)
         if changed:
             self._rebuild()
         return changed
+    
+    def _union_nodes_without_rebuild(self, left: Node, right: Node) -> bool:
+        """Union of union-find. 
+            Unions two two nodes, if they are not already in the same equivalence class,
+            by adding the smaller e-class to the bigger-class.
+            Returns:
+            True, if e-classes were changed
+        """
+        #get representative of their e-class
+        left_root: int = self._find_index(node_id=self._node_index(node=left));
+        right_root: int = self._find_index(node_id=self._node_index(node=right));
+        
+        if left_root == right_root:
+            #they are already in the same e-class
+            return False
+
+        #make sure we add the smaller tree to the larger one 
+        if self._sizes[left_root] < self._sizes[right_root]:
+            left_root, right_root = right_root, left_root
+
+        #left(bigger tree) is now representative of right
+        self._parents[right_root] = left_root
+        #add right to size of left, bc tree was added
+        self._sizes[left_root] += self._sizes[right_root]
+
+        return True
+    
+    def _find_index(self, node_id: int) -> int:
+        """Find of union-find. 
+            Finds the representative of the equivalence class this Node is in.
+            Returns:
+            The node id of the representative 
+        """
+        if node_id < 0 or node_id >= len(self._parents):
+            raise IndexError(f"Unknown EGraph node id: {node_id}")
+        
+        parent: int = self._parents[node_id]
+        if parent != node_id:
+            #recursively calling this function until we find the representative (where index and value of array match)
+            parent = self._find_index(node_id = parent)
+            #update parents array, next time find is faster
+            self._parents[node_id] = parent 
+        return parent
+
+    def _rebuild(self) -> None:
+        """Computes congruence closure until the graph is stable
+            Returns: None
+        """
+        changed: bool = True
+
+        #loops while something changed
+        while changed:
+            changed = False
+            seen: dict[_CongruenceKey, Node] = {}
+
+            #goes through all congruence-relevant nodes (function applications, predicate applications, equality propositions?)
+            for node in sorted(
+                self._congruence_nodes,
+                key=self._node_index,
+            ):
+                # get canonical key, the keys of two function-application-nodes only match if for example both
+                #   - their function symbol
+                #   - AND their arguments
+                # are in the SAME equivalence class
+                # because then they are congruent
+                key: _CongruenceKey = self._congruence_key(node)
+
+                #check if we have seen this key before = if there is a congruence
+                previous = seen.get(key)
+                if previous is None:
+                    #no congruence yet, but we store the key
+                    seen[key] = node
+                else:
+                    #we found a congruence, union the congruent nodes
+                    changed = self._union_nodes_without_rebuild(left=previous, right=node) or changed
+            
+            #handles equality-as-fact behaviour
+            changed = self._reflect_equalities_once() or changed
+
+    def _reflect_equalities_once(self) -> bool:
+        changed:bool = False
+        equality_nodes_by_key:dict[_EqualsClassKey, list[Node]] = {} 
+        true_keys: set[_EqualsClassKey] = set[_EqualsClassKey]()
+        false_keys: set[_EqualsClassKey] = set[_EqualsClassKey]()
+
+        #goes through all equality proposition nodes
+        for node in sorted(self._equality_nodes, key=self._node_index):
+            #computes the canonical key
+            #For `Equals(a, b)`, this key is:
+            #(class(a), class(b))
+            key: _EqualsClassKey = self._equals_class_key(node)
+            #collect all equality nodes that share the same key in a list, grouped by their key
+            equality_nodes_by_key.setdefault(key, []).append(node)
+
+            #both keys are in the same class, so the eq-propostion is true
+            #so union the equality node with the True node
+            if key.left_class == key.right_class:
+                changed = (
+                    self._union_nodes_without_rebuild(left=node, right=self._true_node) or changed
+                )
+            
+            #record which equality keys are known true/false
+            if self.sameClass(left=node, right=self._true_node):
+                true_keys.add(key)
+
+            if self.sameClass(left=node, right=self._false_node):
+                false_keys.add(key)
+        
+
+        for key, nodes in equality_nodes_by_key.items():
+            reversed_key: _EqualsClassKey = _EqualsClassKey(left_class=key.right_class, right_class=key.left_class)
+            if key in true_keys or reversed_key in true_keys:
+                for node in nodes:
+                    changed = (
+                        self._union_nodes_without_rebuild(left=node, right=self._true_node)
+                        or changed
+                    )
+            
+            if key in false_keys or reversed_key in false_keys:
+                for node in nodes:
+                    changed = (
+                        self._union_nodes_without_rebuild(left=node, right=self._false_node)
+                        or changed
+                    )
+
+        return changed
+
+
+        
+    def _congruence_key(self, node: Node) -> _CongruenceKey:
+        """This computes the canonical congruence key for a congruence-relevant node.
+            Returns: the congruence key
+        """
+        node_term: _NodeTerm = self._node_terms[self._node_index(node)]
+
+        if isinstance(node_term, _FunctionApplicationNode):
+            return _FunctionApplicationClassKey(
+                function_class=self._find_index(node_id=self._node_index(node=node_term.function)),
+                argument_class=self._find_index(node_id=self._node_index(node=node_term.argument))
+            )
+
+        if isinstance(node_term, _PredicateApplicationNode):
+            return _PredicateApplicationClassKey(
+                self._find_index(self._node_index(node_term.predicate)),
+                self._find_index(self._node_index(node_term.argument)),
+            )
+
+        if isinstance(node_term, _EqualsNode):
+            return self._equals_class_key(node)
+
+        raise TypeError(f"Node is not a congruence node: {node!r}")
+    
+    def _equals_class_key(self, node: Node) -> _EqualsClassKey:
+        node_term: _NodeTerm = self._node_terms[self._node_index(node)]
+        if not isinstance(node_term, _EqualsNode):
+            raise TypeError(f"Node is not an equality node: {node!r}")
+        
+        return _EqualsClassKey(
+            left_class=self._find_index(node_id=self._node_index(node=node_term.left)),
+            right_class=self._find_index(node_id=self._node_index(node=node_term.right))
+        )
+    
+        
+    
+
+    
+    
+    
 
 
 
