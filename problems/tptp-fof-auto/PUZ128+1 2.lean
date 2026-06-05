@@ -1,3 +1,0 @@
-theorem PUZ128_plus_1 : (_U : Type) -> (f_iokaste_0 : _U) -> (f_oedipus_0 : _U) -> (f_polyneikes_0 : _U) -> (f_thersandros_0 : _U) -> (p_parent_of_2 : _U -> _U -> Prop) -> (p_patricide_1 : _U -> Prop) -> (iokaste_oedipus : p_parent_of_2 f_iokaste_0 f_oedipus_0) -> (iokaste_polyneikes : p_parent_of_2 f_iokaste_0 f_polyneikes_0) -> (oedipus_polyneikes : p_parent_of_2 f_oedipus_0 f_polyneikes_0) -> (polyneikes_thersandros : p_parent_of_2 f_polyneikes_0 f_thersandros_0) -> (oedipus_patricidal : p_patricide_1 f_oedipus_0) -> (thersandros_not_patricidal : Not (p_patricide_1 f_thersandros_0)) -> @Exists _U (fun (P : _U) => @Exists _U (fun (NP : _U) => And (And (And (p_parent_of_2 f_iokaste_0 P) (p_patricide_1 P)) (p_parent_of_2 P NP)) (Not (p_patricide_1 NP)))) :=
-  by grind
-

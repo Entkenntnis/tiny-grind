@@ -1,3 +1,0 @@
-theorem SET913_plus_1 : (_U : Type) -> (f_singleton_1 : _U -> _U) -> (p_disjoint_2 : _U -> _U -> Prop) -> (p_in_2 : _U -> _U -> Prop) -> (p_empty_1 : _U -> Prop) -> (symmetry_r1_xboole_0 : (A : _U) -> (B : _U) -> p_disjoint_2 A B -> p_disjoint_2 B A) -> (antisymmetry_r2_hidden : (A : _U) -> (B : _U) -> p_in_2 A B -> Not (p_in_2 B A)) -> (rc1_xboole_0 : @Exists _U (fun (A : _U) => p_empty_1 A)) -> (rc2_xboole_0 : @Exists _U (fun (A : _U) => Not (p_empty_1 A))) -> (l25_zfmisc_1 : (A : _U) -> (B : _U) -> Not (And (p_disjoint_2 (f_singleton_1 A) B) (p_in_2 A B))) -> (A : _U) -> (B : _U) -> Not (And (p_disjoint_2 (f_singleton_1 A) B) (p_in_2 A B)) :=
-  by grind
-
