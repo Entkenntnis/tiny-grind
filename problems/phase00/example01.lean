@@ -1,4 +1,4 @@
-def phase00_example1 :
+def phase00_example01 :
     (A : Type) ->
     (P : A -> Prop) ->
     (x : A) ->

@@ -1,4 +1,4 @@
-def phase00_example4 :
+def phase00_example04 :
     (A : Type) ->
     (a : A) ->
     (b : A) ->
