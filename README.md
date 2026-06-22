@@ -42,7 +42,7 @@ There are several possible extensions to the solver, there are surely edge cases
 
 ## Setup
 
-This project is managed by `uv`, install it and handle run `uv sync`for setup, then use `uv run main.py` to execute the main script. The lean files within `problems/` can be inspected with the lean InfoView (enable the VS Code Plugin)
+This project is managed by `uv`, install it and handle run `uv sync`for setup, then use `uv run main.py` to execute the main script. The lean files within `problems/` can be inspected with the lean InfoView (enable the VS Code Plugin). For a clean run, `__output.lean` should typecheck without errors.
 
 ## Sources
 

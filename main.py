@@ -48,18 +48,33 @@ def process_problem(dirpath: str, filename: str):
 
     proof = tinygrind(definition)
 
-    proof_def = Definition(
-        name=f"{definition.name}_proof",
-        type=definition.type,
-        value=substitute_grind(definition.value, proof),
-    )
+    if definition.name.endswith("_f"):
 
-    # print(decls)
-    # print(print_program(decls))
-    output += f"-- {full_path}\n"
-    output += print_program(decls)
-    output += "\n\n"
-    output += print_program([proof_def])
+        output += f"-- {full_path}\n\n"
+        output += "/-- warning: declaration uses `sorry` -/\n"
+        output += "#guard_msgs in\n"
+        output += print_program(
+            [
+                Definition(
+                    name=f"{definition.name}",
+                    type=definition.type,
+                    value=substitute_grind(definition.value, proof),
+                )
+            ]
+        )
+
+    else:
+        proof_def = Definition(
+            name=f"{definition.name}_proof",
+            type=definition.type,
+            value=substitute_grind(definition.value, proof),
+        )
+        # print(decls)
+        # print(print_program(decls))
+        output += f"-- {full_path}\n"
+        output += print_program(decls)
+        output += "\n\n"
+        output += print_program([proof_def])
 
     output += "\n\n\n"
 
