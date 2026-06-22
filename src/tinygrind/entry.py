@@ -1,37 +1,23 @@
 # In the most basic use case, the entry point to tinygrind gets a definition of a type
 # and will generate a proof for this exact definition
 
+from typing import Literal
 from scaffolding.printer import print_term
-from scaffolding.syntax import Definition, ElabTactic, Pi, Sort, Term
+from scaffolding.syntax import Definition, ElabTactic, Pi, Sort, Term, Var
 
 import sys
 
 
 def tinygrind(definition: Definition) -> Term:
-
-    return ElabTactic("sorry")
     print("  > tinygrind")
 
     theorem = definition.type
 
     context: list[tuple[str | None, Term]] = []
 
-    theType: str | None = None
-
     while isinstance(theorem, Pi):
         var = theorem.var
         var_type = theorem.var_type
-
-        if (isinstance(var_type, Sort)) and var_type.level == 1:
-            if theType == None:
-                print(f"registering the variable type as {var}")
-                theType = var
-            else:
-                print("[!] We are not supporting multiple types yet")
-                return ElabTactic("sorry")
-
-        # it's a little bit tricky, because the interface will work through
-        # all possible system states
 
         print(f"var: {var}, var_type: {print_term(var_type)}")
 
@@ -43,4 +29,21 @@ def tinygrind(definition: Definition) -> Term:
     print(f"    context: {", ".join([f"{v} : {print_term(t)}" for (v, t) in context])}")
     print(f"    goal: {print_term(goal[1])}")
 
-    sys.exit()
+    theType: str | None = None
+
+    def checkContextTyp(
+        t: Term, theType: str
+    ) -> Literal["theType", "propDef", "funDef", "h"]:
+        if isinstance(t, Sort) and t.level == 1:
+            return "theType"
+        if isinstance(t, Sort) and t.level == 0:
+            return "h"
+        if isinstance(t, Var) and t.name == theType:
+            return "funDef"
+
+        print(t)
+
+    # TODO: go through the context and build
+
+    for c in context:
+        print(checkContextTyp(c, theType))
