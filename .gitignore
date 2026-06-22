@@ -5,3 +5,4 @@ __pycache__
 _tptp_raw
 output.txt
 casc-30
+.pytest_cache
