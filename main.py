@@ -54,12 +54,19 @@ def process_problem(dirpath: str, filename: str):
         value=substitute_grind(definition.value, proof),
     )
 
-    # print(decls)
-    # print(print_program(decls))
-    output += f"-- {full_path}\n"
-    output += print_program(decls)
-    output += "\n\n"
-    output += print_program([proof_def])
+    if definition.name.endswith("_f"):
+        output += f"-- {full_path}\n\n"
+        output += "/-- warning: declaration uses `sorry` -/\n"
+        output += "#guard_msgs in\n"
+        output += print_program([proof_def])
+
+    else:
+        # print(decls)
+        # print(print_program(decls))
+        output += f"-- {full_path}\n"
+        output += print_program(decls)
+        output += "\n\n"
+        output += print_program([proof_def])
 
     output += "\n\n\n"
 

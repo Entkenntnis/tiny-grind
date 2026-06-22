@@ -8,6 +8,8 @@ import sys
 
 
 def tinygrind(definition: Definition) -> Term:
+
+    return ElabTactic("sorry")
     print("  > tinygrind")
 
     theorem = definition.type
@@ -42,4 +44,3 @@ def tinygrind(definition: Definition) -> Term:
     print(f"    goal: {print_term(goal[1])}")
 
     sys.exit()
-    return ElabTactic("sorry")

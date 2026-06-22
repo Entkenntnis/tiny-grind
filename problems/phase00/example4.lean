@@ -1,4 +1,4 @@
-def deeper :
+def phase00_example4 :
     (A : Type) ->
     (a : A) ->
     (b : A) ->
