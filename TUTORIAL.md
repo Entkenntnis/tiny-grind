@@ -1,4 +1,3 @@
-```markdown
 # Proof Generation in tiny-grind — A Step‑by‑Step Tutorial
 
 This tutorial walks you through adding explicit proof‑term generation to
@@ -937,4 +936,3 @@ Recommended order for implementation and testing:
 Run with `python main.py` — the output file `problems/__output.lean`
 will contain the generated proofs.  Compile them with `lake build` in
 the problems directory to verify they typecheck.
-```
