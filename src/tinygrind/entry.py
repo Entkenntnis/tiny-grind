@@ -5,16 +5,19 @@ from typing import Literal
 from scaffolding.printer import print_term
 from scaffolding.syntax import App, Definition, ElabTactic, Pi, Sort, Term, Var
 
-import sys
 
 from tinygrind import egraph
 from tinygrind.egraph import (
     Constant,
     EGraph,
     Equals,
+    FalseTerm,
+    FunctionApplication,
     FunctionSymbol,
     PredicateApplication,
     PredicateSymbol,
+    TrueTerm,
+    ValueTerm,
 )
 
 type Env = dict[str, Literal["type", "constant", "function", "predicate"]]
@@ -61,18 +64,34 @@ def tinygrind(definition: Definition) -> Term:
             print(f"    - Adding new predicate {name} with arity {arity}")
             _ = egraph.addTerm(PredicateSymbol(name, arity))
         elif isinstance(type, App):
-            print(f"    - (todo) add hypothesis {print_term(type)} to egraph")
+            print(f"    - add hypothesis {print_term(type)} to egraph")
             eg_term = lean_to_egraph(type, env, arities)
-            if not isinstance(eg_term, Equals) or not isinstance(
+            if not isinstance(eg_term, Equals) and not isinstance(
                 eg_term, PredicateApplication
             ):
-                pass
-                # raise RuntimeError("Egraph Term must be a predicate")
-            # _ = egraph.addTerm(eg_term)
+                raise RuntimeError(f"Egraph term {eg_term} must be a predicate")
+            _ = egraph.addTerm(eg_term)
         else:
             print(f"TODO: Handling {name} / {type} with type {print_term(type)}")
 
-    # TODO: negate goal, check for bottom, return sorry or proof (todo)
+    goal_eg = lean_to_egraph(goal, env, arities)
+
+    if (
+        not isinstance(goal_eg, TrueTerm)
+        and not isinstance(goal_eg, FalseTerm)
+        and not isinstance(goal_eg, Equals)
+        and not isinstance(goal_eg, PredicateApplication)
+    ):
+        raise RuntimeError("Expect PropTerm as goal")
+
+    _ = egraph.addGoal(goal_eg)
+
+    if egraph.isBottom():
+        print(f"   = egraph found solution, TODO: generate proof")
+        return ElabTactic("grind")
+    else:
+        print(f"   = no proof here")
+        return ElabTactic("sorry")
 
 
 def isFunction(type: Term, env: Env) -> bool:
@@ -115,6 +134,38 @@ def compute_arity(t: Term) -> int:
     return count
 
 
-def lean_to_egraph(term: Term, env: Env, arities: dict[[str, str]]) -> egraph.Term:
-    # NEXTUP
-    pass
+def lean_to_egraph(term: Term, env: Env, arities: dict[str, int]) -> egraph.Term:
+    if isinstance(term, App):
+        args: list[Term] = []
+        t = term
+        while isinstance(t, App):
+            args.insert(0, t.n)
+            t = t.m
+        head = lean_to_egraph(t, env, arities)
+
+        def convertValue(term: Term) -> ValueTerm:
+            t = lean_to_egraph(term, env, arities)
+            if not isinstance(t, Constant) and not isinstance(t, FunctionApplication):
+                raise RuntimeError(f"Value expected, instead got {t}")
+            return t
+
+        if isinstance(head, FunctionSymbol):
+            if head.name == "@Eq":
+                return Equals(convertValue(args[1]), convertValue(args[2]))
+            return FunctionApplication(head, tuple([convertValue(x) for x in args]))
+        elif isinstance(head, PredicateSymbol):
+            return PredicateApplication(head, tuple([convertValue(x) for x in args]))
+        else:
+            raise RuntimeError(f"Can't handle {term} in app with head {head}")
+    elif isinstance(term, Var):
+        if term.name == "@Eq":
+            return FunctionSymbol("@Eq", -1)
+        elif env[term.name] == "constant":  # special case here
+            return Constant(term.name)
+        elif env[term.name] == "function" and term.name in arities:
+            return FunctionSymbol(term.name, arities[term.name])
+        elif env[term.name] == "predicate" and term.name in arities:
+            return PredicateSymbol(term.name, arities[term.name])
+        raise RuntimeError(f"Can't handle {term} in var")
+    else:
+        raise RuntimeError(f"Can't convert {term} to egraph")
