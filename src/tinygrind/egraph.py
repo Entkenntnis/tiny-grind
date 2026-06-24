@@ -193,6 +193,7 @@ class EGraph:
         self._node_term_to_node: dict[_NodeTerm, Node] = {}
         self._congruence_nodes: set[Node] = set()
         self._equality_nodes: set[Node] = set()
+        # PG: _nodes_to_proof [[Node1|Node2]|LeanTerm]
 
         self._true_node: Node = self._add_node(TrueTerm(), _TrueNode(), NodeKind.PROP)
         self._false_node: Node = self._add_node(
@@ -218,25 +219,25 @@ class EGraph:
         if isinstance(term, FunctionApplication):
             return self._add_function_application_term(term)
         
-        if isinstance(term, PredicateApplication):
+        if isinstance(term, PredicateApplication): #PG: needs proof
             return self.addPredicateApplication(term.predicate, term.arguments)
         
-        if isinstance(term, Equals):
+        if isinstance(term, Equals): #PG: needs proof
             return self._add_true_equality_term(term)
         
-        if isinstance(term, TrueTerm):
+        if isinstance(term, TrueTerm): #PG: needs proof
             _ = self._union_nodes(self._true_node, self._true_node)
             return self._true_node
         
         #if we add a false term e get an immediate contradiction
-        if isinstance(term, FalseTerm):
+        if isinstance(term, FalseTerm): #PG: needs proof
             _ = self._union_nodes(self._false_node, self._true_node)
             return self._false_node
         
         raise TypeError(f"Unknown term type: {term!r}")
     
     def addGoal(self, prop: PropTerm) -> Node: # the prop term is not negated, we negate it in here
-        self._validate_term(prop)
+        self._validate_term(prop) #PG: needs proof
 
         prop_node = self._add_prop_term(prop)
         _ = self._union_nodes(prop_node, self._false_node)
@@ -259,7 +260,7 @@ class EGraph:
     
     def addPredicateApplication(
         self, predicate: PredicateSymbol, arguments: tuple[ValueTerm, ...]
-    ) -> Node:
+    ) -> Node: #PG: name of the proof (hypothesis)
         """Adds a Predicate Application and unions it with True
             Returns: The Node
         """
@@ -270,7 +271,7 @@ class EGraph:
             PredicateApplication(predicate, arguments)
         )
 
-        _ = self._union_nodes(prop_node, self._true_node)
+        _ = self._union_nodes(prop_node, self._true_node) #PG: add proof here
         return prop_node
     
     def hasFact(self, prop: PropTerm) -> bool:
@@ -443,8 +444,8 @@ class EGraph:
         if not isinstance(equality_node_term, _EqualsNode):
             raise TypeError(f"Node is not an equality node: {equality_node!r}")
 
-        _ = self._union_nodes(equality_node_term.left, equality_node_term.right)
-        _ = self._union_nodes(equality_node, self._true_node)
+        _ = self._union_nodes(equality_node_term.left, equality_node_term.right) #PG: needs proof (eg h1)
+        _ = self._union_nodes(equality_node, self._true_node) #PG: needs proof (eg eq_true_intro h1) (same h1 as above)
         return equality_node
     
     def _add_equals_term(self, term: Equals) -> Node:
@@ -537,7 +538,7 @@ class EGraph:
             self._rebuild()
         return changed
     
-    def _union_nodes_without_rebuild(self, left: Node, right: Node) -> bool:
+    def _union_nodes_without_rebuild(self, left: Node, right: Node) -> bool: #PG: gets a proof, and stores it in nodes_to_proof
         """Union of union-find. 
             Unions two two nodes, if they are not already in the same equivalence class,
             by adding the smaller e-class to the bigger-class.
@@ -563,6 +564,8 @@ class EGraph:
 
         return True
     
+    #PG: add function, that generates equality chain between two nodes 
+
     def _find_index(self, node_id: int) -> int:
         """Find of union-find. 
             Finds the representative of the equivalence class this Node is in.
@@ -610,8 +613,10 @@ class EGraph:
                     seen[key] = node
                 else:
                     #we found a congruence, union the congruent nodes
-                    changed = self._union_nodes_without_rebuild(left=previous, right=node) or changed
-            
+                    changed = self._union_nodes_without_rebuild(left=previous, right=node) or changed 
+                    #PG: generate proof, get function/predicate symbol + all arguments, 
+                    # von nodes(zeigen auf symbol und arguments)
+
             #handles equality-as-fact behaviour
             changed = self._reflect_equalities_once() or changed
 
@@ -636,6 +641,7 @@ class EGraph:
                 changed = (
                     self._union_nodes_without_rebuild(left=node, right=self._true_node) or changed
                 )
+                #PG: generate proof
             
             #record which equality keys are known true/false
             if self.sameClass(left=node, right=self._true_node):
@@ -652,14 +658,14 @@ class EGraph:
                     changed = (
                         self._union_nodes_without_rebuild(left=node, right=self._true_node)
                         or changed
-                    )
+                    )   #PG: see above (generate proof)
             
             if key in false_keys or reversed_key in false_keys:
                 for node in nodes:
                     changed = (
                         self._union_nodes_without_rebuild(left=node, right=self._false_node)
                         or changed
-                    )
+                    ) #PG: see above (generate proof)
 
         return changed
 
