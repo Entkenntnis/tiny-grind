@@ -3,7 +3,7 @@
 
 from typing import Literal
 from scaffolding.printer import print_term
-from scaffolding.syntax import App, Definition, ElabTactic, Pi, Sort, Term, Var
+from scaffolding.syntax import App, Definition, ElabTactic, Lam, Pi, Sort, Term, Var
 
 
 from tinygrind import egraph
@@ -41,28 +41,35 @@ def tinygrind(definition: Definition) -> Term:
 
     egraph = EGraph()
 
+    names: list[str] = []
+    h_counter = 1
+
     for name, type in context:
         if isinstance(type, Sort) and type.level == 1 and name:
             if "type" in env.values():
                 raise RuntimeError("We only support at most one type right now.")
             print(f"    - Adding new type {name} to env")
             env[name] = "type"
+            names.append(name)
         elif isinstance(type, Var) and name and env[type.name] == "type":
             print(f"    - Adding new constant {name}")
             env[name] = "constant"
             _ = egraph.addTerm(Constant(name))
+            names.append(name)
         elif name and isFunction(type, env):
             arity = compute_arity(type)
             arities[name] = arity
             env[name] = "function"
             print(f"    - Adding new function {name} with arity {arity}")
             _ = egraph.addTerm(FunctionSymbol(name, arity))
+            names.append(name)
         elif name and isPredicate(type, env):
             arity = compute_arity(type)
             arities[name] = arity
             env[name] = "predicate"
             print(f"    - Adding new predicate {name} with arity {arity}")
             _ = egraph.addTerm(PredicateSymbol(name, arity))
+            names.append(name)
         elif isinstance(type, App):
             print(f"    - add hypothesis {print_term(type)} to egraph")
             eg_term = lean_to_egraph(type, env, arities)
@@ -70,7 +77,10 @@ def tinygrind(definition: Definition) -> Term:
                 eg_term, PredicateApplication
             ):
                 raise RuntimeError(f"Egraph term {eg_term} must be a predicate")
-            _ = egraph.addTerm(eg_term)
+            proof_name = f"h{h_counter}"
+            h_counter += 1
+            _ = egraph.addTerm(eg_term, Var("proof_name"))
+            names.append(proof_name)
         else:
             print(f"TODO: Handling {name} / {type} with type {print_term(type)}")
 
@@ -84,11 +94,24 @@ def tinygrind(definition: Definition) -> Term:
     ):
         raise RuntimeError("Expect PropTerm as goal")
 
-    _ = egraph.addGoal(goal_eg)
+    _ = egraph.addGoal(goal_eg, Var("goal"))
 
     if egraph.isBottom():
         print(f"   = egraph found solution, TODO: generate proof")
-        return ElabTactic("grind")
+        body = App(
+            Var("Classical.byContradiction"),
+            Lam(
+                "goal",
+                Var("_"),
+                App(
+                    Var("false_of_true_eq_false"),
+                    egraph.find_proof(TrueTerm(), FalseTerm()),
+                ),
+            ),
+        )
+        for name in reversed(names):
+            body = Lam(name, Var("_"), body)
+        return body
     else:
         print(f"   = no proof here")
         return ElabTactic("sorry")

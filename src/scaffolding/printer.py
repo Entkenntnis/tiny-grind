@@ -71,7 +71,7 @@ def print_term(term: Term, prec: int = 0) -> str:
                 res = f"({var} : {print_term(var_type, 0)}) -> {print_term(body, 0)}"
             return f"({res})" if prec > 0 else res
         case ElabTactic(name, args):
-            parts = [f"by {name}"]
+            parts = [f"(by {name})"]
             if args != None:
                 for arg in args:
                     parts.append(f"({arg})")
