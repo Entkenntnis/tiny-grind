@@ -14,12 +14,14 @@ from tinygrind.egraph import (
     EGraph_,
     Equals,
     Equals_,
+    FalseTerm,
     FalseTerm_,
     FunctionApplication_,
     FunctionSymbol_,
     PredicateApplication_,
     PredicateSymbol_,
     Symbol,
+    TrueTerm,
     TrueTerm_,
     ValueTerm_,
 )
@@ -106,7 +108,7 @@ def tinygrind(definition: Definition) -> Term:
     _ = egraph_.addGoal(goal_eg, Var("goal"))
     egraph.addGoal(lean_to_egraph(goal, env, arities), Var("goal"))
 
-    if egraph_.isBottom():
+    if egraph.isBottom():
         print(f"   = egraph found solution, TODO: generate proof")
         body = App(
             Var("Classical.byContradiction"),
@@ -115,7 +117,7 @@ def tinygrind(definition: Definition) -> Term:
                 Var("_"),
                 App(
                     Var("false_of_true_eq_false"),
-                    egraph_.find_proof(TrueTerm_(), FalseTerm_()),
+                    egraph.findProof(TrueTerm(), FalseTerm()),
                 ),
             ),
         )

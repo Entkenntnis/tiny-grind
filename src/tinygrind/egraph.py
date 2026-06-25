@@ -175,7 +175,7 @@ class _FalseNode:
     pass
 
 
-type _CongruenceKey = (
+type _CongruenceKey_ = (
     _FunctionApplicationClassKey | _PredicateApplicationClassKey | _EqualsClassKey
 )
 
@@ -677,7 +677,7 @@ class EGraph_:
         # loops while something changed
         while changed:
             changed = False
-            seen: dict[_CongruenceKey, Node_] = {}
+            seen: dict[_CongruenceKey_, Node_] = {}
 
             # goes through all congruence-relevant nodes (function applications, predicate applications, equality propositions?)
             for node in sorted(
@@ -689,7 +689,7 @@ class EGraph_:
                 #   - AND their arguments
                 # are in the SAME equivalence class
                 # because then they are congruent
-                key: _CongruenceKey = self._congruence_key(node)
+                key: _CongruenceKey_ = self._congruence_key(node)
 
                 # check if we have seen this key before = if there is a congruence
                 previous = seen.get(key)
@@ -824,7 +824,7 @@ class EGraph_:
 
         return changed
 
-    def _congruence_key(self, node: Node_) -> _CongruenceKey:
+    def _congruence_key(self, node: Node_) -> _CongruenceKey_:
         """This computes the canonical congruence key for a congruence-relevant node.
         Returns: the congruence key
         """
@@ -908,6 +908,14 @@ type Term = TrueTerm | FalseTerm | Equals | Application | Symbol
 
 type Node = int
 
+# class _CongruenceKey:
+
+
+@dataclass(frozen=True)
+class _CongruenceKey:
+    symbol: Node
+    args: tuple[Node, ...]
+
 
 class EGraph:
 
@@ -915,8 +923,10 @@ class EGraph:
         # Node directly indexes into these data structures
         self._parents: list[Node] = []
         self._sizes: list[int] = []
-        self._proof_from_parent: list[syntax.Term | None] = []
         self._node_to_term: list[Term] = []
+
+        # store proofs between nodes
+        self._nodes_to_proof: dict[Node, dict[Node, syntax.Term]] = {}
 
         # Output detailed information about actions
         self._debug: bool = debug
@@ -935,6 +945,7 @@ class EGraph:
         self._add_term(symbol)
         if self._debug:
             print(f"      ~ insert symbol {symbol} as node #{self._get_node(symbol)}")
+        self._rebuild()
 
     def addProp(
         self, prop: Term, proof: syntax.Term
@@ -946,6 +957,7 @@ class EGraph:
             print(f"      ~ insert prop {prop} as node #{node}")
 
         _ = self._union(node, self._true_node, syntax.App(syntax.Var("eq_true"), proof))
+        self._rebuild()
 
     def addGoal(
         self, goal: Term, proof: syntax.Term
@@ -959,12 +971,15 @@ class EGraph:
         _ = self._union(
             node, self._false_node, syntax.App(syntax.Var("eq_false_intro"), proof)
         )
+        self._rebuild()
 
-    def _get_node(self, term: Term) -> Node:
-        node = self._term_to_node.get(term)
-        if node is None:
-            raise RuntimeError(f"Expected node for term {term} to exist")
-        return node
+    def findProof(self, a: Term, b: Term) -> syntax.Term:
+        return self._find_proof(self._get_node(a), self._get_node(b))
+
+    def isBottom(self) -> bool:
+        ra = self._find(self._true_node)
+        rb = self._find(self._false_node)
+        return ra == rb
 
     def _add_term(self, term: Term) -> None:
         existing = self._term_to_node.get(term)
@@ -983,11 +998,16 @@ class EGraph:
 
         node = len(self._sizes)  # it really is just a continues int id
         self._sizes.append(1)
-        self._proof_from_parent.append(None)
         self._parents.append(node)  # self parent, own eclass
         self._node_to_term.append(term)
 
         self._term_to_node[term] = node
+
+    def _get_node(self, term: Term) -> Node:
+        node = self._term_to_node.get(term)
+        if node is None:
+            raise RuntimeError(f"Expected node for term {term} to exist")
+        return node
 
     def _find(self, node: Node) -> Node:
         # returns the representant
@@ -1004,13 +1024,142 @@ class EGraph:
 
         if self._sizes[ra] < self._sizes[rb]:
             ra, rb = rb, ra
-            proof = syntax.App(syntax.Var("Eq.symm"), proof)
 
         self._parents[rb] = ra
         self._sizes[ra] += self._sizes[rb]
-        self._proof_from_parent[rb] = proof  # stores proof a = b in this direction
+
+        self._nodes_to_proof.setdefault(a, {})[b] = proof
+        self._nodes_to_proof.setdefault(b, {})[a] = syntax.App(
+            syntax.Var("Eq.symm"), proof
+        )
 
         if self._debug:
             print(f"      ~ union #{a} and #{b} with proof {proof}")
 
         return True
+
+    def _find_proof(self, a: Node, b: Node) -> syntax.Term:
+        if a == b:
+            return syntax.App(syntax.Var("rfl"), syntax.Var("_"))
+
+        queue: deque[Node] = deque([a])
+        visited: set[Node] = {a}
+        parent: dict[Node, tuple[Node, syntax.Term]] = {}
+
+        while queue:
+            current = queue.popleft()
+            if current == b:
+                output = parent[current][1]  # this is the proof from parent to my
+                node = parent[current][0]
+                while node != a:
+                    # extend the proof to include new node in chain
+                    (prev, proof) = parent[node]
+                    output = syntax.App(
+                        syntax.App(syntax.Var("Eq.trans"), proof), output
+                    )
+                    node = prev
+                return output
+
+            for neighbor, proof in self._nodes_to_proof.get(current, {}).items():
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    parent[neighbor] = (current, proof)
+                    queue.append(neighbor)
+
+        print(f"No proof found between {a} and {b}")
+        return syntax.ElabTactic("grind")
+
+    def _rebuild(self):
+        # do congruence closure and other stuff here
+        changed: bool = True
+
+        while changed:
+            changed = False
+
+            # step 1: congruence closure
+            if self._do_congrunce_closure():
+                continue
+
+            # step 2: equality reflection
+
+            if self._debug:
+                print(f"      ~ Doing equality reflection now")
+
+            for node in range(len(self._node_to_term)):
+                term = self._node_to_term[node]
+                if isinstance(term, Equals):
+                    if self._find(node) == self._find(self._true_node):
+                        left_node = self._get_node(term.left)
+                        right_node = self._get_node(term.right)
+                        original_proof = self._nodes_to_proof.get(node, {}).get(
+                            self._true_node
+                        )
+                        if not original_proof:
+                            raise RuntimeError("Missing proof")
+
+                        if self._union(
+                            left_node,
+                            right_node,
+                            proof=syntax.App(syntax.Var("of_eq_true"), original_proof),
+                        ):
+                            changed = True
+
+                            if self._debug:
+                                print(
+                                    f"      ~ eq reflect: union {left_node} and {right_node} "
+                                    + f"because Equals({term.left},{term.right}) is true"
+                                )
+
+    def _do_congrunce_closure(self) -> bool:
+        # if self._debug:
+        #     print(f"      ~ Doing congruence closure now")
+
+        seen: dict[_CongruenceKey, Node] = {}
+        for node in range(len(self._node_to_term)):
+            term = self._node_to_term[node]
+            if not isinstance(term, (Application)):
+                continue  # not relevant here
+
+            # define a key
+            sym_node = self._get_node(term.symbol)
+            sym_class = self._find(sym_node)
+            arg_classes = tuple(
+                self._find(self._get_node(arg)) for arg in term.arguments
+            )
+            key = _CongruenceKey(sym_class, arg_classes)
+
+            previous = seen.get(key)
+            if previous is None:
+                seen[key] = node
+            else:
+                # build proof
+                prev_term = self._node_to_term[previous]
+                node_term = self._node_to_term[node]
+
+                if not isinstance(prev_term, (Application)) or not isinstance(
+                    node_term, Application
+                ):
+                    raise RuntimeError("Application expected in congruence closure")
+
+                name = prev_term.symbol.name
+
+                proof = syntax.App(
+                    syntax.App(syntax.Var("congrArg"), syntax.Var(name)),
+                    self._find_proof(
+                        self._get_node(prev_term.arguments[0]),
+                        self._get_node(node_term.arguments[0]),
+                    ),
+                )
+
+                if len(prev_term.arguments) != 1:
+                    print("Arity > 1 for congruence closure not implemented yet")
+                    # proof = syntax.ElabTactic("grind")
+
+                if self._debug:
+                    print(
+                        f"      ~ Merging #{previous} with #{node} because of congruence"
+                    )
+
+                return self._union(previous, node, proof)
+
+        return False
