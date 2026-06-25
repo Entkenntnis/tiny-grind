@@ -1,15 +1,15 @@
 from collections import deque
 from dataclasses import dataclass
 from enum import Enum
-from typing import cast
+from typing import Literal, cast
 
 from scaffolding import syntax
 
 # Defining the structure of the term variants
-type HigherOrderTerm = FunctionSymbol | PredicateSymbol
-type ValueTerm = Constant | FunctionApplication
-type PropTerm = PredicateApplication | Equals | TrueTerm | FalseTerm
-type Term = HigherOrderTerm | ValueTerm | PropTerm
+type HigherOrderTerm_ = FunctionSymbol_ | PredicateSymbol_
+type ValueTerm_ = Constant_ | FunctionApplication_
+type PropTerm_ = PredicateApplication_ | Equals_ | TrueTerm_ | FalseTerm_
+type Term_ = HigherOrderTerm_ | ValueTerm_ | PropTerm_
 
 # Term classes describe input syntax = public AST
 # Classes recursively contain other classes
@@ -17,47 +17,47 @@ type Term = HigherOrderTerm | ValueTerm | PropTerm
 
 
 @dataclass(frozen=True)
-class Constant:
+class Constant_:
     name: str
 
 
 @dataclass(frozen=True)
-class FunctionSymbol:
-    name: str
-    arity: int
-
-
-@dataclass(frozen=True)
-class PredicateSymbol:
+class FunctionSymbol_:
     name: str
     arity: int
 
 
 @dataclass(frozen=True)
-class FunctionApplication:
-    function: FunctionSymbol
-    arguments: tuple[ValueTerm, ...]
+class PredicateSymbol_:
+    name: str
+    arity: int
 
 
 @dataclass(frozen=True)
-class PredicateApplication:
-    predicate: PredicateSymbol
-    arguments: tuple[ValueTerm, ...]
+class FunctionApplication_:
+    function: FunctionSymbol_
+    arguments: tuple[ValueTerm_, ...]
 
 
 @dataclass(frozen=True)
-class Equals:
-    left: Term
-    right: Term
+class PredicateApplication_:
+    predicate: PredicateSymbol_
+    arguments: tuple[ValueTerm_, ...]
 
 
 @dataclass(frozen=True)
-class TrueTerm:
+class Equals_:
+    left: Term_
+    right: Term_
+
+
+@dataclass(frozen=True)
+class TrueTerm_:
     pass
 
 
 @dataclass(frozen=True)
-class FalseTerm:
+class FalseTerm_:
     pass
 
 
@@ -68,19 +68,19 @@ class NodeKind(Enum):
 
 
 @dataclass(frozen=True)
-class NodeId:
+class NodeId_:
     value: int
 
 
 @dataclass(frozen=True)
-class Node:
+class Node_:
     """Represents a node in the e-graph.
 
     Attributes:
         id: Unique identifier for the node
     """
 
-    id: NodeId
+    id: NodeId_
     kind: NodeKind
 
 
@@ -107,8 +107,8 @@ class BottomResult:
     """
 
     found: bool
-    left: Node | None = None
-    right: Node | None = None
+    left: Node_ | None = None
+    right: Node_ | None = None
 
 
 # Node classes describe graph storage = Egraph representation
@@ -149,20 +149,20 @@ class _PredicateSymbolNode:
 
 @dataclass(frozen=True)
 class _FunctionApplicationNode:
-    function: Node
-    arguments: tuple[Node, ...]
+    function: Node_
+    arguments: tuple[Node_, ...]
 
 
 @dataclass(frozen=True)
 class _PredicateApplicationNode:
-    predicate: Node
-    arguments: tuple[Node, ...]
+    predicate: Node_
+    arguments: tuple[Node_, ...]
 
 
 @dataclass(frozen=True)
 class _EqualsNode:
-    left: Node
-    right: Node
+    left: Node_
+    right: Node_
 
 
 @dataclass(frozen=True)
@@ -202,7 +202,7 @@ class _EqualsClassKey:
     right_class: int
 
 
-class EGraph:
+class EGraph_:
     """Representing the EGraph
 
     Attributes:
@@ -221,57 +221,57 @@ class EGraph:
     def __init__(self) -> None:
         self._parents: list[int] = []
         self._sizes: list[int] = []
-        self._nodes: list[Node] = []
+        self._nodes: list[Node_] = []
         self._node_terms: list[_NodeTerm] = []
-        self._term_to_node: dict[Term, Node] = {}
-        self._node_term_to_node: dict[_NodeTerm, Node] = {}
-        self._congruence_nodes: set[Node] = set()
-        self._equality_nodes: set[Node] = set()
+        self._term_to_node: dict[Term_, Node_] = {}
+        self._node_term_to_node: dict[_NodeTerm, Node_] = {}
+        self._congruence_nodes: set[Node_] = set()
+        self._equality_nodes: set[Node_] = set()
 
         # store proofs between two nodes that are merged, syntax.Term is a lean proof term
-        self._nodes_to_proof: dict[Node, dict[Node, syntax.Term]] = {}
+        self._nodes_to_proof: dict[Node_, dict[Node_, syntax.Term]] = {}
 
-        self._true_node: Node = self._add_node(TrueTerm(), _TrueNode(), NodeKind.PROP)
-        self._false_node: Node = self._add_node(
-            FalseTerm(), _FalseNode(), NodeKind.PROP
+        self._true_node: Node_ = self._add_node(TrueTerm_(), _TrueNode(), NodeKind.PROP)
+        self._false_node: Node_ = self._add_node(
+            FalseTerm_(), _FalseNode(), NodeKind.PROP
         )
 
-    def addTerm(self, term: Term, proof: syntax.Term | None = None) -> Node:
+    def addTerm(self, term: Term_, proof: syntax.Term | None = None) -> Node_:
         """Calling the private add functions, or returning the existing True/False Node"""
         self._validate_term(term)
 
-        if isinstance(term, Constant):
+        if isinstance(term, Constant_):
             return self._add_constant_term(term)
 
-        if isinstance(term, FunctionSymbol):
+        if isinstance(term, FunctionSymbol_):
             return self._add_function_symbol_term(term)
 
-        if isinstance(term, PredicateSymbol):
+        if isinstance(term, PredicateSymbol_):
             return self._add_predicate_symbol_term(term)
 
-        if isinstance(term, FunctionApplication):
+        if isinstance(term, FunctionApplication_):
             return self._add_function_application_term(term)
 
-        if isinstance(term, PredicateApplication) and proof:
+        if isinstance(term, PredicateApplication_) and proof:
             return self.addPredicateApplication(term.predicate, term.arguments, proof)
 
-        if isinstance(term, Equals) and proof:
+        if isinstance(term, Equals_) and proof:
             return self._add_true_equality_term(term, proof)
 
-        if isinstance(term, TrueTerm) and proof:
+        if isinstance(term, TrueTerm_) and proof:
             _ = self._union_nodes(self._true_node, self._true_node, proof)
             return self._true_node
 
         # if we add a false term e get an immediate contradiction
-        if isinstance(term, FalseTerm) and proof:
+        if isinstance(term, FalseTerm_) and proof:
             _ = self._union_nodes(self._false_node, self._true_node, proof)
             return self._false_node
 
         raise TypeError(f"Unknown term type: {term!r}")
 
     def addGoal(
-        self, prop: PropTerm, proof: syntax.Term
-    ) -> Node:  # the prop term is not negated, we negate it in here
+        self, prop: PropTerm_, proof: syntax.Term
+    ) -> Node_:  # the prop term is not negated, we negate it in here
         self._validate_term(prop)  # PG: needs proof
 
         prop_node = self._add_prop_term(prop)
@@ -280,14 +280,14 @@ class EGraph:
         )
         return prop_node
 
-    def addNewConstant(self, name: str) -> Node:
-        return self._add_constant_term(Constant(name))
+    def addNewConstant(self, name: str) -> Node_:
+        return self._add_constant_term(Constant_(name))
 
-    def addNewFunctionSymbol(self, name: str, arity: int) -> Node:
-        return self._add_function_symbol_term(FunctionSymbol(name, arity))
+    def addNewFunctionSymbol(self, name: str, arity: int) -> Node_:
+        return self._add_function_symbol_term(FunctionSymbol_(name, arity))
 
-    def addNewPredicateSymbol(self, name: str, arity: int) -> Node:
-        return self._add_predicate_symbol_term(PredicateSymbol(name, arity))
+    def addNewPredicateSymbol(self, name: str, arity: int) -> Node_:
+        return self._add_predicate_symbol_term(PredicateSymbol_(name, arity))
 
     # def addEquation(self, left: Term, right: Term) -> Node:
     #     self._validate_term(left)
@@ -297,10 +297,10 @@ class EGraph:
 
     def addPredicateApplication(
         self,
-        predicate: PredicateSymbol,
-        arguments: tuple[ValueTerm, ...],
+        predicate: PredicateSymbol_,
+        arguments: tuple[ValueTerm_, ...],
         proof: syntax.Term,
-    ) -> Node:  # PG: name of the proof (hypothesis)
+    ) -> Node_:  # PG: name of the proof (hypothesis)
         """Adds a Predicate Application and unions it with True
         Returns: The Node
         """
@@ -308,7 +308,7 @@ class EGraph:
             self._validate_term(arg)
 
         prop_node = self._add_predicate_application_term(
-            PredicateApplication(predicate, arguments)
+            PredicateApplication_(predicate, arguments)
         )
 
         _ = self._union_nodes(
@@ -316,7 +316,7 @@ class EGraph:
         )  # PG: add proof here
         return prop_node
 
-    def hasFact(self, prop: PropTerm) -> bool:
+    def hasFact(self, prop: PropTerm_) -> bool:
         """Checks if a proposition is marked as True.
         Mostly helpful for debugging, maybe proof generation.
         (Checks both Equals(a, b) and Equals(b, a))
@@ -327,20 +327,20 @@ class EGraph:
         if self.sameClass(prop_node, self._true_node):
             return True
 
-        if isinstance(prop, Equals):
-            reversed_node = self._add_equals_term(Equals(prop.right, prop.left))
+        if isinstance(prop, Equals_):
+            reversed_node = self._add_equals_term(Equals_(prop.right, prop.left))
             return self.sameClass(reversed_node, self._true_node)
 
         return False
 
-    def findClass(self, node: Node) -> EClass:
+    def findClass(self, node: Node_) -> EClass:
         """Mostly helpful for debugging
 
         Returns: The EClass of this node
         """
         return EClass(self._find_index(self._node_index(node)))
 
-    def sameClass(self, left: Node, right: Node) -> bool:
+    def sameClass(self, left: Node_, right: Node_) -> bool:
         """Returns: True if the two Nodes are in the same equivalence class,
         False, otherwise
         """
@@ -362,23 +362,23 @@ class EGraph:
     def isBottom(self) -> bool:
         return self.findBottom().found
 
-    def _validate_term(self, term: Term) -> None:
+    def _validate_term(self, term: Term_) -> None:
         """Validate a term is well-formed for this graph.
 
         - Equals sides must be value terms
         - Applications must match their symbol's arity
         - All arguments are recursively validated
         """
-        if isinstance(term, Constant):
+        if isinstance(term, Constant_):
             # Constants are always valid
             pass
-        elif isinstance(term, FunctionSymbol):
+        elif isinstance(term, FunctionSymbol_):
             # Symbols themselves are valid
             pass
-        elif isinstance(term, PredicateSymbol):
+        elif isinstance(term, PredicateSymbol_):
             # Symbols themselves are valid
             pass
-        elif isinstance(term, FunctionApplication):
+        elif isinstance(term, FunctionApplication_):
             # Validate arity matches
             if len(term.arguments) != term.function.arity:
                 raise TypeError(
@@ -387,26 +387,26 @@ class EGraph:
             # Recursively validate all arguments (must be value terms)
             for _, arg in enumerate(term.arguments):
                 self._validate_term(arg)
-        elif isinstance(term, PredicateApplication):
+        elif isinstance(term, PredicateApplication_):
             if len(term.arguments) != term.predicate.arity:
                 raise TypeError(
                     f"Predicate {term.predicate.name}/{term.predicate.arity} got {len(term.arguments)} arguments, expected {term.predicate.arity}"
                 )
             for _, arg in enumerate(term.arguments):
                 self._validate_term(arg)
-        elif isinstance(term, Equals):
+        elif isinstance(term, Equals_):
             self._validate_term(term.left)
             self._validate_term(term.right)
-        elif isinstance(term, TrueTerm):
+        elif isinstance(term, TrueTerm_):
             pass
 
-    def _add_constant_term(self, term: Constant) -> Node:
+    def _add_constant_term(self, term: Constant_) -> Node_:
         """Adds a node for this constant term
         Returns: this node
         """
         return self._add_node(term, _ConstantNode(term.name), NodeKind.VALUE)
 
-    def _add_function_symbol_term(self, term: FunctionSymbol) -> Node:
+    def _add_function_symbol_term(self, term: FunctionSymbol_) -> Node_:
         """Adds a node for this function symbol
         Returns: this node
         """
@@ -414,7 +414,7 @@ class EGraph:
             term, _FunctionSymbolNode(term.name, term.arity), NodeKind.HIGHER_ORDER
         )
 
-    def _add_predicate_symbol_term(self, term: PredicateSymbol) -> Node:
+    def _add_predicate_symbol_term(self, term: PredicateSymbol_) -> Node_:
         """Adds a node for this predicate symbol
         Returns: this node
         """
@@ -422,7 +422,7 @@ class EGraph:
             term, _PredicateSymbolNode(term.name, term.arity), NodeKind.HIGHER_ORDER
         )
 
-    def _add_function_application_term(self, term: FunctionApplication) -> Node:
+    def _add_function_application_term(self, term: FunctionApplication_) -> Node_:
         """Adds a node for this function application by:
         - Adding its FunctionSymbol and its Arguments
         - Creating a FunctionApplicationNode
@@ -433,7 +433,7 @@ class EGraph:
         """
         function_node = self._add_function_symbol_term(term.function)
 
-        argument_nodes: list[Node] = []
+        argument_nodes: list[Node_] = []
         for arg in term.arguments:
             arg_node = self._add_value_term(arg)
             argument_nodes.append(arg_node)
@@ -445,7 +445,7 @@ class EGraph:
 
         return node
 
-    def _add_predicate_application_term(self, term: PredicateApplication) -> Node:
+    def _add_predicate_application_term(self, term: PredicateApplication_) -> Node_:
         """Adds a node for this predicate application by:
         - Adding its PredicateSymbol and its Arguments
         - Creating a PredicateApplicationNode
@@ -455,7 +455,7 @@ class EGraph:
         Returns: this node
         """
         predicate_node = self._add_predicate_symbol_term(term.predicate)
-        argument_nodes: list[Node] = []
+        argument_nodes: list[Node_] = []
         for arg in term.arguments:
             arg_node = self._add_value_term(arg)
             argument_nodes.append(arg_node)
@@ -466,7 +466,7 @@ class EGraph:
 
         return node
 
-    def _add_true_equality_term(self, term: Equals, proof: syntax.Term):
+    def _add_true_equality_term(self, term: Equals_, proof: syntax.Term):
         """Adds a Equality and asserts it as true
         - Calls _add_equals_term to add the Node
         - Unions the left and right side of the equality, since they are equal
@@ -487,7 +487,7 @@ class EGraph:
         )
         return equality_node
 
-    def _add_equals_term(self, term: Equals) -> Node:
+    def _add_equals_term(self, term: Equals_) -> Node_:
         """Adds a node for this equals term by:
         - Adding its left side and its right side
         - Creating a EqualsNode
@@ -506,35 +506,35 @@ class EGraph:
 
         return node
 
-    def _add_value_term(self, term: Term) -> Node:
-        if isinstance(term, Constant):
+    def _add_value_term(self, term: Term_) -> Node_:
+        if isinstance(term, Constant_):
             return self._add_constant_term(term)
-        if isinstance(term, FunctionApplication):
+        if isinstance(term, FunctionApplication_):
             return self._add_function_application_term(term)
 
         raise TypeError(f"Expected a value term, got {term!r}")
 
-    def _add_prop_term(self, term: Term) -> Node:
-        if isinstance(term, PredicateApplication):
+    def _add_prop_term(self, term: Term_) -> Node_:
+        if isinstance(term, PredicateApplication_):
             return self._add_predicate_application_term(term)
 
-        if isinstance(term, Equals):
+        if isinstance(term, Equals_):
             return self._add_equals_term(term)
 
-        if isinstance(term, TrueTerm):
+        if isinstance(term, TrueTerm_):
             return self._true_node
 
-        if isinstance(term, FalseTerm):
+        if isinstance(term, FalseTerm_):
             return self._false_node
 
         raise TypeError(f"Expected a proposition term, got {term!r}")
 
     def _add_node(
         self,
-        public_term: Term,
+        public_term: Term_,
         node_term: _NodeTerm,
         kind: NodeKind,
-    ) -> Node:
+    ) -> Node_:
         """Adds a node by:
         - returning it if it already exists based on its syntax/ internal node
         - or creating a new node and updating private variables
@@ -556,7 +556,7 @@ class EGraph:
             return existing
 
         # this node does not already exist -> create it
-        node = Node(NodeId(len(self._nodes)), kind)  # TODO: do this more elaborately?
+        node = Node_(NodeId_(len(self._nodes)), kind)  # TODO: do this more elaborately?
         self._nodes.append(node)
         self._node_terms.append(node_term)
         self._parents.append(self._node_index(node))
@@ -566,20 +566,20 @@ class EGraph:
 
         return node
 
-    def _node_index(self, node: Node) -> int:
+    def _node_index(self, node: Node_) -> int:
         """Returns the int value of the id of a node"""
         return (
             node.id.value
         )  # TODO: is this necessary? Should this be a property of the node class?
 
-    def _union_nodes(self, left: Node, right: Node, proof: syntax.Term) -> bool:
+    def _union_nodes(self, left: Node_, right: Node_, proof: syntax.Term) -> bool:
         changed: bool = self._union_nodes_without_rebuild(left, right, proof)
         if changed:
             self._rebuild()
         return changed
 
     def _union_nodes_without_rebuild(
-        self, left: Node, right: Node, proof: syntax.Term
+        self, left: Node_, right: Node_, proof: syntax.Term
     ) -> bool:  # PG: gets a proof, and stores it in nodes_to_proof
         """Union of union-find.
         Unions two two nodes, if they are not already in the same equivalence class,
@@ -614,19 +614,19 @@ class EGraph:
 
         return True
 
-    def find_proof(self, A: Term, B: Term) -> syntax.Term:
+    def find_proof(self, A: Term_, B: Term_) -> syntax.Term:
         # PG: use proofs to create an equality between two nodes
         nodeA = self._term_to_node[A]
         nodeB = self._term_to_node[B]
         return self._find_proof_between_nodes(nodeA, nodeB)
 
-    def _find_proof_between_nodes(self, nodeA: Node, nodeB: Node) -> syntax.Term:
+    def _find_proof_between_nodes(self, nodeA: Node_, nodeB: Node_) -> syntax.Term:
         if nodeA == nodeB:
             return syntax.App(syntax.Var("rfl"), syntax.Var("_"))
 
-        queue: deque[Node] = deque([nodeA])
-        visited: set[Node] = {nodeA}
-        parent: dict[Node, tuple[Node, syntax.Term]] = {}
+        queue: deque[Node_] = deque([nodeA])
+        visited: set[Node_] = {nodeA}
+        parent: dict[Node_, tuple[Node_, syntax.Term]] = {}
 
         while queue:
             current = queue.popleft()
@@ -649,7 +649,7 @@ class EGraph:
                     queue.append(neighbor)
 
         print(f"No proof found between {nodeA} and {nodeB}")
-        return syntax.ElabTactic("sorry")
+        return syntax.ElabTactic("grind")
 
     def _find_index(self, node_id: int) -> int:
         """Find of union-find.
@@ -677,7 +677,7 @@ class EGraph:
         # loops while something changed
         while changed:
             changed = False
-            seen: dict[_CongruenceKey, Node] = {}
+            seen: dict[_CongruenceKey, Node_] = {}
 
             # goes through all congruence-relevant nodes (function applications, predicate applications, equality propositions?)
             for node in sorted(
@@ -737,9 +737,6 @@ class EGraph:
                             ].name,
                         )
 
-                    if len(prev_term.arguments) != 1:
-                        print("Arity > 1 for congruence closure not implemented yet")
-
                     if not isinstance(
                         node_term, _FunctionApplicationNode
                     ) and not isinstance(node_term, _PredicateApplicationNode):
@@ -747,18 +744,20 @@ class EGraph:
                             f"Can't generate proof of non-callable nodes node {node}"
                         )
 
-                    proof = self._find_proof_between_nodes(
-                        prev_term.arguments[0], node_term.arguments[0]
+                    proof = syntax.App(
+                        syntax.App(syntax.Var("congrArg"), syntax.Var(name)),
+                        self._find_proof_between_nodes(
+                            prev_term.arguments[0], node_term.arguments[0]
+                        ),
                     )
+
+                    if len(prev_term.arguments) != 1:
+                        print("Arity > 1 for congruence closure not implemented yet")
+                        proof = syntax.ElabTactic("grind")
 
                     changed = (
                         self._union_nodes_without_rebuild(
-                            left=previous,
-                            right=node,
-                            proof=syntax.App(
-                                syntax.App(syntax.Var("congrArg"), syntax.Var(name)),
-                                proof,
-                            ),
+                            left=previous, right=node, proof=proof
                         )
                         or changed
                     )
@@ -770,7 +769,7 @@ class EGraph:
 
     def _reflect_equalities_once(self) -> bool:
         changed: bool = False
-        equality_nodes_by_key: dict[_EqualsClassKey, list[Node]] = {}
+        equality_nodes_by_key: dict[_EqualsClassKey, list[Node_]] = {}
         true_keys: set[_EqualsClassKey] = set[_EqualsClassKey]()
         false_keys: set[_EqualsClassKey] = set[_EqualsClassKey]()
 
@@ -825,7 +824,7 @@ class EGraph:
 
         return changed
 
-    def _congruence_key(self, node: Node) -> _CongruenceKey:
+    def _congruence_key(self, node: Node_) -> _CongruenceKey:
         """This computes the canonical congruence key for a congruence-relevant node.
         Returns: the congruence key
         """
@@ -856,7 +855,7 @@ class EGraph:
 
         raise TypeError(f"Node is not a congruence node: {node!r}")
 
-    def _equals_class_key(self, node: Node) -> _EqualsClassKey:
+    def _equals_class_key(self, node: Node_) -> _EqualsClassKey:
         node_term: _NodeTerm = self._node_terms[self._node_index(node)]
         if not isinstance(node_term, _EqualsNode):
             raise TypeError(f"Node is not an equality node: {node!r}")
@@ -867,3 +866,151 @@ class EGraph:
                 node_id=self._node_index(node=node_term.right)
             ),
         )
+
+
+###### REWRITE WITH NEW MENTAL IMAGE
+
+# This is the public API
+# use this to create terms and add to the egraph
+
+
+@dataclass(frozen=True)
+class TrueTerm:
+    pass
+
+
+@dataclass(frozen=True)
+class FalseTerm:
+    pass
+
+
+@dataclass(frozen=True)
+class Equals:
+    left: Term
+    right: Term
+
+
+@dataclass(frozen=True)
+class Application:
+    symbol: Symbol
+    arguments: tuple[Term, ...]
+
+
+@dataclass(frozen=True)
+class Symbol:
+    name: str
+    arity: int  # all arguments are of type Sort for now
+    result: Literal["Prop", "Sort"]
+
+
+type Term = TrueTerm | FalseTerm | Equals | Application | Symbol
+
+
+type Node = int
+
+
+class EGraph:
+
+    def __init__(self, debug: bool = False):
+        # Node directly indexes into these data structures
+        self._parents: list[Node] = []
+        self._sizes: list[int] = []
+        self._proof_from_parent: list[syntax.Term | None] = []
+        self._node_to_term: list[Term] = []
+
+        # Output detailed information about actions
+        self._debug: bool = debug
+
+        # "structual sharing" happens here
+        self._term_to_node: dict[Term, Node] = {}
+
+        # we start with 2 built-in nodes
+        self._add_term(TrueTerm())
+        self._true_node: Node = self._get_node(TrueTerm())
+
+        self._add_term(FalseTerm())
+        self._false_node: Node = self._get_node(FalseTerm())
+
+    def addSymbol(self, symbol: Symbol):  # no proof obligation
+        self._add_term(symbol)
+        if self._debug:
+            print(f"      ~ insert symbol {symbol} as node #{self._get_node(symbol)}")
+
+    def addProp(
+        self, prop: Term, proof: syntax.Term
+    ):  # everything else does need an proof
+        self._add_term(prop)
+        # it should be fine to set the proof right?
+        node = self._get_node(prop)
+        if self._debug:
+            print(f"      ~ insert prop {prop} as node #{node}")
+
+        _ = self._union(node, self._true_node, syntax.App(syntax.Var("eq_true"), proof))
+
+    def addGoal(
+        self, goal: Term, proof: syntax.Term
+    ):  # everything else does need an proof
+        self._add_term(goal)
+        # it should be fine to set the proof right?
+        node = self._get_node(goal)
+        if self._debug:
+            print(f"      ~ insert goal {goal} as node #{node}")
+
+        _ = self._union(
+            node, self._false_node, syntax.App(syntax.Var("eq_false_intro"), proof)
+        )
+
+    def _get_node(self, term: Term) -> Node:
+        node = self._term_to_node.get(term)
+        if node is None:
+            raise RuntimeError(f"Expected node for term {term} to exist")
+        return node
+
+    def _add_term(self, term: Term) -> None:
+        existing = self._term_to_node.get(term)
+        if existing is not None:
+            # nothing to do
+            return
+
+        # recursively add children
+        if isinstance(term, Application):
+            self._add_term(term.symbol)
+            for arg in term.arguments:
+                self._add_term(arg)
+        elif isinstance(term, Equals):
+            self._add_term(term.left)
+            self._add_term(term.right)
+
+        node = len(self._sizes)  # it really is just a continues int id
+        self._sizes.append(1)
+        self._proof_from_parent.append(None)
+        self._parents.append(node)  # self parent, own eclass
+        self._node_to_term.append(term)
+
+        self._term_to_node[term] = node
+
+    def _find(self, node: Node) -> Node:
+        # returns the representant
+        while self._parents[node] != node:
+            node = self._parents[node]
+        return node
+
+    def _union(self, a: Node, b: Node, proof: syntax.Term) -> bool:
+        ra = self._find(a)
+        rb = self._find(b)
+        if ra == rb:
+            # no union (not sure why it is exactly necessary, but downstream seems to need it)
+            return False
+
+        if self._sizes[ra] < self._sizes[rb]:
+            ra, rb = rb, ra
+            proof = syntax.App(syntax.Var("Eq.symm"), proof)
+
+        self._parents[rb] = ra
+        self._sizes[ra] += self._sizes[rb]
+        self._proof_from_parent[rb] = proof  # stores proof a = b in this direction
+
+        if self._debug:
+            print(f"      ~ union #{a} and #{b} with proof {proof}")
+
+        return True
