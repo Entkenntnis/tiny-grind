@@ -79,7 +79,7 @@ def tinygrind(definition: Definition) -> Term:
                 raise RuntimeError(f"Egraph term {eg_term} must be a predicate")
             proof_name = f"h{h_counter}"
             h_counter += 1
-            _ = egraph.addTerm(eg_term, Var("proof_name"))
+            _ = egraph.addTerm(eg_term, Var(proof_name))
             names.append(proof_name)
         else:
             print(f"TODO: Handling {name} / {type} with type {print_term(type)}")

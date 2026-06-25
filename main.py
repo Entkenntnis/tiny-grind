@@ -18,7 +18,8 @@ from scaffolding.syntax import Definition
 from scaffolding.helper import substitute_grind
 from tinygrind.entry import tinygrind
 
-output = ""
+
+output = "\ntheorem eq_false_intro {a : Prop} (h : ¬a) : a = False := propext (iff_false_intro h)\n\n"
 
 
 def process_problem(dirpath: str, filename: str):

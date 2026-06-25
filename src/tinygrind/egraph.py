@@ -1,5 +1,7 @@
+from collections import deque
 from dataclasses import dataclass
 from enum import Enum
+from typing import cast
 
 from scaffolding import syntax
 
@@ -273,7 +275,9 @@ class EGraph:
         self._validate_term(prop)  # PG: needs proof
 
         prop_node = self._add_prop_term(prop)
-        _ = self._union_nodes(prop_node, self._false_node, proof)
+        _ = self._union_nodes(
+            prop_node, self._false_node, syntax.App(syntax.Var("eq_false_intro"), proof)
+        )
         return prop_node
 
     def addNewConstant(self, name: str) -> Node:
@@ -307,7 +311,9 @@ class EGraph:
             PredicateApplication(predicate, arguments)
         )
 
-        _ = self._union_nodes(prop_node, self._true_node, proof)  # PG: add proof here
+        _ = self._union_nodes(
+            prop_node, self._true_node, syntax.App(syntax.Var("eq_true"), proof)
+        )  # PG: add proof here
         return prop_node
 
     def hasFact(self, prop: PropTerm) -> bool:
@@ -573,7 +579,7 @@ class EGraph:
         return changed
 
     def _union_nodes_without_rebuild(
-        self, left: Node, right: Node, proof: syntax.Term = None
+        self, left: Node, right: Node, proof: syntax.Term
     ) -> bool:  # PG: gets a proof, and stores it in nodes_to_proof
         """Union of union-find.
         Unions two two nodes, if they are not already in the same equivalence class,
@@ -599,19 +605,51 @@ class EGraph:
         self._sizes[left_root] += self._sizes[right_root]
 
         # add proofs in both directions, assume that proof is left = right
-        # if proof:  # DEBUG!!!
-        #     if not self._nodes_to_proof[left]:
-        #         self._nodes_to_proof[left] = {}
-        #     self._nodes_to_proof[left][right] = proof
-        #     if not self._nodes_to_proof[right]:
-        #         self._nodes_to_proof[right] = {}
-        #     self._nodes_to_proof[left][right] = syntax.App(syntax.Var("Eq.symm"), proof)
+
+        if proof:  # DEBUG!!!
+            self._nodes_to_proof.setdefault(left, {})[right] = proof
+            self._nodes_to_proof.setdefault(right, {})[left] = syntax.App(
+                syntax.Var("Eq.symm"), proof
+            )
 
         return True
 
     def find_proof(self, A: Term, B: Term) -> syntax.Term:
         # PG: use proofs to create an equality between two nodes
-        return syntax.ElabTactic("grind")
+        nodeA = self._term_to_node[A]
+        nodeB = self._term_to_node[B]
+        return self._find_proof_between_nodes(nodeA, nodeB)
+
+    def _find_proof_between_nodes(self, nodeA: Node, nodeB: Node) -> syntax.Term:
+        if nodeA == nodeB:
+            return syntax.App(syntax.Var("rfl"), syntax.Var("_"))
+
+        queue: deque[Node] = deque([nodeA])
+        visited: set[Node] = {nodeA}
+        parent: dict[Node, tuple[Node, syntax.Term]] = {}
+
+        while queue:
+            current = queue.popleft()
+            if current == nodeB:
+                output = parent[current][1]  # this is the proof from parent to my
+                node = parent[current][0]
+                while node != nodeA:
+                    # extend the proof to include new node in chain
+                    (prev, proof) = parent[node]
+                    output = syntax.App(
+                        syntax.App(syntax.Var("Eq.trans"), proof), output
+                    )
+                    node = prev
+                return output
+
+            for neighbor, proof in self._nodes_to_proof.get(current, {}).items():
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    parent[neighbor] = (current, proof)
+                    queue.append(neighbor)
+
+        print(f"No proof found between {nodeA} and {nodeB}")
+        return syntax.ElabTactic("sorry")
 
     def _find_index(self, node_id: int) -> int:
         """Find of union-find.
@@ -659,9 +697,69 @@ class EGraph:
                     # no congruence yet, but we store the key
                     seen[key] = node
                 else:
+
                     # we found a congruence, union the congruent nodes
+
+                    # first, build a proof
+                    prev_term = self._node_terms[self._node_index(previous)]
+                    node_term = self._node_terms[self._node_index(node)]
+
+                    if isinstance(prev_term, _EqualsNode):
+                        changed = (
+                            self._union_nodes_without_rebuild(
+                                left=previous,
+                                right=node,
+                                proof=None,
+                            )
+                            or changed
+                        )
+                        continue
+
+                    if not isinstance(
+                        prev_term, _FunctionApplicationNode
+                    ) and not isinstance(prev_term, _PredicateApplicationNode):
+                        raise RuntimeError(
+                            f"Can't generate proof of non-callable nodes prev_term {prev_term}"
+                        )
+
+                    name = ""
+
+                    if isinstance(prev_term, _FunctionApplicationNode):
+                        name = cast(
+                            str,
+                            self._node_terms[self._node_index(prev_term.function)].name,
+                        )
+                    if isinstance(prev_term, _PredicateApplicationNode):
+                        name = cast(
+                            str,
+                            self._node_terms[
+                                self._node_index(prev_term.predicate)
+                            ].name,
+                        )
+
+                    if len(prev_term.arguments) != 1:
+                        print("Arity > 1 for congruence closure not implemented yet")
+
+                    if not isinstance(
+                        node_term, _FunctionApplicationNode
+                    ) and not isinstance(node_term, _PredicateApplicationNode):
+                        raise RuntimeError(
+                            f"Can't generate proof of non-callable nodes node {node}"
+                        )
+
+                    proof = self._find_proof_between_nodes(
+                        prev_term.arguments[0], node_term.arguments[0]
+                    )
+
                     changed = (
-                        self._union_nodes_without_rebuild(left=previous, right=node)
+                        self._union_nodes_without_rebuild(
+                            left=previous,
+                            right=node,
+                            proof=syntax.App(
+                                syntax.App(syntax.Var("congrArg"), syntax.Var(name)),
+                                proof,
+                            ),
+                        )
                         or changed
                     )
                     # PG: generate proof, get function/predicate symbol + all arguments,
@@ -689,7 +787,9 @@ class EGraph:
             # so union the equality node with the True node
             if key.left_class == key.right_class:
                 changed = (
-                    self._union_nodes_without_rebuild(left=node, right=self._true_node)
+                    self._union_nodes_without_rebuild(
+                        left=node, right=self._true_node, proof=None
+                    )
                     or changed
                 )
                 # PG: generate proof
@@ -709,7 +809,7 @@ class EGraph:
                 for node in nodes:
                     changed = (
                         self._union_nodes_without_rebuild(
-                            left=node, right=self._true_node
+                            left=node, right=self._true_node, proof=None
                         )
                         or changed
                     )  # PG: see above (generate proof)
@@ -718,7 +818,7 @@ class EGraph:
                 for node in nodes:
                     changed = (
                         self._union_nodes_without_rebuild(
-                            left=node, right=self._false_node
+                            left=node, right=self._false_node, proof=None
                         )
                         or changed
                     )  # PG: see above (generate proof)
