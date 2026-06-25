@@ -140,26 +140,23 @@ def compute_arity(t: Term) -> int:
 
 def lean_to_egraph(term: Term, env: Env, arities: dict[str, int]) -> egraph.Term:
     if isinstance(term, App):
-        args: list[Term] = []
-        t = term
-        while isinstance(t, App):
-            args.insert(0, t.n)
-            t = t.m
-        head = lean_to_egraph(t, env, arities)
-
-        def convertValue(term: Term) -> egraph.Term:
-            t = lean_to_egraph(term, env, arities)
-            # if not isinstance(t, Symbol) and not isinstance(t, Application):
-            #     raise RuntimeError(f"Value expected, instead got {t}")
-            return t
-
-        if isinstance(head, Symbol):
-            if head.name == "@Eq":
-                return Equals(convertValue(args[1]), convertValue(args[2]))
-            # return Application(head, tuple([convertValue(x) for x in args]))
-            return Application(head, convertValue(args[0]))
+        appHead = term
+        while isinstance(appHead, App):
+            appHead = appHead.m
+        if isinstance(appHead, Var) and appHead.name == "@Eq":
+            t = term
+            args: list[Term] = []
+            while isinstance(t, App):
+                args.insert(0, t.n)
+                t = t.m
+            return Equals(
+                lean_to_egraph(args[1], env, arities),
+                lean_to_egraph(args[2], env, arities),
+            )
         else:
-            raise RuntimeError(f"Can't handle {term} in app with head {head}")
+            head = lean_to_egraph(term.m, env, arities)
+            arg = lean_to_egraph(term.n, env, arities)
+            return Application(head, arg)
     elif isinstance(term, Var):
         if term.name == "@Eq":
             return Symbol("@Eq", -1)
