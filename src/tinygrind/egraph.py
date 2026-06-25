@@ -40,14 +40,6 @@ type Term = TrueTerm | FalseTerm | Equals | Application | Symbol
 
 type Node = int
 
-# class _CongruenceKey:
-
-
-@dataclass(frozen=True)
-class _CongruenceKey:
-    symbol: Node
-    args: Node
-
 
 class EGraph:
 
@@ -158,7 +150,6 @@ class EGraph:
         ra = self._find(a)
         rb = self._find(b)
         if ra == rb:
-            # no union (not sure why it is exactly necessary, but downstream seems to need it)
             return False
 
         if self._sizes[ra] < self._sizes[rb]:
@@ -207,23 +198,14 @@ class EGraph:
         raise RuntimeError(f"No proof found between {a} and {b}")
 
     def _rebuild(self):
-        # do congruence closure and other stuff here
-        while True:
-            # step 1: congruence closure
-            if self._do_congrunce_closure():
-                continue
-
-            # step 2: equality reflection
-            if self._do_equality_reflection():
-                continue
-
-            break
+        while self._do_congrunce_closure() or self._do_equality_reflection():
+            pass
 
     def _do_congrunce_closure(self) -> bool:
         # if self._debug:
         #     print(f"      ~ Doing congruence closure now")
 
-        seen: dict[_CongruenceKey, Node] = {}
+        seen: dict[tuple[Node, Node], Node] = {}
         for node in range(len(self._node_to_term)):
             term = self._node_to_term[node]
             if not isinstance(term, (Application)):
@@ -232,7 +214,7 @@ class EGraph:
             # define a key
             repr_head = self._find(self._get_node(term.head))
             repr_arg = self._find(self._get_node(term.arg))
-            key = _CongruenceKey(repr_head, repr_arg)
+            key = (repr_head, repr_arg)
 
             previous = seen.get(key)
             if previous is None:

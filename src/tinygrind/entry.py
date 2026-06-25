@@ -42,8 +42,6 @@ def tinygrind(definition: Definition) -> Term:
 
     for name, type in context:
         if isinstance(type, Sort) and type.level == 1 and name:
-            if "type" in env.values():
-                raise RuntimeError("We only support at most one type right now.")
             print(f"    - Adding new type {name} to env")
             env[name] = "type"
             names.append(name)
@@ -78,7 +76,7 @@ def tinygrind(definition: Definition) -> Term:
     egraph.addGoal(lean_to_egraph(goal, env, arities), Var("goal"))
 
     if egraph.isBottom():
-        print(f"   = egraph found solution, TODO: generate proof")
+        print(f"   = egraph found solution, generate proof")
         body = App(
             Var("Classical.byContradiction"),
             Lam(
