@@ -26,7 +26,7 @@ For standalone, fully automated provers, superposition is a tried-and-tested app
 
 Our prover will take problems from `/problems`, each problem is a lean file with a theorem definition which is solvable solely with `by grind`. Our parser reads these definitions and outputs a lean proof for each definition into `output.lean`. This file should type check when inserted into an lean environment. In the beginning, we want to focus only on problems that grind is able to solve in the latest release of lean. Converting TPTP problems into lean seems feasable and can serve as a foundation of problems to look at. Due to the modular nature of E-graphs, we aim to build and expand the prover in several phases.
 
-### Phase 1
+### Phase 1 ✔️ COMPLETED
 
 The focus in on ground terms and function applications, very similiar to the example in the introduction. We need to implement the E-graph, congruence closure, handling of True/False/Eq and a basic proof generator. The graph can be untyped at first (we assume all symbols are operating on the same type). We might generate a synthetical set of problems to test the prover and get edge cases right.
 
