@@ -9,21 +9,11 @@ from scaffolding.syntax import App, Definition, ElabTactic, Lam, Pi, Sort, Term,
 from tinygrind import egraph
 from tinygrind.egraph import (
     Application,
-    Constant_,
     EGraph,
-    EGraph_,
     Equals,
-    Equals_,
     FalseTerm,
-    FalseTerm_,
-    FunctionApplication_,
-    FunctionSymbol_,
-    PredicateApplication_,
-    PredicateSymbol_,
     Symbol,
     TrueTerm,
-    TrueTerm_,
-    ValueTerm_,
 )
 
 type Env = dict[str, Literal["type", "constant", "function", "predicate"]]
@@ -45,7 +35,6 @@ def tinygrind(definition: Definition) -> Term:
     env: Env = {}
     arities: dict[str, int] = {}
 
-    egraph_ = EGraph_()
     egraph = EGraph(debug=True)
 
     names: list[str] = []
@@ -61,51 +50,31 @@ def tinygrind(definition: Definition) -> Term:
         elif isinstance(type, Var) and name and env[type.name] == "type":
             print(f"    - Adding new constant {name}")
             env[name] = "constant"
-            _ = egraph_.addTerm(Constant_(name))
-            egraph.addSymbol(Symbol(name, 0, "Sort"))
+            egraph.addSymbol(Symbol(name, 0))
             names.append(name)
         elif name and isFunction(type, env):
             arity = compute_arity(type)
             arities[name] = arity
             env[name] = "function"
             print(f"    - Adding new function {name} with arity {arity}")
-            _ = egraph_.addTerm(FunctionSymbol_(name, arity))
-            egraph.addSymbol(Symbol(name, arity, "Sort"))
+            egraph.addSymbol(Symbol(name, arity))
             names.append(name)
         elif name and isPredicate(type, env):
             arity = compute_arity(type)
             arities[name] = arity
             env[name] = "predicate"
             print(f"    - Adding new predicate {name} with arity {arity}")
-            _ = egraph_.addTerm(PredicateSymbol_(name, arity))
-            egraph.addSymbol(Symbol(name, arity, "Prop"))
+            egraph.addSymbol(Symbol(name, arity))
             names.append(name)
         elif isinstance(type, App):
             print(f"    - add hypothesis {print_term(type)} to egraph")
-            eg_term = lean_to_egraph_(type, env, arities)
-            if not isinstance(eg_term, Equals_) and not isinstance(
-                eg_term, PredicateApplication_
-            ):
-                raise RuntimeError(f"Egraph term {eg_term} must be a predicate")
             proof_name = f"h{h_counter}"
             h_counter += 1
-            _ = egraph_.addTerm(eg_term, Var(proof_name))
             egraph.addProp(lean_to_egraph(type, env, arities), Var(proof_name))
             names.append(proof_name)
         else:
             print(f"TODO: Handling {name} / {type} with type {print_term(type)}")
 
-    goal_eg = lean_to_egraph_(goal, env, arities)
-
-    if (
-        not isinstance(goal_eg, TrueTerm_)
-        and not isinstance(goal_eg, FalseTerm_)
-        and not isinstance(goal_eg, Equals_)
-        and not isinstance(goal_eg, PredicateApplication_)
-    ):
-        raise RuntimeError("Expect PropTerm as goal")
-
-    _ = egraph_.addGoal(goal_eg, Var("goal"))
     egraph.addGoal(lean_to_egraph(goal, env, arities), Var("goal"))
 
     if egraph.isBottom():
@@ -169,43 +138,6 @@ def compute_arity(t: Term) -> int:
     return count
 
 
-def lean_to_egraph_(term: Term, env: Env, arities: dict[str, int]) -> egraph.Term_:
-    if isinstance(term, App):
-        args: list[Term] = []
-        t = term
-        while isinstance(t, App):
-            args.insert(0, t.n)
-            t = t.m
-        head = lean_to_egraph_(t, env, arities)
-
-        def convertValue(term: Term) -> ValueTerm_:
-            t = lean_to_egraph_(term, env, arities)
-            if not isinstance(t, Constant_) and not isinstance(t, FunctionApplication_):
-                raise RuntimeError(f"Value expected, instead got {t}")
-            return t
-
-        if isinstance(head, FunctionSymbol_):
-            if head.name == "@Eq":
-                return Equals_(convertValue(args[1]), convertValue(args[2]))
-            return FunctionApplication_(head, tuple([convertValue(x) for x in args]))
-        elif isinstance(head, PredicateSymbol_):
-            return PredicateApplication_(head, tuple([convertValue(x) for x in args]))
-        else:
-            raise RuntimeError(f"Can't handle {term} in app with head {head}")
-    elif isinstance(term, Var):
-        if term.name == "@Eq":
-            return FunctionSymbol_("@Eq", -1)
-        elif env[term.name] == "constant":  # special case here
-            return Constant_(term.name)
-        elif env[term.name] == "function" and term.name in arities:
-            return FunctionSymbol_(term.name, arities[term.name])
-        elif env[term.name] == "predicate" and term.name in arities:
-            return PredicateSymbol_(term.name, arities[term.name])
-        raise RuntimeError(f"Can't handle {term} in var")
-    else:
-        raise RuntimeError(f"Can't convert {term} to egraph")
-
-
 def lean_to_egraph(term: Term, env: Env, arities: dict[str, int]) -> egraph.Term:
     if isinstance(term, App):
         args: list[Term] = []
@@ -224,18 +156,19 @@ def lean_to_egraph(term: Term, env: Env, arities: dict[str, int]) -> egraph.Term
         if isinstance(head, Symbol):
             if head.name == "@Eq":
                 return Equals(convertValue(args[1]), convertValue(args[2]))
-            return Application(head, tuple([convertValue(x) for x in args]))
+            # return Application(head, tuple([convertValue(x) for x in args]))
+            return Application(head, convertValue(args[0]))
         else:
             raise RuntimeError(f"Can't handle {term} in app with head {head}")
     elif isinstance(term, Var):
         if term.name == "@Eq":
-            return Symbol("@Eq", -1, "Prop")
+            return Symbol("@Eq", -1)
         elif env[term.name] == "constant":  # special case here
-            return Symbol(term.name, 0, "Sort")
+            return Symbol(term.name, 0)
         elif env[term.name] == "function" and term.name in arities:
-            return Symbol(term.name, arities[term.name], "Prop")
+            return Symbol(term.name, arities[term.name])
         elif env[term.name] == "predicate" and term.name in arities:
-            return Symbol(term.name, arities[term.name], "Sort")
+            return Symbol(term.name, arities[term.name])
         raise RuntimeError(f"Can't handle {term} in var")
     else:
         raise RuntimeError(f"Can't convert {term} to egraph")

@@ -25,8 +25,8 @@ class Equals:
 
 @dataclass(frozen=True)
 class Application:
-    symbol: Symbol
-    arguments: tuple[Term, ...]
+    head: Term
+    arg: Term
 
 
 @dataclass(frozen=True)
@@ -46,7 +46,7 @@ type Node = int
 @dataclass(frozen=True)
 class _CongruenceKey:
     symbol: Node
-    args: tuple[Node, ...]
+    args: Node
 
 
 class EGraph:
@@ -75,8 +75,7 @@ class EGraph:
 
     def addSymbol(self, symbol: Symbol):  # no proof obligation
         self._add_term(symbol)
-        if self._debug:
-            print(f"      ~ insert symbol {symbol} as node #{self._get_node(symbol)}")
+        self._deb(f"insert symbol {symbol} as node #{self._get_node(symbol)}")
         self._rebuild()
 
     def addProp(
@@ -85,8 +84,7 @@ class EGraph:
         self._add_term(prop)
         # it should be fine to set the proof right?
         node = self._get_node(prop)
-        if self._debug:
-            print(f"      ~ insert prop {prop} as node #{node}")
+        self._deb(f"insert prop {prop} as node #{node}")
 
         _ = self._union(node, self._true_node, syntax.App(syntax.Var("eq_true"), proof))
 
@@ -104,8 +102,7 @@ class EGraph:
         self._add_term(goal)
         # it should be fine to set the proof right?
         node = self._get_node(goal)
-        if self._debug:
-            print(f"      ~ insert goal {goal} as node #{node}")
+        self._deb(f"insert goal {goal} as node #{node}")
 
         _ = self._union(
             node, self._false_node, syntax.App(syntax.Var("eq_false_intro"), proof)
@@ -120,6 +117,10 @@ class EGraph:
         rb = self._find(self._false_node)
         return ra == rb
 
+    def _deb(self, msg: str):
+        if self._debug:
+            print(f"      ~ {msg}")
+
     def _add_term(self, term: Term) -> None:
         existing = self._term_to_node.get(term)
         if existing is not None:
@@ -128,9 +129,8 @@ class EGraph:
 
         # recursively add children
         if isinstance(term, Application):
-            self._add_term(term.symbol)
-            for arg in term.arguments:
-                self._add_term(arg)
+            self._add_term(term.head)
+            self._add_term(term.arg)
         elif isinstance(term, Equals):
             self._add_term(term.left)
             self._add_term(term.right)
@@ -172,8 +172,7 @@ class EGraph:
             syntax.Var("Eq.symm"), proof
         )
 
-        if self._debug:
-            print(f"      ~ union #{a} and #{b} with proof {proof}")
+        self._deb(f"union #{a} and #{b} with proof {proof}")
 
         return True
 
@@ -205,8 +204,7 @@ class EGraph:
                     parent[neighbor] = (current, proof)
                     queue.append(neighbor)
 
-        print(f"No proof found between {a} and {b}")
-        return syntax.ElabTactic("grind")
+        raise RuntimeError(f"No proof found between {a} and {b}")
 
     def _rebuild(self):
         # do congruence closure and other stuff here
@@ -232,12 +230,9 @@ class EGraph:
                 continue  # not relevant here
 
             # define a key
-            sym_node = self._get_node(term.symbol)
-            sym_class = self._find(sym_node)
-            arg_classes = tuple(
-                self._find(self._get_node(arg)) for arg in term.arguments
-            )
-            key = _CongruenceKey(sym_class, arg_classes)
+            repr_head = self._find(self._get_node(term.head))
+            repr_arg = self._find(self._get_node(term.arg))
+            key = _CongruenceKey(repr_head, repr_arg)
 
             previous = seen.get(key)
             if previous is None:
@@ -252,24 +247,19 @@ class EGraph:
                 ):
                     raise RuntimeError("Application expected in congruence closure")
 
-                name = prev_term.symbol.name
-
-                proof = syntax.App(
-                    syntax.App(syntax.Var("congrArg"), syntax.Var(name)),
-                    self._find_proof(
-                        self._get_node(prev_term.arguments[0]),
-                        self._get_node(node_term.arguments[0]),
-                    ),
+                head_proof = self._find_proof(
+                    self._get_node(prev_term.head), self._get_node(node_term.head)
                 )
 
-                if len(prev_term.arguments) != 1:
-                    print("Arity > 1 for congruence closure not implemented yet")
-                    # proof = syntax.ElabTactic("grind")
+                arg_proof = self._find_proof(
+                    self._get_node(prev_term.arg), self._get_node(node_term.arg)
+                )
 
-                if self._debug:
-                    print(
-                        f"      ~ Merging #{previous} with #{node} because of congruence"
-                    )
+                proof = syntax.App(
+                    syntax.App(syntax.Var("congr"), head_proof), arg_proof
+                )
+
+                self._deb(f"Merging #{previous} with #{node} because of congruence")
 
                 return self._union(previous, node, proof)
 
@@ -292,7 +282,6 @@ class EGraph:
                             self._find_proof(left_node, right_node),
                         ),
                     ):
-                        if self._debug:
-                            print(f"      ~ Equality Reflection, #{node} becomes True")
+                        self._deb(f"Equality Reflection, #{node} becomes True")
                         return True
         return False
