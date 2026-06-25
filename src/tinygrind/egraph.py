@@ -1,6 +1,6 @@
+# pyright: reportUnusedCallResult=false
 from collections import deque
 from dataclasses import dataclass
-
 from scaffolding import syntax
 
 # This is the public API
@@ -32,7 +32,6 @@ class Application:
 @dataclass(frozen=True)
 class Symbol:
     name: str
-    arity: int  # all arguments are of type Sort for now
 
 
 type Term = TrueTerm | FalseTerm | Equals | Application | Symbol
@@ -43,102 +42,82 @@ type Node = int
 
 class EGraph:
 
-    def __init__(self, debug: bool = False):
+    def __init__(self):
         # Node directly indexes into these data structures
         self._parents: list[Node] = []
-        self._sizes: list[int] = []
         self._node_to_term: list[Term] = []
 
         # store proofs between nodes
         self._nodes_to_proof: dict[Node, dict[Node, syntax.Term]] = {}
 
-        # Output detailed information about actions
-        self._debug: bool = debug
-
         # "structual sharing" happens here
         self._term_to_node: dict[Term, Node] = {}
+        self._True: Node = self._add_term(TrueTerm())
+        self._False: Node = self._add_term(FalseTerm())
 
-        # we start with 2 built-in nodes
-        self._add_term(TrueTerm())
-        self._true_node: Node = self._get_node(TrueTerm())
-
-        self._add_term(FalseTerm())
-        self._false_node: Node = self._get_node(FalseTerm())
-
-    def addSymbol(self, symbol: Symbol):  # no proof obligation
+    def addSymbol(self, symbol: Symbol):
         self._add_term(symbol)
-        self._deb(f"insert symbol {symbol} as node #{self._get_node(symbol)}")
         self._rebuild()
 
-    def addProp(
-        self, prop: Term, proof: syntax.Term
-    ):  # everything else does need an proof
-        self._add_term(prop)
-        # it should be fine to set the proof right?
-        node = self._get_node(prop)
-        self._deb(f"insert prop {prop} as node #{node}")
+    def addProp(self, prop: Term, proof: syntax.Term):
+        """
+        Adding a Prop needs a proof
+        """
+        node = self._add_term(prop)
 
-        _ = self._union(node, self._true_node, syntax.App(syntax.Var("eq_true"), proof))
+        self._union(node, self._True, syntax.App(syntax.Var("eq_true"), proof))
 
         if isinstance(prop, Equals):
             # union now, so we don't need to do this later
-            _ = self._union(
-                self._get_node(prop.left), self._get_node(prop.right), proof
-            )
+            self._union(self._node(prop.left), self._node(prop.right), proof)
 
         self._rebuild()
 
     def addGoal(
         self, goal: Term, proof: syntax.Term
     ):  # everything else does need an proof
-        self._add_term(goal)
-        # it should be fine to set the proof right?
-        node = self._get_node(goal)
-        self._deb(f"insert goal {goal} as node #{node}")
+        node = self._add_term(goal)
 
-        _ = self._union(
-            node, self._false_node, syntax.App(syntax.Var("eq_false_intro"), proof)
+        self._union(
+            node,
+            self._False,
+            syntax.App(syntax.Var("eq_false_intro"), proof),
         )
         self._rebuild()
 
     def findProof(self, a: Term, b: Term) -> syntax.Term:
-        return self._find_proof(self._get_node(a), self._get_node(b))
+        return self._find_proof(self._node(a), self._node(b))
 
     def isBottom(self) -> bool:
-        ra = self._find(self._true_node)
-        rb = self._find(self._false_node)
-        return ra == rb
+        a = self._True
+        b = self._False
+        return self._equals(a, b)
 
-    def _deb(self, msg: str):
-        if self._debug:
-            print(f"      ~ {msg}")
+    def _equals(self, a: Node, b: Node) -> bool:
+        return self._find(a) == self._find(b)
 
-    def _add_term(self, term: Term) -> None:
+    def _add_term(self, term: Term) -> Node:
         existing = self._term_to_node.get(term)
         if existing is not None:
-            # nothing to do
-            return
+            return existing
 
         # recursively add children
         if isinstance(term, Application):
-            self._add_term(term.head)
-            self._add_term(term.arg)
+            _ = self._add_term(term.head)
+            _ = self._add_term(term.arg)
         elif isinstance(term, Equals):
-            self._add_term(term.left)
-            self._add_term(term.right)
+            _ = self._add_term(term.left)
+            _ = self._add_term(term.right)
 
-        node = len(self._sizes)  # it really is just a continues int id
-        self._sizes.append(1)
-        self._parents.append(node)  # self parent, own eclass
+        node = len(self._parents)  # it really is just a continuous int id
+        self._parents.append(node)
         self._node_to_term.append(term)
 
         self._term_to_node[term] = node
-
-    def _get_node(self, term: Term) -> Node:
-        node = self._term_to_node.get(term)
-        if node is None:
-            raise RuntimeError(f"Expected node for term {term} to exist")
         return node
+
+    def _node(self, term: Term) -> Node:
+        return self._term_to_node[term]
 
     def _find(self, node: Node) -> Node:
         # returns the representant
@@ -152,18 +131,11 @@ class EGraph:
         if ra == rb:
             return False
 
-        if self._sizes[ra] < self._sizes[rb]:
-            ra, rb = rb, ra
-
         self._parents[rb] = ra
-        self._sizes[ra] += self._sizes[rb]
-
         self._nodes_to_proof.setdefault(a, {})[b] = proof
         self._nodes_to_proof.setdefault(b, {})[a] = syntax.App(
             syntax.Var("Eq.symm"), proof
         )
-
-        self._deb(f"union #{a} and #{b} with proof {proof}")
 
         return True
 
@@ -178,7 +150,7 @@ class EGraph:
         while queue:
             current = queue.popleft()
             if current == b:
-                output = parent[current][1]  # this is the proof from parent to my
+                output = parent[current][1]  # this is the proof from parent to me
                 node = parent[current][0]
                 while node != a:
                     # extend the proof to include new node in chain
@@ -202,24 +174,20 @@ class EGraph:
             pass
 
     def _do_congrunce_closure(self) -> bool:
-        # if self._debug:
-        #     print(f"      ~ Doing congruence closure now")
-
         seen: dict[tuple[Node, Node], Node] = {}
         for node in range(len(self._node_to_term)):
             term = self._node_to_term[node]
             if not isinstance(term, (Application)):
-                continue  # not relevant here
+                continue
 
-            # define a key
-            repr_head = self._find(self._get_node(term.head))
-            repr_arg = self._find(self._get_node(term.arg))
+            repr_head = self._find(self._node(term.head))
+            repr_arg = self._find(self._node(term.arg))
             key = (repr_head, repr_arg)
 
             previous = seen.get(key)
             if previous is None:
                 seen[key] = node
-            elif self._find(previous) != self._find(node):
+            elif not self._equals(previous, node):
                 # build proof
                 prev_term = self._node_to_term[previous]
                 node_term = self._node_to_term[node]
@@ -229,41 +197,29 @@ class EGraph:
                 ):
                     raise RuntimeError("Application expected in congruence closure")
 
-                head_proof = self._find_proof(
-                    self._get_node(prev_term.head), self._get_node(node_term.head)
-                )
-
-                arg_proof = self._find_proof(
-                    self._get_node(prev_term.arg), self._get_node(node_term.arg)
-                )
-
+                head_proof = self.findProof(prev_term.head, node_term.head)
+                arg_proof = self.findProof(prev_term.arg, node_term.arg)
                 proof = syntax.App(
                     syntax.App(syntax.Var("congr"), head_proof), arg_proof
                 )
-
-                self._deb(f"Merging #{previous} with #{node} because of congruence")
-
                 return self._union(previous, node, proof)
-
         return False
 
     def _do_equality_reflection(self) -> bool:
         for node in range(len(self._node_to_term)):
             term = self._node_to_term[node]
             if isinstance(term, Equals):
-                left_node = self._get_node(term.left)
-                right_node = self._get_node(term.right)
-                if self._find(left_node) == self._find(right_node) and self._find(
-                    node
-                ) != self._find(self._true_node):
-                    if self._union(
+                left_node = self._node(term.left)
+                right_node = self._node(term.right)
+                if self._equals(left_node, right_node) and not self._equals(
+                    node, self._True
+                ):
+                    return self._union(
                         node,
-                        self._true_node,
+                        self._True,
                         proof=syntax.App(
                             syntax.Var("eq_true"),
                             self._find_proof(left_node, right_node),
                         ),
-                    ):
-                        self._deb(f"Equality Reflection, #{node} becomes True")
-                        return True
+                    )
         return False
