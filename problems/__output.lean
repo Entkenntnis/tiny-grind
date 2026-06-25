@@ -393,14 +393,6 @@ theorem phase00_example46_proof : (A : Type) -> (P : A -> A -> A -> A -> Prop) -
   fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => fun (h5 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h5)) (Eq.trans (congr (congr (congr (congr rfl h1) h2) h3) h4) (eq_false_intro goal))))
 
 
--- problems/phase00/example46_f.lean
-
-/-- warning: declaration uses `sorry` -/
-#guard_msgs in
-theorem phase00_example46_f : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (f : A -> A) -> @Eq A a b -> @Eq A b (f c) -> @Eq A a c :=
-  (by sorry)
-
-
 -- problems/phase00/example47.lean
 theorem phase00_example47 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (F : A -> A -> A) -> (g : A -> A) -> (h : A -> A) -> @Eq A a c -> @Eq A b d -> @Eq A (F (g a) (h b)) (F (g c) (h d)) :=
   (by grind)
@@ -535,5 +527,37 @@ theorem phase00_example62 : (A : Type) -> (B : Type) -> (P : B -> Prop) -> (Q : 
 
 theorem phase00_example62_proof : (A : Type) -> (B : Type) -> (P : B -> Prop) -> (Q : A -> Prop) -> (a : A) -> (b : A) -> (x : B) -> (f : A -> B) -> @Eq A a b -> Q a -> @Eq B (f a) x -> P x -> P (f b) :=
   fun (A : _) => fun (B : _) => fun (P : _) => fun (Q : _) => fun (a : _) => fun (b : _) => fun (x : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr rfl (Eq.trans (Eq.symm h3) (congr rfl h1))) (eq_false_intro goal))))
+
+
+-- problems/phase00/example63.lean
+theorem phase00_example63 : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> @Eq A a b -> @Eq A (f a) (f b) :=
+  (by grind)
+
+theorem phase00_example63_proof : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> @Eq A a b -> @Eq A (f a) (f b) :=
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr rfl h1))) (eq_false_intro goal)))
+
+
+-- problems/phase00/example64_f.lean
+
+/-- warning: declaration uses `sorry` -/
+#guard_msgs in
+theorem phase00_example64_f : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> @Eq A (f a) (f b) :=
+  (by sorry)
+
+
+-- problems/phase00/example65_f.lean
+
+/-- warning: declaration uses `sorry` -/
+#guard_msgs in
+theorem phase00_example65_f : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (f : A -> A) -> @Eq A b c -> @Eq A (f a) (f b) :=
+  (by sorry)
+
+
+-- problems/phase00/example66_f.lean
+
+/-- warning: declaration uses `sorry` -/
+#guard_msgs in
+theorem phase00_example66_f : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (f : A -> A) -> (g : A -> A) -> (h : A -> A) -> @Eq A a (f b) -> @Eq A (f b) (g c) -> @Eq A (g c) (h d) -> @Eq A d a -> @Eq A (g (f (h a))) (g (f (g b))) :=
+  (by sorry)
 
 

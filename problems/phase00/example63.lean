@@ -1,10 +1,8 @@
-def phase00_example46_f :
+def phase00_example63 :
     (A : Type) ->
     (a : A) ->
     (b : A) ->
-    (c : A) ->
     (f : A -> A) ->
     @Eq A a b ->
-    @Eq A b (f c) ->
-    @Eq A a c :=
+    @Eq A (f a) (f b) :=
   by grind
