@@ -1,7 +1,9 @@
 name = "problems"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["Problems"]
+
+[[lean_lib]]
+name = "__output"
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`

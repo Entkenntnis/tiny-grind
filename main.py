@@ -17,6 +17,7 @@ from scaffolding.printer import print_program
 from scaffolding.syntax import Definition
 from scaffolding.helper import substitute_grind
 from tinygrind.entry import tinygrind
+import subprocess
 
 
 output = "\ntheorem eq_false_intro {a : Prop} (h : ¬a) : a = False := propext (iff_false_intro h)\n\n"
@@ -93,4 +94,6 @@ traverse_folder("problems")
 with open("problems/__output.lean", "w", encoding="utf-8") as f:
     _ = f.write(output)
 
-print("\nProofs saved to problems/__output.lean\nBYE")
+print("\nProofs saved to problems/__output.lean\n")
+
+result = subprocess.run(["lake", "build", "__output"], cwd="problems")
