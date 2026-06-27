@@ -20,7 +20,7 @@ from tinygrind.entry import tinygrind
 import subprocess
 
 
-output = "\ntheorem eq_false_intro {a : Prop} (h : ¬a) : a = False := propext (iff_false_intro h)\n\n"
+output = "\ntheorem eq_false_intro {a : Prop} (h : ¬a) : a = False := propext (iff_false_intro h)\ntheorem and_elim_left {a b : Prop} (h : (a ∧ b) = True) : a = True := eq_true (of_eq_true h).left\ntheorem and_elim_right {a b : Prop} (h : (a ∧ b) = True) : b = True := eq_true (of_eq_true h).right\n\n"
 
 
 def process_problem(dirpath: str, filename: str):

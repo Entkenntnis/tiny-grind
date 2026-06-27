@@ -64,13 +64,7 @@ class EGraph:
         Adding a Prop needs a proof
         """
         node = self._add_term(prop)
-
         self._union(node, self._True, syntax.App(syntax.Var("eq_true"), proof))
-
-        if isinstance(prop, Equals):
-            # union now, so we don't need to do this later
-            self._union(self._node(prop.left), self._node(prop.right), proof)
-
         self._rebuild()
 
     def addGoal(
@@ -170,7 +164,12 @@ class EGraph:
         raise RuntimeError(f"No proof found between {a} and {b}")
 
     def _rebuild(self):
-        while self._do_congrunce_closure() or self._do_equality_reflection():
+        while (
+            self._do_congrunce_closure()
+            or self._do_equality_reflection()
+            or self._do_elimination_of_conjunction()
+            or self._do_true_equality_elimination()
+        ):
             pass
 
     def _do_congrunce_closure(self) -> bool:
@@ -222,4 +221,58 @@ class EGraph:
                             self._find_proof(left_node, right_node),
                         ),
                     )
+        return False
+
+    def _do_elimination_of_conjunction(self) -> bool:
+        for node in range(len(self._node_to_term)):
+            if self._find(node) != self._find(self._True):
+                continue
+
+            term = self._node_to_term[node]
+
+            if not isinstance(term, Application):
+                continue
+
+            outer = term
+            inner = outer.head
+            if not isinstance(inner, Application):
+                continue
+            if inner.head != Symbol("And"):
+                continue
+
+            # We have an true AND term
+            left = self._node(inner.arg)
+            right = self._node(outer.arg)
+
+            if not self._equals(left, self._True):
+                proof_and_true = self._find_proof(node, self._True)
+                proof_left = syntax.App(syntax.Var("and_elim_left"), proof_and_true)
+                if self._union(left, self._True, proof_left):
+                    return True
+
+            if not self._equals(right, self._True):
+                proof_and_true = self._find_proof(node, self._True)
+                proof_right = syntax.App(syntax.Var("and_elim_right"), proof_and_true)
+                if self._union(right, self._True, proof_right):
+                    return True
+
+        return False
+
+    def _do_true_equality_elimination(self) -> bool:
+        for node in range(len(self._node_to_term)):
+            if self._find(node) != self._find(self._True):
+                continue
+            term = self._node_to_term[node]
+            if not isinstance(term, Equals):
+                continue
+
+            left_node = self._node(term.left)
+            right_node = self._node(term.right)
+
+            if not self._equals(left_node, right_node):
+                proof_eq_true = self._find_proof(node, self._True)
+                proof_eq = syntax.App(syntax.Var("of_eq_true"), proof_eq_true)
+                if self._union(left_node, right_node, proof_eq):
+                    return True
+
         return False
