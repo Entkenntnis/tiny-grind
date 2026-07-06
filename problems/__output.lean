@@ -2,6 +2,7 @@
 theorem eq_false_intro {a : Prop} (h : ¬a) : a = False := propext (iff_false_intro h)
 theorem and_elim_left {a b : Prop} (h : (a ∧ b) = True) : a = True := eq_true (of_eq_true h).left
 theorem and_elim_right {a b : Prop} (h : (a ∧ b) = True) : b = True := eq_true (of_eq_true h).right
+theorem modus_ponens {a b : Prop} (imp: (a → b) = True) (ha : a = True) : b = True := eq_true ((of_eq_true imp) (of_eq_true ha))
 
 -- problems/phase00/example01.lean
 theorem phase00_example01 : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> @Eq A x y -> P x -> P y :=
@@ -576,7 +577,7 @@ theorem phase10_example02 : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) 
   (by grind)
 
 theorem phase10_example02_proof : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> (P x -> P y) -> P x -> P y :=
-  (by sorry)
+  fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (modus_ponens (eq_true h1) (eq_true h2))) (eq_false_intro goal)))
 
 
 -- problems/phase10/example03.lean
@@ -584,7 +585,7 @@ theorem phase10_example03 : (A : Prop) -> (B : Prop) -> A -> (A -> B) -> B :=
   (by grind)
 
 theorem phase10_example03_proof : (A : Prop) -> (B : Prop) -> A -> (A -> B) -> B :=
-  (by sorry)
+  fun (A : _) => fun (B : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (modus_ponens (eq_true h2) (eq_true h1))) (eq_false_intro goal)))
 
 
 -- problems/phase10/example04_f.lean

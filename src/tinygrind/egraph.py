@@ -169,6 +169,7 @@ class EGraph:
             or self._do_equality_reflection()
             or self._do_elimination_of_conjunction()
             or self._do_true_equality_elimination()
+            or self._do_modus_ponens()
         ):
             pass
 
@@ -273,6 +274,41 @@ class EGraph:
                 proof_eq_true = self._find_proof(node, self._True)
                 proof_eq = syntax.App(syntax.Var("of_eq_true"), proof_eq_true)
                 if self._union(left_node, right_node, proof_eq):
+                    return True
+
+        return False
+
+    def _do_modus_ponens(self) -> bool:
+        for node in range(len(self._node_to_term)):
+            if not self._equals(node, self._True):
+                continue
+
+            term = self._node_to_term[node]
+            if not isinstance(term, Application):
+                continue
+            outer_app = term
+            inner_app = outer_app.head
+            if not isinstance(inner_app, Application):
+                continue
+            if inner_app.head != Symbol("Imp"):
+                continue
+
+            # (Imp A) B
+            a_term = inner_app.arg
+            b_term = outer_app.arg
+            a_node = self._node(a_term)
+            b_node = self._node(b_term)
+
+            if self._equals(a_node, self._True):
+                # Build proof
+                proof_imp_true = self._find_proof(node, self._True)
+                proof_a_true = self._find_proof(a_node, self._True)
+                proof_b_true = syntax.App(
+                    syntax.App(syntax.Var("modus_ponens"), proof_imp_true), proof_a_true
+                )
+
+                if not self._equals(b_node, self._True):
+                    self._union(b_node, self._True, proof_b_true)
                     return True
 
         return False

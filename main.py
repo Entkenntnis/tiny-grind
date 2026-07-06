@@ -30,7 +30,13 @@ _ = parser.add_argument(
 args = parser.parse_args()
 
 
-output = "\ntheorem eq_false_intro {a : Prop} (h : ¬a) : a = False := propext (iff_false_intro h)\ntheorem and_elim_left {a b : Prop} (h : (a ∧ b) = True) : a = True := eq_true (of_eq_true h).left\ntheorem and_elim_right {a b : Prop} (h : (a ∧ b) = True) : b = True := eq_true (of_eq_true h).right\n\n"
+output = """
+theorem eq_false_intro {a : Prop} (h : ¬a) : a = False := propext (iff_false_intro h)
+theorem and_elim_left {a b : Prop} (h : (a ∧ b) = True) : a = True := eq_true (of_eq_true h).left
+theorem and_elim_right {a b : Prop} (h : (a ∧ b) = True) : b = True := eq_true (of_eq_true h).right
+theorem modus_ponens {a b : Prop} (imp: (a → b) = True) (ha : a = True) : b = True := eq_true ((of_eq_true imp) (of_eq_true ha))
+
+"""
 
 
 def process_problem(dirpath: str, filename: str, target_name: str | None = None):
