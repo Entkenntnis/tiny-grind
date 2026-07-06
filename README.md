@@ -44,6 +44,8 @@ There are several possible extensions to the solver, there are surely edge cases
 
 This project is managed by `uv`, install it and handle run `uv sync`for setup, then use `uv run main.py` to execute the main script. The lean files within `problems/` can be inspected with the lean InfoView (enable the VS Code Plugin). For a clean run, `__output.lean` should typecheck without errors.
 
+Run only one problem with e.g. `uv run main.py --theorem phase10_example03`.
+
 ## Sources
 
 Documentation for grind: https://lean-lang.org/doc/reference/latest/The--grind--tactic/
