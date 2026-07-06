@@ -55,6 +55,21 @@ class EGraph:
         self._True: Node = self._add_term(TrueTerm())
         self._False: Node = self._add_term(FalseTerm())
 
+    # not really "elegant", but this is our current approach for case splitting
+    def _clone(self) -> "EGraph":
+        # create new EGraph instance without calling init
+        clone = EGraph.__new__(EGraph)
+        clone._parents = self._parents.copy()
+        clone._node_to_term = self._node_to_term.copy()
+        clone._term_to_node = self._term_to_node.copy()
+
+        clone._nodes_to_proof = {}
+        for k, v in self._nodes_to_proof.items():
+            clone._nodes_to_proof[k] = v.copy()
+        clone._True = self._True
+        clone._False = self._False
+        return clone
+
     def addSymbol(self, symbol: Symbol):
         self._add_term(symbol)
         self._rebuild()
@@ -77,7 +92,7 @@ class EGraph:
             self._False,
             syntax.App(syntax.Var("eq_false_intro"), proof),
         )
-        self._rebuild()
+        self._rebuild(case_split_levels=5)
 
     def findProof(self, a: Term, b: Term) -> syntax.Term:
         return self._find_proof(self._node(a), self._node(b))
@@ -163,7 +178,7 @@ class EGraph:
 
         raise RuntimeError(f"No proof found between {a} and {b}")
 
-    def _rebuild(self):
+    def _rebuild(self, case_split_levels: int = 0):
         while (
             self._do_congrunce_closure()
             or self._do_equality_reflection()
@@ -172,6 +187,64 @@ class EGraph:
             or self._do_modus_ponens()
         ):
             pass
+        if case_split_levels > 0 and not self.isBottom():
+            if self._try_case_split(case_split_levels):
+                self._rebuild(case_split_levels=case_split_levels - 1)
+
+    def _try_case_split(self, case_split_levels: int = 0) -> bool:
+        for node in range(len(self._node_to_term)):
+            if not self._equals(node, self._True):
+                continue
+            term = self._node_to_term[node]
+            if not isinstance(term, Application):
+                continue
+            outer_app = term
+            inner_app = outer_app.head
+            if not isinstance(inner_app, Application):
+                continue
+            if inner_app.head != Symbol("Or"):
+                continue
+
+            A = inner_app.arg
+            hypA = f"h_case_{node}_left"
+
+            cloneA = self._clone()
+            cloneA.addProp(A, syntax.Var(hypA))
+            cloneA._rebuild(case_split_levels=case_split_levels - 1)
+            if not cloneA.isBottom():
+                continue  # no proof found
+
+            B = outer_app.arg
+            hypB = f"h_case_{node}_right"
+            cloneB = self._clone()
+            cloneB.addProp(B, syntax.Var(hypB))
+            cloneB._rebuild(case_split_levels=case_split_levels - 1)
+            if not cloneB.isBottom():
+                continue
+
+            # now there are contradictions found for A and B
+            lam_A = syntax.Lam(
+                hypA, syntax.Var("_"), cloneA._find_proof(self._True, self._False)
+            )
+            lam_B = syntax.Lam(
+                hypB, syntax.Var("_"), cloneB._find_proof(self._True, self._False)
+            )
+
+            proof = syntax.App(
+                syntax.App(
+                    syntax.App(
+                        syntax.Var("or_elim"), self._find_proof(node, self._True)
+                    ),
+                    lam_A,
+                ),
+                lam_B,
+            )
+
+            self._union(self._True, self._False, proof)
+
+            print(f"Attemp to case split {term}")
+
+        return False
 
     def _do_congrunce_closure(self) -> bool:
         seen: dict[tuple[Node, Node], Node] = {}
