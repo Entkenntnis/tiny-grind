@@ -46,6 +46,7 @@ class EGraph:
         # Node directly indexes into these data structures
         self._parents: list[Node] = []
         self._node_to_term: list[Term] = []
+        self._sizes: list[int] = []
 
         # store proofs between nodes
         self._nodes_to_proof: dict[Node, dict[Node, syntax.Term]] = {}
@@ -62,6 +63,7 @@ class EGraph:
         clone._parents = self._parents.copy()
         clone._node_to_term = self._node_to_term.copy()
         clone._term_to_node = self._term_to_node.copy()
+        clone._sizes = self._sizes.copy()
 
         clone._nodes_to_proof = {}
         for k, v in self._nodes_to_proof.items():
@@ -121,6 +123,7 @@ class EGraph:
         node = len(self._parents)  # it really is just a continuous int id
         self._parents.append(node)
         self._node_to_term.append(term)
+        self._sizes.append(1)
 
         self._term_to_node[term] = node
         return node
@@ -147,8 +150,11 @@ class EGraph:
         rb = self._find(b)
         if ra == rb:
             return False
-
+        if self._sizes[ra] < self._sizes[rb]:
+            ra, rb = rb, ra  # ra is always the larger tree
         self._parents[rb] = ra
+        self._sizes[ra] += self._sizes[rb]
+
         self._nodes_to_proof.setdefault(a, {})[b] = proof
         self._nodes_to_proof.setdefault(b, {})[a] = syntax.App(
             syntax.Var("Eq.symm"), proof
