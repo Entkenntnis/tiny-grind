@@ -689,3 +689,43 @@ theorem phase10_example15_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> (A -
   fun (A : _) => fun (B : _) => fun (C : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (modus_ponens (modus_ponens (eq_true h1) (eq_true h3)) (eq_true h2))) (eq_false_intro goal)))
 
 
+-- problems/phase10/example16.lean
+theorem phase10_example16 : (A : Prop) -> A -> (A -> False) -> False :=
+  (by grind)
+
+theorem phase10_example16_proof : (A : Prop) -> A -> (A -> False) -> False :=
+  fun (A : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.symm (modus_ponens (eq_true h2) (eq_true h1))))
+
+
+-- problems/phase10/example17.lean
+theorem phase10_example17 : (A : Prop) -> (B : Prop) -> (C : Prop) -> And A (And B C) -> And (And A B) C :=
+  (by grind)
+
+theorem phase10_example17_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> And A (And B C) -> And (And A B) C :=
+  fun (A : _) => fun (B : _) => fun (C : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (and_elim_right (eq_true h1))) (Eq.trans (congr (Eq.trans (Eq.symm (congr rfl (Eq.trans (and_elim_left (eq_true h1)) (Eq.symm (and_elim_left (and_elim_right (eq_true h1))))))) (congr rfl (Eq.trans (and_elim_left (eq_true h1)) (Eq.trans (Eq.symm (and_elim_right (eq_true h1))) (congr (Eq.symm (congr rfl (Eq.trans (and_elim_left (eq_true h1)) (Eq.symm (and_elim_left (and_elim_right (eq_true h1))))))) (Eq.trans (and_elim_right (and_elim_right (eq_true h1))) (Eq.symm (and_elim_left (and_elim_right (eq_true h1)))))))))) rfl) (eq_false_intro goal))))
+
+
+-- problems/phase10/example18.lean
+theorem phase10_example18 : (A : Prop) -> (B : Prop) -> (C : Prop) -> Or A (And B C) -> And (Or A B) (Or A C) :=
+  (by grind)
+
+theorem phase10_example18_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> Or A (And B C) -> And (Or A B) (Or A C) :=
+  (by sorry)
+
+
+-- problems/phase10/example19.lean
+theorem phase10_example19 : (A : Prop) -> (B : Prop) -> (C : Prop) -> (And A B -> C) -> A -> B -> C :=
+  (by grind)
+
+theorem phase10_example19_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> (And A B -> C) -> A -> B -> C :=
+  (by sorry)
+
+
+-- problems/phase10/example20.lean
+theorem phase10_example20 : (A : Prop) -> (B : Prop) -> (C : Prop) -> (A -> And B C) -> And (A -> B) (A -> C) :=
+  (by grind)
+
+theorem phase10_example20_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> (A -> And B C) -> And (A -> B) (A -> C) :=
+  (by sorry)
+
+
