@@ -571,3 +571,35 @@ theorem phase10_example01_proof : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y
   fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (and_elim_left (eq_true h1))) (Eq.trans (congr rfl (of_eq_true (and_elim_right (eq_true h1)))) (eq_false_intro goal))))
 
 
+-- problems/phase10/example02.lean
+theorem phase10_example02 : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> (P x -> P y) -> P x -> P y :=
+  (by grind)
+
+theorem phase10_example02_proof : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> (P x -> P y) -> P x -> P y :=
+  (by sorry)
+
+
+-- problems/phase10/example03.lean
+theorem phase10_example03 : (A : Prop) -> (B : Prop) -> A -> (A -> B) -> B :=
+  (by grind)
+
+theorem phase10_example03_proof : (A : Prop) -> (B : Prop) -> A -> (A -> B) -> B :=
+  (by sorry)
+
+
+-- problems/phase10/example04_f.lean
+
+/-- warning: declaration uses `sorry` -/
+#guard_msgs in
+theorem phase10_example04_f : (A : Prop) -> (B : Prop) -> A -> (B -> A) -> B :=
+  (by sorry)
+
+
+-- problems/phase10/example05.lean
+theorem phase10_example05 : (T : Type) -> (A : Prop) -> (B : Prop) -> (P : T -> Prop) -> Or A B -> (x : T) -> (y : T) -> (A -> @Eq T x y) -> (B -> @Eq T x y) -> P x -> P y :=
+  (by grind)
+
+theorem phase10_example05_proof : (T : Type) -> (A : Prop) -> (B : Prop) -> (P : T -> Prop) -> Or A B -> (x : T) -> (y : T) -> (A -> @Eq T x y) -> (B -> @Eq T x y) -> P x -> P y :=
+  (by sorry)
+
+
