@@ -130,9 +130,17 @@ class EGraph:
 
     def _find(self, node: Node) -> Node:
         # returns the representant
-        while self._parents[node] != node:
-            node = self._parents[node]
-        return node
+        root = node
+        while self._parents[root] != root:
+            root = self._parents[root]
+
+        # path compresion
+        while self._parents[node] != root:
+            nxt = self._parents[node]
+            self._parents[node] = root
+            node = nxt
+
+        return root
 
     def _union(self, a: Node, b: Node, proof: syntax.Term) -> bool:
         ra = self._find(a)
@@ -240,9 +248,7 @@ class EGraph:
                 lam_B,
             )
 
-            self._union(self._True, self._False, proof)
-
-            print(f"Attemp to case split {term}")
+            return self._union(self._True, self._False, proof)
 
         return False
 
