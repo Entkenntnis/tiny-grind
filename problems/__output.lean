@@ -609,3 +609,83 @@ theorem phase10_example05_proof : (T : Type) -> (A : Prop) -> (B : Prop) -> (P :
   fun (T : _) => fun (A : _) => fun (B : _) => fun (P : _) => fun (h1 : _) => fun (x : _) => fun (y : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (or_elim (eq_true h1) (fun (h_case_7_left : _) => Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr rfl (of_eq_true (modus_ponens (eq_true h2) (eq_true h_case_7_left)))) (eq_false_intro goal))) (fun (h_case_7_right : _) => Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr rfl (of_eq_true (modus_ponens (eq_true h3) (eq_true h_case_7_right)))) (eq_false_intro goal)))))
 
 
+-- problems/phase10/example06.lean
+theorem phase10_example06 : (P : Prop) -> (Q : Prop) -> (P -> Q) -> (Q -> False) -> P -> False :=
+  (by grind)
+
+theorem phase10_example06_proof : (P : Prop) -> (Q : Prop) -> (P -> Q) -> (Q -> False) -> P -> False :=
+  fun (P : _) => fun (Q : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.symm (modus_ponens (eq_true h2) (modus_ponens (eq_true h1) (eq_true h3)))))
+
+
+-- problems/phase10/example07.lean
+theorem phase10_example07 : (A : Prop) -> (B : Prop) -> Or A B -> Or B A :=
+  (by grind)
+
+theorem phase10_example07_proof : (A : Prop) -> (B : Prop) -> Or A B -> Or B A :=
+  (by sorry)
+
+
+-- problems/phase10/example08.lean
+theorem phase10_example08 : (A : Prop) -> (B : Prop) -> (C : Prop) -> (D : Prop) -> Or A (Or B C) -> (A -> D) -> (B -> D) -> (C -> D) -> D :=
+  (by grind)
+
+theorem phase10_example08_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> (D : Prop) -> Or A (Or B C) -> (A -> D) -> (B -> D) -> (C -> D) -> D :=
+  fun (A : _) => fun (B : _) => fun (C : _) => fun (D : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (or_elim (eq_true h1) (fun (h_case_10_left : _) => Eq.trans (Eq.symm (modus_ponens (eq_true h2) (eq_true h_case_10_left))) (eq_false_intro goal)) (fun (h_case_10_right : _) => or_elim (eq_true h_case_10_right) (fun (h_case_9_left : _) => Eq.trans (Eq.symm (modus_ponens (eq_true h3) (eq_true h_case_9_left))) (eq_false_intro goal)) (fun (h_case_9_right : _) => Eq.trans (Eq.symm (modus_ponens (eq_true h4) (eq_true h_case_9_right))) (eq_false_intro goal)))))
+
+
+-- problems/phase10/example09.lean
+theorem phase10_example09 : (A : Prop) -> (B : Prop) -> (C : Prop) -> And (Or A B) (And (A -> C) (B -> C)) -> C :=
+  (by grind)
+
+theorem phase10_example09_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> And (Or A B) (And (A -> C) (B -> C)) -> C :=
+  fun (A : _) => fun (B : _) => fun (C : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (or_elim (and_elim_left (eq_true h1)) (fun (h_case_8_left : _) => Eq.trans (Eq.symm (modus_ponens (and_elim_left (and_elim_right (eq_true h1))) (eq_true h_case_8_left))) (eq_false_intro goal)) (fun (h_case_8_right : _) => Eq.trans (Eq.symm (modus_ponens (and_elim_right (and_elim_right (eq_true h1))) (eq_true h_case_8_right))) (eq_false_intro goal))))
+
+
+-- problems/phase10/example10.lean
+theorem phase10_example10 : (A : Prop) -> False -> A :=
+  (by grind)
+
+theorem phase10_example10_proof : (A : Prop) -> False -> A :=
+  fun (A : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.symm (eq_true h1)))
+
+
+-- problems/phase10/example11_f.lean
+
+/-- warning: declaration uses `sorry` -/
+#guard_msgs in
+theorem phase10_example11_f : (A : Prop) -> (B : Prop) -> (A -> B) -> B -> A :=
+  (by sorry)
+
+
+-- problems/phase10/example12.lean
+theorem phase10_example12 : (A : Prop) -> (B : Prop) -> (C : Prop) -> (A -> B) -> (B -> C) -> A -> C :=
+  (by grind)
+
+theorem phase10_example12_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> (A -> B) -> (B -> C) -> A -> C :=
+  fun (A : _) => fun (B : _) => fun (C : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (modus_ponens (eq_true h2) (modus_ponens (eq_true h1) (eq_true h3)))) (eq_false_intro goal)))
+
+
+-- problems/phase10/example13.lean
+theorem phase10_example13 : (A : Prop) -> (B : Prop) -> And A B -> And B A :=
+  (by grind)
+
+theorem phase10_example13_proof : (A : Prop) -> (B : Prop) -> And A B -> And B A :=
+  fun (A : _) => fun (B : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h1)) (Eq.trans (congr (congr rfl (Eq.trans (and_elim_left (eq_true h1)) (Eq.symm (and_elim_right (eq_true h1))))) (Eq.trans (and_elim_right (eq_true h1)) (Eq.symm (and_elim_left (eq_true h1))))) (eq_false_intro goal))))
+
+
+-- problems/phase10/example14.lean
+theorem phase10_example14 : (A : Prop) -> (B : Prop) -> (C : Prop) -> Or A (Or B C) -> Or (Or A B) C :=
+  (by grind)
+
+theorem phase10_example14_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> Or A (Or B C) -> Or (Or A B) C :=
+  (by sorry)
+
+
+-- problems/phase10/example15.lean
+theorem phase10_example15 : (A : Prop) -> (B : Prop) -> (C : Prop) -> (A -> B -> C) -> B -> A -> C :=
+  (by grind)
+
+theorem phase10_example15_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> (A -> B -> C) -> B -> A -> C :=
+  fun (A : _) => fun (B : _) => fun (C : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (modus_ponens (modus_ponens (eq_true h1) (eq_true h3)) (eq_true h2))) (eq_false_intro goal)))
+
+

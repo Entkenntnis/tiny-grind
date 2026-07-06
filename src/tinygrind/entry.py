@@ -86,6 +86,10 @@ def lean_to_egraph(term: Term) -> egraph.Term:
             arg = lean_to_egraph(term.n)
             return Application(head, arg)
     elif isinstance(term, Var):
+        if term.name == "False":
+            return FalseTerm()
+        if term.name == "True":
+            return TrueTerm()
         return Symbol(term.name)
     elif isinstance(term, Pi):
         return Application(
