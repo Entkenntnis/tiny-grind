@@ -18,12 +18,33 @@ from scaffolding.syntax import Definition
 from scaffolding.helper import substitute_grind
 from tinygrind.entry import tinygrind
 import subprocess
+import argparse
+
+parser = argparse.ArgumentParser(description="Process Lean problems with tinygrind.")
+_ = parser.add_argument(
+    "--theorem",
+    type=str,
+    default=None,
+    help="Process only the file whose first definition has this exact name.",
+)
+args = parser.parse_args()
 
 
-output = "\ntheorem eq_false_intro {a : Prop} (h : ¬a) : a = False := propext (iff_false_intro h)\ntheorem and_elim_left {a b : Prop} (h : (a ∧ b) = True) : a = True := eq_true (of_eq_true h).left\ntheorem and_elim_right {a b : Prop} (h : (a ∧ b) = True) : b = True := eq_true (of_eq_true h).right\n\n"
+output = """
+theorem eq_false_intro {a : Prop} (h : ¬a) : a = False := propext (iff_false_intro h)
+
+theorem and_elim_left {a b : Prop} (h : (a ∧ b) = True) : a = True := eq_true (of_eq_true h).left
+
+theorem and_elim_right {a b : Prop} (h : (a ∧ b) = True) : b = True := eq_true (of_eq_true h).right
+
+theorem modus_ponens {a b : Prop} (imp: (a → b) = True) (ha : a = True) : b = True := eq_true ((of_eq_true imp) (of_eq_true ha))
+
+theorem or_elim {A B : Prop} (hor : (A ∨ B) = True) (hA : A -> (True = False)) (hB : B -> (True = False)) : True = False := Or.elim (of_eq_true hor) hA hB
+
+"""
 
 
-def process_problem(dirpath: str, filename: str):
+def process_problem(dirpath: str, filename: str, target_name: str | None = None):
     if (
         not filename.endswith(".lean")
         or filename == "__output.lean"
@@ -33,7 +54,6 @@ def process_problem(dirpath: str, filename: str):
         return
     global output
     full_path = os.path.join(dirpath, filename)
-    print(f"Processing {full_path}")
     with open(full_path, "r", encoding="utf-8") as f:
         content = f.read()
 
@@ -43,10 +63,15 @@ def process_problem(dirpath: str, filename: str):
     # might make this more clever by explicitly looking for "by grind" and operating on it
     # but hey, for now, this should be fine
     decls = parse_declarations(content)
-    if isinstance(decls[0], Definition):
-        definition = decls[0]
-    else:
+    if not isinstance(decls[0], Definition):
         raise RuntimeError("No declaration found")
+
+    definition = decls[0]
+
+    if target_name is not None and definition.name != target_name:
+        return
+
+    print(f"Processing {full_path}")
 
     proof = tinygrind(definition)
 
@@ -81,16 +106,16 @@ def process_problem(dirpath: str, filename: str):
     output += "\n\n\n"
 
 
-def traverse_folder(root_dir: str):
+def traverse_folder(root_dir: str, target_name: str | None = None):
     for dirpath, dirnames, filenames in os.walk(root_dir):
         dirnames.sort()
         filenames.sort()
 
         for filename in filenames:
-            process_problem(dirpath, filename)
+            process_problem(dirpath, filename, target_name=target_name)
 
 
-traverse_folder("problems")
+traverse_folder("problems", args.theorem)  # pyright: ignore
 with open("problems/__output.lean", "w", encoding="utf-8") as f:
     _ = f.write(output)
 

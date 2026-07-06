@@ -1,7 +1,13 @@
 
 theorem eq_false_intro {a : Prop} (h : ¬a) : a = False := propext (iff_false_intro h)
+
 theorem and_elim_left {a b : Prop} (h : (a ∧ b) = True) : a = True := eq_true (of_eq_true h).left
+
 theorem and_elim_right {a b : Prop} (h : (a ∧ b) = True) : b = True := eq_true (of_eq_true h).right
+
+theorem modus_ponens {a b : Prop} (imp: (a → b) = True) (ha : a = True) : b = True := eq_true ((of_eq_true imp) (of_eq_true ha))
+
+theorem or_elim {A B : Prop} (hor : (A ∨ B) = True) (hA : A -> (True = False)) (hB : B -> (True = False)) : True = False := Or.elim (of_eq_true hor) hA hB
 
 -- problems/phase00/example01.lean
 theorem phase00_example01 : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> @Eq A x y -> P x -> P y :=
@@ -569,5 +575,37 @@ theorem phase10_example01 : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) 
 
 theorem phase10_example01_proof : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> And (P x) (@Eq A x y) -> P y :=
   fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (and_elim_left (eq_true h1))) (Eq.trans (congr rfl (of_eq_true (and_elim_right (eq_true h1)))) (eq_false_intro goal))))
+
+
+-- problems/phase10/example02.lean
+theorem phase10_example02 : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> (P x -> P y) -> P x -> P y :=
+  (by grind)
+
+theorem phase10_example02_proof : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> (P x -> P y) -> P x -> P y :=
+  fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (modus_ponens (eq_true h1) (eq_true h2))) (eq_false_intro goal)))
+
+
+-- problems/phase10/example03.lean
+theorem phase10_example03 : (A : Prop) -> (B : Prop) -> A -> (A -> B) -> B :=
+  (by grind)
+
+theorem phase10_example03_proof : (A : Prop) -> (B : Prop) -> A -> (A -> B) -> B :=
+  fun (A : _) => fun (B : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (modus_ponens (eq_true h2) (eq_true h1))) (eq_false_intro goal)))
+
+
+-- problems/phase10/example04_f.lean
+
+/-- warning: declaration uses `sorry` -/
+#guard_msgs in
+theorem phase10_example04_f : (A : Prop) -> (B : Prop) -> A -> (B -> A) -> B :=
+  (by sorry)
+
+
+-- problems/phase10/example05.lean
+theorem phase10_example05 : (T : Type) -> (A : Prop) -> (B : Prop) -> (P : T -> Prop) -> Or A B -> (x : T) -> (y : T) -> (A -> @Eq T x y) -> (B -> @Eq T x y) -> P x -> P y :=
+  (by grind)
+
+theorem phase10_example05_proof : (T : Type) -> (A : Prop) -> (B : Prop) -> (P : T -> Prop) -> Or A B -> (x : T) -> (y : T) -> (A -> @Eq T x y) -> (B -> @Eq T x y) -> P x -> P y :=
+  fun (T : _) => fun (A : _) => fun (B : _) => fun (P : _) => fun (h1 : _) => fun (x : _) => fun (y : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (or_elim (eq_true h1) (fun (h_case_7_left : _) => Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr rfl (of_eq_true (modus_ponens (eq_true h2) (eq_true h_case_7_left)))) (eq_false_intro goal))) (fun (h_case_7_right : _) => Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr rfl (of_eq_true (modus_ponens (eq_true h3) (eq_true h_case_7_right)))) (eq_false_intro goal)))))
 
 

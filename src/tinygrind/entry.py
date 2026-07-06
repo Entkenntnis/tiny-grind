@@ -30,14 +30,20 @@ def tinygrind(definition: Definition) -> Term:
     for name, type in context:
         if isinstance(type, Sort) and type.level == 1 and name:
             names.append(name)
-        elif isinstance(type, App):
+        elif name:
+            # functions and implications are not differentiated, uff
+            # interesting
+            # but that's kinda complicated, no?
+            # later on I should probably make this a bit more robust
+            egraph.addSymbol(Symbol(name))
+            names.append(name)
+        elif isinstance(type, App) or isinstance(type, Pi) or isinstance(type, Var):
             proof_name = f"h{h_counter}"
             h_counter += 1
             egraph.addProp(lean_to_egraph(type), Var(proof_name))
             names.append(proof_name)
-        elif name:
-            egraph.addSymbol(Symbol(name))
-            names.append(name)
+        else:
+            raise RuntimeError(f"Unknown context {name}, {type}")
 
     egraph.addGoal(lean_to_egraph(goal), Var("goal"))
 
@@ -81,5 +87,10 @@ def lean_to_egraph(term: Term) -> egraph.Term:
             return Application(head, arg)
     elif isinstance(term, Var):
         return Symbol(term.name)
+    elif isinstance(term, Pi):
+        return Application(
+            Application(Symbol("Imp"), lean_to_egraph(term.var_type)),
+            lean_to_egraph(term.body),
+        )
     else:
         raise RuntimeError(f"Can't convert {term} to egraph")
