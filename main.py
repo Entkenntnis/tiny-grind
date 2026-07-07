@@ -37,6 +37,34 @@ theorem and_elim_left {a b : Prop} (h : (a ∧ b) = True) : a = True := eq_true 
 
 theorem and_elim_right {a b : Prop} (h : (a ∧ b) = True) : b = True := eq_true (of_eq_true h).right
 
+theorem and_eq_false_of_left_false {a b : Prop} (ha : a = False) : (a ∧ b) = False := eq_false_intro (fun h => of_eq_false ha h.left)
+
+theorem and_eq_false_of_right_false {a b : Prop} (hb : b = False) : (a ∧ b) = False := eq_false_intro (fun h => of_eq_false hb h.right)
+
+theorem and_eq_right_of_left_true {a b : Prop} (ha : a = True) : (a ∧ b) = b := propext (Iff.intro (fun h => h.right) (fun hb => And.intro (of_eq_true ha) hb))
+
+theorem and_eq_left_of_right_true {a b : Prop} (hb : b = True) : (a ∧ b) = a := propext (Iff.intro (fun h => h.left) (fun ha => And.intro ha (of_eq_true hb)))
+
+theorem or_eq_true_of_left_true {a b : Prop} (ha : a = True) : (a ∨ b) = True := eq_true (Or.inl (of_eq_true ha))
+
+theorem or_eq_true_of_right_true {a b : Prop} (hb : b = True) : (a ∨ b) = True := eq_true (Or.inr (of_eq_true hb))
+
+theorem or_eq_of_left_false {a b : Prop} (ha : a = False) : (a ∨ b) = b := propext (Iff.intro (fun h => Or.elim h (fun hleft => False.elim (of_eq_false ha hleft)) id) (fun hb => Or.inr hb))
+
+theorem or_eq_of_right_false {a b : Prop} (hb : b = False) : (a ∨ b) = a := propext (Iff.intro (fun h => Or.elim h id (fun hright => False.elim (of_eq_false hb hright))) (fun ha => Or.inl ha))
+
+theorem or_elim_left_false {a b : Prop} (h : (a ∨ b) = False) : a = False := eq_false_intro (fun ha => of_eq_false h (Or.inl ha))
+
+theorem or_elim_right_false {a b : Prop} (h : (a ∨ b) = False) : b = False := eq_false_intro (fun hb => of_eq_false h (Or.inr hb))
+
+theorem not_eq_false_of_arg_true {a : Prop} (ha : a = True) : (¬a) = False := eq_false_intro (fun hn => hn (of_eq_true ha))
+
+theorem not_eq_true_of_arg_false {a : Prop} (ha : a = False) : (¬a) = True := eq_true (fun h => of_eq_false ha h)
+
+theorem eq_false_of_not_eq_true {a : Prop} (hn : (¬a) = True) : a = False := eq_false_intro (fun ha => (of_eq_true hn) ha)
+
+theorem eq_true_of_not_eq_false {a : Prop} (hn : (¬a) = False) : a = True := eq_true (Classical.byContradiction (fun hna => of_eq_false hn hna))
+
 theorem modus_ponens {a b : Prop} (imp: (a → b) = True) (ha : a = True) : b = True := eq_true ((of_eq_true imp) (of_eq_true ha))
 
 theorem or_elim {A B : Prop} (hor : (A ∨ B) = True) (hA : A -> (True = False)) (hB : B -> (True = False)) : True = False := Or.elim (of_eq_true hor) hA hB

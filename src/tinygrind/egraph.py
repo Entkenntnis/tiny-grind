@@ -309,6 +309,54 @@ class EGraph:
                     )
         return False
 
+    def _binary_connective_args(self, term: Term, name: str) -> tuple[Term, Term] | None:
+        if not isinstance(term, Application):
+            return None
+        
+        inner = term.head
+        if not isinstance(inner, Application):
+            return None
+        
+        if inner.head != Symbol(name):
+            return None
+        
+        return (inner.arg, term.arg)
+
+    def _unary_connective_args(self, term: Term, name: str) -> Term | None:
+        if not isinstance(term, Application):
+            return None
+        
+        if term.head != Symbol(name):
+            return None
+        
+        return term.arg
+
+    def _do_propositional_constraint_propagation(self) -> bool:
+        for node in range(len(self._node_to_term)):
+            term = self._node_to_term[node]
+
+            and_args = self._binary_connective_args(term, "And")
+            if and_args is not None:
+                if self._propagate_and(node, and_args[0], and_args[1]):
+                    return True
+            
+            or_args = self._binary_connective_args(term, "Or")
+            if or_args is not None:
+                if self._propagate_or(node, or_args[0], or_args[1]):
+                    return True
+            
+            not_arg = self._unary_connective_args(term, "Not")
+            if not_arg is not None:
+                if self._propagate_not(node, not_arg):
+                    return True
+        return False
+
+    def _propagate_and(self, node: int, left_term: Term, right_term: Term) -> bool
+        left = self._node(left_term)
+        right = self._node(right_term)
+
+        
+
     def _do_elimination_of_conjunction(self) -> bool:
         for node in range(len(self._node_to_term)):
             if self._find(node) != self._find(self._True):
@@ -325,6 +373,7 @@ class EGraph:
                 continue
             if inner.head != Symbol("And"):
                 continue
+            #can we make this part more efficient?
 
             # We have an true AND term
             left = self._node(inner.arg)
