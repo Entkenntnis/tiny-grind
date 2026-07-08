@@ -194,10 +194,10 @@ class EGraph:
 
     def _rebuild(self, case_split_levels: int = 0):
         while (
-            self._do_congrunce_closure()
+            self._do_true_equality_elimination()
             or self._do_equality_reflection()
+            or self._do_congrunce_closure()
             or self._do_propositional_constraint_propagation()
-            or self._do_true_equality_elimination()
             or self._do_modus_ponens()
         ):
             pass

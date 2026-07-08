@@ -69,6 +69,20 @@ theorem modus_ponens {a b : Prop} (imp: (a → b) = True) (ha : a = True) : b = 
 
 theorem or_elim {A B : Prop} (hor : (A ∨ B) = True) (hA : A -> (True = False)) (hB : B -> (True = False)) : True = False := Or.elim (of_eq_true hor) hA hB
 
+theorem push_not_and {A B : Prop} (h: (A ∧ B) = False) : (¬ A ∨ ¬ B) = True := eq_true (
+    match Classical.em A with
+    | Or.inl hA =>
+        Or.inr (fun hB => of_eq_false h ⟨hA, hB⟩)
+    | Or.inr hnA =>
+        Or.inl hnA
+  )
+
+theorem push_not_imp {A B : Prop} (h: (A → B) = False) : (A ∧ ¬ B) = True := 
+eq_true ⟨
+    Classical.byContradiction
+      (fun hnA => of_eq_false h (fun hA => False.elim (hnA hA))),
+    fun hB => of_eq_false h (fun _ => hB)
+  ⟩
 """
 
 
