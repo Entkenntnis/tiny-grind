@@ -30,15 +30,15 @@ Our prover will take problems from `/problems`, each problem is a lean file with
 
 The focus in on ground terms and function applications, very similiar to the example in the introduction. We need to implement the E-graph, congruence closure, handling of True/False/Eq and a basic proof generator. The graph can be untyped at first (we assume all symbols are operating on the same type). We might generate a synthetical set of problems to test the prover and get edge cases right.
 
-### Phase 2
+### Phase 2 ✔️ COMPLETED
 
-Next up, we want to improve the logical expressiveness of the language. Support for AND, OR, and other logical operations will be added including constraint propagations, and E-matching will be explored to allow instantiations. Case spliting might be necessary to handle alternative branches. This will also be the time to consider adding a good set of lemmas to the E-matching engine, so that more logical proofs can be found.
+Next up, we want to improve the logical expressiveness of the language. Support for AND, OR, and other logical operations will be added including constraint propagations, Case spliting might be necessary to handle alternative branches.
 
-We assume that this phase might take a good amount of time, but after that, the prover should have a strong foundation that can be easily extended with further lemmas - without the need to rewrite much of the internal logic.
+We assume that this phase might take a good amount of time, but after that, the prover should have a strong logical foundation.
 
 ### Phase 3
 
-There are several possible extensions to the solver, there are surely edge cases of phase 2 that need more attention, we can fine-tune the performance more and find bigger problem sets to benchmark the prover. Additionally, more lemmas could be added or more nested problems be attempted. Finally, we might integrate satellite theory solvers.
+Implement E-matching to allow instantiations. There are several possible extensions to the solver, there are surely edge cases of phase 2 that need more attention, we can fine-tune the performance more and find bigger problem sets to benchmark the prover. Additionally, more lemmas could be added or more nested problems be attempted. Finally, we might integrate satellite theory solvers.
 
 ## Setup
 
