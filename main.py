@@ -91,6 +91,15 @@ eq_true ⟨
     fun hA => of_eq_false h (Or.inl hA),
     fun hB => of_eq_false h (Or.inr hB)
   ⟩
+
+theorem imp_eq_true_of_left_false {A B : Prop} (h : A = False) : (A → B) = True :=
+  eq_true (fun (a : A) => False.elim (of_eq_true (Eq.trans (Eq.symm h) (eq_true a))))
+
+theorem imp_eq_true_of_right_true {A B : Prop} (h : B = True) : (A → B) = True :=
+  eq_true (fun a => of_eq_true h)
+
+
+
 """
 
 

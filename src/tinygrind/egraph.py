@@ -212,7 +212,6 @@ class EGraph:
             or self._do_congrunce_closure()
             or self._do_propositional_constraint_propagation()
             or self._do_push_not()
-            or self._do_modus_ponens()
         ):
             pass
         if case_split_levels > 0 and not self.isBottom():
@@ -361,6 +360,11 @@ class EGraph:
                 if self._propagate_or(node, or_args[0], or_args[1]):
                     return True
 
+            imp_args = self._binary_connective_args(term, "Imp")
+            if imp_args is not None:
+                if self._propagate_imp(node, imp_args[0], imp_args[1]):
+                    return True
+
             not_arg = self._unary_connective_args(term, "Not")
             if not_arg is not None:
                 if self._propagate_not(node, not_arg):
@@ -373,25 +377,25 @@ class EGraph:
     def _is_eq_false(self, node: Node) -> bool:
         return self._equals(node, self._False)
 
-    def _propagate_and(self, node: int, left_term: Term, right_term: Term) -> bool:
+    def _propagate_and(self, node: Node, left_term: Term, right_term: Term) -> bool:
         left = self._node(left_term)
         right = self._node(right_term)
 
         # a = False => (a ∧ b) = False
-        if self._is_eq_false(left) and not self._is_eq_false(node):
-            proof_left_false = self._find_proof(left, self._False)
-            proof = syntax.App(
-                syntax.Var("and_eq_false_of_left_false"), proof_left_false
-            )
-            return self._union(node, self._False, proof)
+        # if self._is_eq_false(left) and not self._is_eq_false(node):
+        #     proof_left_false = self._find_proof(left, self._False)
+        #     proof = syntax.App(
+        #         syntax.Var("and_eq_false_of_left_false"), proof_left_false
+        #     )
+        #     return self._union(node, self._False, proof)
 
         # b = False => (a ∧ b) = False
-        if self._is_eq_false(right) and not self._is_eq_false(node):
-            proof_right_false = self._find_proof(right, self._False)
-            proof = syntax.App(
-                syntax.Var("and_eq_false_of_right_false"), proof_right_false
-            )
-            return self._union(node, self._False, proof)
+        # if self._is_eq_false(right) and not self._is_eq_false(node):
+        #     proof_right_false = self._find_proof(right, self._False)
+        #     proof = syntax.App(
+        #         syntax.Var("and_eq_false_of_right_false"), proof_right_false
+        #     )
+        #     return self._union(node, self._False, proof)
 
         # a = True => (a ∧ b) = b
         if self._is_eq_true(left) and not self._equals(node, right):
@@ -400,12 +404,12 @@ class EGraph:
             return self._union(node, right, proof)
 
         # b = True => (a ∧ b) = a
-        if self._is_eq_true(right) and not self._equals(node, left):
-            proof_right_true = self._find_proof(right, self._True)
-            proof = syntax.App(
-                syntax.Var("and_eq_left_of_right_true"), proof_right_true
-            )
-            return self._union(node, left, proof)
+        # if self._is_eq_true(right) and not self._equals(node, left):
+        #     proof_right_true = self._find_proof(right, self._True)
+        #     proof = syntax.App(
+        #         syntax.Var("and_eq_left_of_right_true"), proof_right_true
+        #     )
+        #     return self._union(node, left, proof)
 
         # (a ∧ b) = True => a = True
         if self._is_eq_true(node) and not self._is_eq_true(left):
@@ -414,71 +418,110 @@ class EGraph:
             return self._union(left, self._True, proof_left)
 
         # (a ∧ b) = True => b = True
-        if self._is_eq_true(node) and not self._is_eq_true(right):
-            proof_and_true = self._find_proof(node, self._True)
-            proof_right = syntax.App(syntax.Var("and_elim_right"), proof_and_true)
-            return self._union(right, self._True, proof_right)
+        # if self._is_eq_true(node) and not self._is_eq_true(right):
+        #     proof_and_true = self._find_proof(node, self._True)
+        #     proof_right = syntax.App(syntax.Var("and_elim_right"), proof_and_true)
+        #     return self._union(right, self._True, proof_right)
 
         return False
 
-    def _propagate_or(self, node: int, left_term: Term, right_term: Term) -> bool:
+    def _propagate_or(self, _node: Node, _left_term: Term, _right_term: Term) -> bool:
+        # left = self._node(left_term)
+        # right = self._node(right_term)
+
+        # a = True        => (a ∨ b) = True
+        # if self._is_eq_true(left) and not self._is_eq_true(node):
+        #     proof_left_true = self._find_proof(left, self._True)
+        #     proof = syntax.App(syntax.Var("or_eq_true_of_left_true"), proof_left_true)
+        #     return self._union(node, self._True, proof)
+
+        # b = True        => (a ∨ b) = True
+        # if self._is_eq_true(right) and not self._is_eq_true(node):
+        #     proof_right_true = self._find_proof(right, self._True)
+        #     proof = syntax.App(syntax.Var("or_eq_true_of_right_true"), proof_right_true)
+        #     return self._union(node, self._True, proof)
+
+        # a = False       => (a ∨ b) = b
+        # if self._is_eq_false(left) and not self._equals(node, right):
+        #     proof_left_false = self._find_proof(left, self._False)
+        #     proof = syntax.App(syntax.Var("or_eq_of_left_false"), proof_left_false)
+        #     return self._union(node, right, proof)
+
+        # b = False       => (a ∨ b) = a
+        # if self._is_eq_false(right) and not self._equals(node, left):
+        #     proof_right_false = self._find_proof(right, self._False)
+        #     proof = syntax.App(syntax.Var("or_eq_of_right_false"), proof_right_false)
+        #     return self._union(node, left, proof)
+
+        # (a ∨ b) = False => a = False
+        # if self._is_eq_false(node) and not self._is_eq_false(left):
+        #     proof_false = self._find_proof(node, self._False)
+        #     proof_left_false = syntax.App(syntax.Var("or_elim_left_false"), proof_false)
+        #     return self._union(left, self._False, proof_left_false)
+
+        # (a ∨ b) = False => b = False
+        # if self._is_eq_false(node) and not self._is_eq_false(right):
+        #     proof_false = self._find_proof(node, self._False)
+        #     proof_right_false = syntax.App(
+        #         syntax.Var("or_elim_right_false"), proof_false
+        #     )
+        #     return self._union(right, self._False, proof_right_false)
+
+        return False
+
+    def _propagate_imp(self, node: Node, left_term: Term, right_term: Term) -> bool:
         left = self._node(left_term)
         right = self._node(right_term)
 
-        # a = True        => (a ∨ b) = True
-        if self._is_eq_true(left) and not self._is_eq_true(node):
-            proof_left_true = self._find_proof(left, self._True)
-            proof = syntax.App(syntax.Var("or_eq_true_of_left_true"), proof_left_true)
-            return self._union(node, self._True, proof)
-
-        # b = True        => (a ∨ b) = True
-        if self._is_eq_true(right) and not self._is_eq_true(node):
-            proof_right_true = self._find_proof(right, self._True)
-            proof = syntax.App(syntax.Var("or_eq_true_of_right_true"), proof_right_true)
-            return self._union(node, self._True, proof)
-
-        # a = False       => (a ∨ b) = b
-        if self._is_eq_false(left) and not self._equals(node, right):
+        # Rule 1: A = False => (A -> B) = True
+        if self._is_eq_false(left) and not self._is_eq_true(node):
             proof_left_false = self._find_proof(left, self._False)
-            proof = syntax.App(syntax.Var("or_eq_of_left_false"), proof_left_false)
-            return self._union(node, right, proof)
-
-        # b = False       => (a ∨ b) = a
-        if self._is_eq_false(right) and not self._equals(node, left):
-            proof_right_false = self._find_proof(right, self._False)
-            proof = syntax.App(syntax.Var("or_eq_of_right_false"), proof_right_false)
-            return self._union(node, left, proof)
-
-        # (a ∨ b) = False => a = False
-        if self._is_eq_false(node) and not self._is_eq_false(left):
-            proof_false = self._find_proof(node, self._False)
-            proof_left_false = syntax.App(syntax.Var("or_elim_left_false"), proof_false)
-            return self._union(left, self._False, proof_left_false)
-
-        # (a ∨ b) = False => b = False
-        if self._is_eq_false(node) and not self._is_eq_false(right):
-            proof_false = self._find_proof(node, self._False)
-            proof_right_false = syntax.App(
-                syntax.Var("or_elim_right_false"), proof_false
+            proof = syntax.App(
+                syntax.Var("imp_eq_true_of_left_false"), proof_left_false
             )
-            return self._union(right, self._False, proof_right_false)
+            return self._union(node, self._True, proof)
+
+        # Rule 2: B = True => (A -> B) = True
+        # if self._is_eq_true(right) and not self._is_eq_true(node):
+        #     proof_right_true = self._find_proof(right, self._True)
+        #     proof = syntax.App(
+        #         syntax.Var("imp_eq_true_of_right_true"), proof_right_true
+        #     )
+        #     return self._union(node, self._True, proof)
+
+        # Rule 3: (A -> B) = True and A = True => B = True (modus ponens)
+        if (
+            self._is_eq_true(node)
+            and self._is_eq_true(left)
+            and not self._is_eq_true(right)
+        ):
+            proof_imp_true = self._find_proof(node, self._True)
+            proof_left_true = self._find_proof(left, self._True)
+            proof = syntax.App(
+                syntax.App(syntax.Var("modus_ponens"), proof_imp_true), proof_left_true
+            )
+            return self._union(right, self._True, proof)
+
+        # Rule 4: (A -> B) = True and B = False => A = False (modus tollens)
+        # Rule 5: (A -> B) = False => A = True
+        # RUle 6: (A -> B) = False => B = False
 
         return False
 
-    def _propagate_not(self, node: int, inner_term: Term) -> bool:
+    def _propagate_not(self, node: Node, inner_term: Term) -> bool:
         term = self._node(inner_term)
 
         # A = True      => ¬A = False
-        if self._is_eq_true(term) and not self._is_eq_false(node):
-            proof_true = self._find_proof(term, self._True)
-            proof = syntax.App(syntax.Var("not_eq_false_of_arg_true"), proof_true)
-            return self._union(node, self._False, proof)
+        # if self._is_eq_true(term) and not self._is_eq_false(node):
+        #     proof_true = self._find_proof(term, self._True)
+        #     proof = syntax.App(syntax.Var("not_eq_false_of_arg_true"), proof_true)
+        #     return self._union(node, self._False, proof)
 
         # A = False     => ¬A = True
-        if self._is_eq_false(term) and not self._is_eq_true(node):
-            proof_false = self._find_proof(term, self._False)
-            proof = syntax.App(syntax.Var("not_eq_true_of_arg_false"), proof_false)
-            return self._union(node, self._True, proof)
+        # if self._is_eq_false(term) and not self._is_eq_true(node):
+        #     proof_false = self._find_proof(term, self._False)
+        #     proof = syntax.App(syntax.Var("not_eq_true_of_arg_false"), proof_false)
+        #     return self._union(node, self._True, proof)
 
         # ¬A = True     => A = False
         if self._is_eq_true(node) and not self._is_eq_false(term):
@@ -487,10 +530,10 @@ class EGraph:
             return self._union(term, self._False, proof)
 
         # ¬A = False    => A = True
-        if self._is_eq_false(node) and not self._is_eq_true(term):
-            proof_false = self._find_proof(node, self._False)
-            proof = syntax.App(syntax.Var("eq_true_of_not_eq_false"), proof_false)
-            return self._union(term, self._True, proof)
+        # if self._is_eq_false(node) and not self._is_eq_true(term):
+        #     proof_false = self._find_proof(node, self._False)
+        #     proof = syntax.App(syntax.Var("eq_true_of_not_eq_false"), proof_false)
+        #     return self._union(term, self._True, proof)
 
         return False
 
@@ -576,41 +619,6 @@ class EGraph:
                 proof_eq_true = self._find_proof(node, self._True)
                 proof_eq = syntax.App(syntax.Var("of_eq_true"), proof_eq_true)
                 if self._union(left_node, right_node, proof_eq):
-                    return True
-
-        return False
-
-    def _do_modus_ponens(self) -> bool:
-        for node in range(len(self._node_to_term)):
-            if not self._equals(node, self._True):
-                continue
-
-            term = self._node_to_term[node]
-            if not isinstance(term, Application):
-                continue
-            outer_app = term
-            inner_app = outer_app.head
-            if not isinstance(inner_app, Application):
-                continue
-            if inner_app.head != Symbol("Imp"):
-                continue
-
-            # (Imp A) B
-            a_term = inner_app.arg
-            b_term = outer_app.arg
-            a_node = self._node(a_term)
-            b_node = self._node(b_term)
-
-            if self._equals(a_node, self._True):
-                # Build proof
-                proof_imp_true = self._find_proof(node, self._True)
-                proof_a_true = self._find_proof(a_node, self._True)
-                proof_b_true = syntax.App(
-                    syntax.App(syntax.Var("modus_ponens"), proof_imp_true), proof_a_true
-                )
-
-                if not self._equals(b_node, self._True):
-                    self._union(b_node, self._True, proof_b_true)
                     return True
 
         return False
