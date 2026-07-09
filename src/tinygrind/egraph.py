@@ -63,10 +63,13 @@ class EGraph:
         # store proofs between nodes
         self._nodes_to_proof: dict[Node, dict[Node, syntax.Term]] = {}
 
+        # some type information
+        self._nodes_to_type: dict[Node, syntax.Term] = {}
+
         # "structual sharing" happens here
         self._term_to_node: dict[Term, Node] = {}
-        self._True: Node = self._add_term(TrueTerm())
-        self._False: Node = self._add_term(FalseTerm())
+        self._True: Node = self._add_term(TrueTerm(), syntax.Sort(0))
+        self._False: Node = self._add_term(FalseTerm(), syntax.Sort(0))
 
     # not really "elegant", but this is our current approach for case splitting
     def _clone(self) -> "EGraph":
@@ -80,26 +83,27 @@ class EGraph:
         clone._nodes_to_proof = {}
         for k, v in self._nodes_to_proof.items():
             clone._nodes_to_proof[k] = v.copy()
+        clone._nodes_to_type = self._nodes_to_type.copy()
         clone._True = self._True
         clone._False = self._False
         return clone
 
-    def addSymbol(self, symbol: Symbol):
-        self._add_term(symbol)
+    def addSymbol(self, symbol: Symbol, type: syntax.Term):
+        self._add_term(symbol, type)
         self._rebuild()
 
     def addProp(self, prop: Term, proof: syntax.Term):
         """
         Adding a Prop needs a proof
         """
-        node = self._add_term(prop)
+        node = self._add_term(prop, syntax.Sort(0))
         self._union(node, self._True, syntax.App(syntax.Var("eq_true"), proof))
         self._rebuild()
 
     def addGoal(
         self, goal: Term, proof: syntax.Term
     ):  # everything else does need an proof
-        node = self._add_term(goal)
+        node = self._add_term(goal, syntax.Sort(0))
 
         self._union(
             node,
@@ -119,18 +123,21 @@ class EGraph:
     def _equals(self, a: Node, b: Node) -> bool:
         return self._find(a) == self._find(b)
 
-    def _add_term(self, term: Term) -> Node:
+    def _add_term(self, term: Term, type: syntax.Term) -> Node:
         existing = self._term_to_node.get(term)
         if existing is not None:
             return existing
 
         # recursively add children
         if isinstance(term, Application):
-            _ = self._add_term(term.head)
-            _ = self._add_term(term.arg)
+            # _TODO_ Type inference should happen here, the logic is just a little bit too simple
+            _ = self._add_term(term.head, syntax.Sort(0))  # ???
+            _ = self._add_term(term.arg, syntax.Sort(0))  # ???
         elif isinstance(term, Equals):
-            _ = self._add_term(term.left)
-            _ = self._add_term(term.right)
+            _ = self._add_term(term.left, syntax.Sort(0))
+            _ = self._add_term(term.right, syntax.Sort(0))
+
+        print(f"Add {term} with type {type}")
 
         node = len(self._parents)  # it really is just a continuous int id
         self._parents.append(node)
@@ -138,6 +145,7 @@ class EGraph:
         self._sizes.append(1)
 
         self._term_to_node[term] = node
+        self._nodes_to_type[node] = type
         return node
 
     def _node(self, term: Term) -> Node:
@@ -561,7 +569,7 @@ class EGraph:
 
         result_term = Application(Application(Symbol("Or"), not_a), not_b)
 
-        result_node = self._add_term(result_term)
+        result_node = self._add_term(result_term, syntax.Sort(0))
         if not self._is_eq_true(result_node):
             false_proof = self._find_proof(node, self._False)
             proof = syntax.App(syntax.Var("push_not_and"), false_proof)
@@ -576,7 +584,7 @@ class EGraph:
 
         result_term = Application(Application(Symbol("And"), not_a), not_b)
 
-        result_node = self._add_term(result_term)
+        result_node = self._add_term(result_term, syntax.Sort(0))
         if not self._is_eq_true(result_node):
             false_proof = self._find_proof(node, self._False)
             proof = syntax.App(syntax.Var("push_not_or"), false_proof)
@@ -590,7 +598,7 @@ class EGraph:
 
         result_term = Application(Application(Symbol("And"), a_term), not_b)
 
-        result_node = self._add_term(result_term)
+        result_node = self._add_term(result_term, syntax.Sort(0))
         if not self._is_eq_true(result_node):
             false_proof = self._find_proof(node, self._False)
             proof = syntax.App(syntax.Var("push_not_imp"), false_proof)
