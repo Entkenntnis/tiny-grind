@@ -40,6 +40,16 @@ type Term = TrueTerm | FalseTerm | Equals | Application | Symbol
 type Node = int
 
 
+def termToLean(term: Term) -> syntax.Term:
+    match term:
+        case Symbol():
+            return syntax.Var(term.name)
+        case Application():
+            return syntax.App(termToLean(term.head), termToLean(term.arg))
+        case _:
+            raise RuntimeError(f"Conversion failed for {term}")
+
+
 class EGraph:
 
     def __init__(self):
@@ -164,7 +174,10 @@ class EGraph:
 
     def _find_proof(self, a: Node, b: Node) -> syntax.Term:
         if a == b:
-            return syntax.Var("rfl")
+            return syntax.App(
+                syntax.App(syntax.Var("@rfl"), syntax.Var("_")),
+                termToLean(self._node_to_term[a]),
+            )
 
         queue: deque[Node] = deque([a])
         visited: set[Node] = {a}
@@ -310,26 +323,28 @@ class EGraph:
                     )
         return False
 
-    def _binary_connective_args(self, term: Term, name: str) -> tuple[Term, Term] | None:
+    def _binary_connective_args(
+        self, term: Term, name: str
+    ) -> tuple[Term, Term] | None:
         if not isinstance(term, Application):
             return None
-        
+
         inner = term.head
         if not isinstance(inner, Application):
             return None
-        
+
         if inner.head != Symbol(name):
             return None
-        
+
         return (inner.arg, term.arg)
 
     def _unary_connective_args(self, term: Term, name: str) -> Term | None:
         if not isinstance(term, Application):
             return None
-        
+
         if term.head != Symbol(name):
             return None
-        
+
         return term.arg
 
     def _do_propositional_constraint_propagation(self) -> bool:
@@ -340,12 +355,12 @@ class EGraph:
             if and_args is not None:
                 if self._propagate_and(node, and_args[0], and_args[1]):
                     return True
-            
+
             or_args = self._binary_connective_args(term, "Or")
             if or_args is not None:
                 if self._propagate_or(node, or_args[0], or_args[1]):
                     return True
-            
+
             not_arg = self._unary_connective_args(term, "Not")
             if not_arg is not None:
                 if self._propagate_not(node, not_arg):
@@ -365,15 +380,19 @@ class EGraph:
         # a = False => (a ∧ b) = False
         if self._is_eq_false(left) and not self._is_eq_false(node):
             proof_left_false = self._find_proof(left, self._False)
-            proof = syntax.App(syntax.Var("and_eq_false_of_left_false"), proof_left_false)
+            proof = syntax.App(
+                syntax.Var("and_eq_false_of_left_false"), proof_left_false
+            )
             return self._union(node, self._False, proof)
-        
+
         # b = False => (a ∧ b) = False
         if self._is_eq_false(right) and not self._is_eq_false(node):
             proof_right_false = self._find_proof(right, self._False)
-            proof = syntax.App(syntax.Var("and_eq_false_of_right_false"), proof_right_false)
+            proof = syntax.App(
+                syntax.Var("and_eq_false_of_right_false"), proof_right_false
+            )
             return self._union(node, self._False, proof)
-        
+
         # a = True => (a ∧ b) = b
         if self._is_eq_true(left) and not self._equals(node, right):
             proof_left_true = self._find_proof(left, self._True)
@@ -383,7 +402,9 @@ class EGraph:
         # b = True => (a ∧ b) = a
         if self._is_eq_true(right) and not self._equals(node, left):
             proof_right_true = self._find_proof(right, self._True)
-            proof = syntax.App(syntax.Var("and_eq_left_of_right_true"), proof_right_true)
+            proof = syntax.App(
+                syntax.Var("and_eq_left_of_right_true"), proof_right_true
+            )
             return self._union(node, left, proof)
 
         # (a ∧ b) = True => a = True
@@ -391,17 +412,16 @@ class EGraph:
             proof_and_true = self._find_proof(node, self._True)
             proof_left = syntax.App(syntax.Var("and_elim_left"), proof_and_true)
             return self._union(left, self._True, proof_left)
-        
+
         # (a ∧ b) = True => b = True
         if self._is_eq_true(node) and not self._is_eq_true(right):
             proof_and_true = self._find_proof(node, self._True)
             proof_right = syntax.App(syntax.Var("and_elim_right"), proof_and_true)
             return self._union(right, self._True, proof_right)
-        
+
         return False
 
-
-    def _propagate_or(self, node:int, left_term: Term, right_term: Term) -> bool:
+    def _propagate_or(self, node: int, left_term: Term, right_term: Term) -> bool:
         left = self._node(left_term)
         right = self._node(right_term)
 
@@ -410,7 +430,7 @@ class EGraph:
             proof_left_true = self._find_proof(left, self._True)
             proof = syntax.App(syntax.Var("or_eq_true_of_left_true"), proof_left_true)
             return self._union(node, self._True, proof)
-        
+
         # b = True        => (a ∨ b) = True
         if self._is_eq_true(right) and not self._is_eq_true(node):
             proof_right_true = self._find_proof(right, self._True)
@@ -428,21 +448,23 @@ class EGraph:
             proof_right_false = self._find_proof(right, self._False)
             proof = syntax.App(syntax.Var("or_eq_of_right_false"), proof_right_false)
             return self._union(node, left, proof)
-        
+
         # (a ∨ b) = False => a = False
         if self._is_eq_false(node) and not self._is_eq_false(left):
             proof_false = self._find_proof(node, self._False)
             proof_left_false = syntax.App(syntax.Var("or_elim_left_false"), proof_false)
             return self._union(left, self._False, proof_left_false)
-        
+
         # (a ∨ b) = False => b = False
         if self._is_eq_false(node) and not self._is_eq_false(right):
             proof_false = self._find_proof(node, self._False)
-            proof_right_false = syntax.App(syntax.Var("or_elim_right_false"), proof_false)
+            proof_right_false = syntax.App(
+                syntax.Var("or_elim_right_false"), proof_false
+            )
             return self._union(right, self._False, proof_right_false)
-        
+
         return False
-    
+
     def _propagate_not(self, node: int, inner_term: Term) -> bool:
         term = self._node(inner_term)
 
@@ -451,102 +473,93 @@ class EGraph:
             proof_true = self._find_proof(term, self._True)
             proof = syntax.App(syntax.Var("not_eq_false_of_arg_true"), proof_true)
             return self._union(node, self._False, proof)
-        
+
         # A = False     => ¬A = True
         if self._is_eq_false(term) and not self._is_eq_true(node):
             proof_false = self._find_proof(term, self._False)
             proof = syntax.App(syntax.Var("not_eq_true_of_arg_false"), proof_false)
             return self._union(node, self._True, proof)
-        
+
         # ¬A = True     => A = False
         if self._is_eq_true(node) and not self._is_eq_false(term):
             proof_true = self._find_proof(node, self._True)
             proof = syntax.App(syntax.Var("eq_false_of_not_eq_true"), proof_true)
             return self._union(term, self._False, proof)
-        
+
         # ¬A = False    => A = True
         if self._is_eq_false(node) and not self._is_eq_true(term):
             proof_false = self._find_proof(node, self._False)
             proof = syntax.App(syntax.Var("eq_true_of_not_eq_false"), proof_false)
             return self._union(term, self._True, proof)
-        
+
         return False
 
     def _do_push_not(self) -> bool:
         for node in range(len(self._node_to_term)):
-            if self._is_eq_false(node) and not self._is_eq_true(node): # guarantee that we have not found Bottom yet
+            if self._is_eq_false(node) and not self._is_eq_true(
+                node
+            ):  # guarantee that we have not found Bottom yet
                 term = self._node_to_term[node]
 
                 and_args = self._binary_connective_args(term, "And")
                 if and_args is not None:
                     if self._push_not_and(node, and_args[0], and_args[1]):
                         return True
-                
+
                 or_args = self._binary_connective_args(term, "Or")
                 if or_args is not None:
                     if self._push_not_or(node, or_args[0], or_args[1]):
                         return True
-                
+
                 imp_args = self._binary_connective_args(term, "Imp")
                 if imp_args is not None:
                     if self._push_not_imp(node, imp_args[0], imp_args[1]):
                         return True
-        return False 
-                
+        return False
+
     def _push_not_and(self, node: int, a_term: Term, b_term: Term) -> bool:
 
         not_a = Application(Symbol("Not"), a_term)
         not_b = Application(Symbol("Not"), b_term)
 
-        result_term = Application(
-            Application(Symbol("Or"), not_a),
-            not_b
-        )
+        result_term = Application(Application(Symbol("Or"), not_a), not_b)
 
         result_node = self._add_term(result_term)
         if not self._is_eq_true(result_node):
             false_proof = self._find_proof(node, self._False)
             proof = syntax.App(syntax.Var("push_not_and"), false_proof)
             return self._union(result_node, self._True, proof)
-        
+
         return False
-    
+
     def _push_not_or(self, node: int, a_term: Term, b_term: Term) -> bool:
 
         not_a = Application(Symbol("Not"), a_term)
         not_b = Application(Symbol("Not"), b_term)
 
-        result_term = Application(
-            Application(Symbol("And"), not_a),
-            not_b
-        )
+        result_term = Application(Application(Symbol("And"), not_a), not_b)
 
         result_node = self._add_term(result_term)
         if not self._is_eq_true(result_node):
             false_proof = self._find_proof(node, self._False)
             proof = syntax.App(syntax.Var("push_not_or"), false_proof)
             return self._union(result_node, self._True, proof)
-        
+
         return False
-    
+
     def _push_not_imp(self, node: int, a_term: Term, b_term: Term) -> bool:
 
         not_b = Application(Symbol("Not"), b_term)
 
-        result_term = Application(
-            Application(Symbol("And"), a_term),
-            not_b
-        )
+        result_term = Application(Application(Symbol("And"), a_term), not_b)
 
         result_node = self._add_term(result_term)
         if not self._is_eq_true(result_node):
             false_proof = self._find_proof(node, self._False)
             proof = syntax.App(syntax.Var("push_not_imp"), false_proof)
             return self._union(result_node, self._True, proof)
-        
+
         return False
-
-
 
     def _do_true_equality_elimination(self) -> bool:
         for node in range(len(self._node_to_term)):

@@ -1,4 +1,6 @@
 
+def Imp (A : Prop) (B : Prop) := A → B
+
 theorem eq_false_intro {a : Prop} (h : ¬a) : a = False := propext (iff_false_intro h)
 
 theorem and_elim_left {a b : Prop} (h : (a ∧ b) = True) : a = True := eq_true (of_eq_true h).left
@@ -51,12 +53,18 @@ eq_true ⟨
       (fun hnA => of_eq_false h (fun hA => False.elim (hnA hA))),
     fun hB => of_eq_false h (fun _ => hB)
   ⟩
+
+theorem push_not_or {A B : Prop} (h: (A ∨ B) = False) : (¬ A ∧ ¬ B) = True :=
+eq_true ⟨
+    fun hA => of_eq_false h (Or.inl hA),
+    fun hB => of_eq_false h (Or.inr hB)
+  ⟩
 -- problems/phase00/example01.lean
 theorem phase00_example01 : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> @Eq A x y -> P x -> P y :=
   (by grind)
 
 theorem phase00_example01_proof : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> @Eq A x y -> P x -> P y :=
-  fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr rfl (of_eq_true (eq_true h1))) (eq_false_intro goal))))
+  fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr (@rfl _ P) (of_eq_true (eq_true h1))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example02.lean
@@ -64,7 +72,7 @@ theorem phase00_example02 : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) 
   (by grind)
 
 theorem phase00_example02_proof : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> (z : A) -> (w : A) -> @Eq A x y -> @Eq A y z -> @Eq A z w -> P x -> P w :=
-  fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => fun (z : _) => fun (w : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr rfl (Eq.trans (of_eq_true (eq_true h1)) (Eq.trans (of_eq_true (eq_true h2)) (of_eq_true (eq_true h3))))) (eq_false_intro goal))))
+  fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => fun (z : _) => fun (w : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr (@rfl _ P) (Eq.trans (of_eq_true (eq_true h1)) (Eq.trans (of_eq_true (eq_true h2)) (of_eq_true (eq_true h3))))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example03.lean
@@ -72,7 +80,7 @@ theorem phase00_example03 : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> 
   (by grind)
 
 theorem phase00_example03_proof : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> @Eq A a b -> @Eq A (f (f a)) (f (f b)) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr rfl (congr rfl (of_eq_true (eq_true h1)))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (@rfl _ f) (congr (@rfl _ f) (of_eq_true (eq_true h1)))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example04.lean
@@ -80,7 +88,7 @@ theorem phase00_example04 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : 
   (by grind)
 
 theorem phase00_example04_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (f : A -> A) -> (g : A -> A) -> (h : A -> A) -> @Eq A a (f b) -> @Eq A (f b) (g c) -> @Eq A (g c) (h d) -> @Eq A d a -> @Eq A (g (f (h a))) (g (f (g c))) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr rfl (congr rfl (Eq.trans (Eq.symm (congr rfl (of_eq_true (eq_true h4)))) (Eq.symm (of_eq_true (eq_true h3)))))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (@rfl _ g) (congr (@rfl _ f) (Eq.trans (Eq.symm (congr (@rfl _ h) (of_eq_true (eq_true h4)))) (Eq.symm (of_eq_true (eq_true h3)))))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example05_f.lean
@@ -96,7 +104,7 @@ theorem phase00_example06 : (A : Type) -> (a : A) -> @Eq A a a :=
   (by grind)
 
 theorem phase00_example06_proof : (A : Type) -> (a : A) -> @Eq A a a :=
-  fun (A : _) => fun (a : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true rfl)) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (@rfl _ a))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example07.lean
@@ -112,7 +120,7 @@ theorem phase00_example08 : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> 
   (by grind)
 
 theorem phase00_example08_proof : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> (g : A -> A) -> @Eq A a b -> @Eq A (f b) (g a) -> @Eq A (f a) (g b) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (Eq.trans (Eq.symm (congr rfl (Eq.symm (of_eq_true (eq_true h1))))) (Eq.trans (of_eq_true (eq_true h2)) (congr rfl (of_eq_true (eq_true h1))))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (Eq.trans (Eq.symm (congr (@rfl _ f) (Eq.symm (of_eq_true (eq_true h1))))) (Eq.trans (of_eq_true (eq_true h2)) (congr (@rfl _ g) (of_eq_true (eq_true h1))))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example09.lean
@@ -120,7 +128,7 @@ theorem phase00_example09 : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> 
   (by grind)
 
 theorem phase00_example09_proof : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> (g : A -> A) -> @Eq A a b -> @Eq A (f (g a)) (f (g b)) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr rfl (congr rfl (of_eq_true (eq_true h1)))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (@rfl _ f) (congr (@rfl _ g) (of_eq_true (eq_true h1)))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example10.lean
@@ -136,7 +144,7 @@ theorem phase00_example11 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : 
   (by grind)
 
 theorem phase00_example11_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (e : A) -> (f : A -> A) -> @Eq A a b -> @Eq A b c -> @Eq A c d -> @Eq A d e -> @Eq A (f a) (f e) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr rfl (Eq.trans (of_eq_true (eq_true h1)) (Eq.trans (of_eq_true (eq_true h2)) (Eq.trans (of_eq_true (eq_true h3)) (of_eq_true (eq_true h4)))))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (@rfl _ f) (Eq.trans (of_eq_true (eq_true h1)) (Eq.trans (of_eq_true (eq_true h2)) (Eq.trans (of_eq_true (eq_true h3)) (of_eq_true (eq_true h4)))))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example12.lean
@@ -152,7 +160,7 @@ theorem phase00_example13 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (f : 
   (by grind)
 
 theorem phase00_example13_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (f : A -> A) -> (g : A -> A) -> (h : A -> A) -> @Eq A (f a) b -> @Eq A (g b) c -> @Eq A (h c) a -> @Eq A (f (h (g (f a)))) (f a) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (Eq.symm (congr rfl (Eq.trans (Eq.symm (of_eq_true (eq_true h3))) (congr rfl (Eq.trans (Eq.symm (of_eq_true (eq_true h2))) (congr rfl (Eq.symm (of_eq_true (eq_true h1))))))))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (Eq.symm (congr (@rfl _ f) (Eq.trans (Eq.symm (of_eq_true (eq_true h3))) (congr (@rfl _ h) (Eq.trans (Eq.symm (of_eq_true (eq_true h2))) (congr (@rfl _ g) (Eq.symm (of_eq_true (eq_true h1))))))))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example14.lean
@@ -160,7 +168,7 @@ theorem phase00_example14 : (A : Type) -> (P : A -> Prop) -> (a : A) -> (b : A) 
   (by grind)
 
 theorem phase00_example14_proof : (A : Type) -> (P : A -> Prop) -> (a : A) -> (b : A) -> (c : A) -> @Eq A a b -> @Eq A b c -> P a -> P c :=
-  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (Eq.trans (congr rfl (Eq.trans (of_eq_true (eq_true h1)) (of_eq_true (eq_true h2)))) (eq_false_intro goal))))
+  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (Eq.trans (congr (@rfl _ P) (Eq.trans (of_eq_true (eq_true h1)) (of_eq_true (eq_true h2)))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example15.lean
@@ -168,7 +176,7 @@ theorem phase00_example15 : (A : Type) -> (P : A -> Prop) -> (a : A) -> (b : A) 
   (by grind)
 
 theorem phase00_example15_proof : (A : Type) -> (P : A -> Prop) -> (a : A) -> (b : A) -> (f : A -> A) -> @Eq A a (f b) -> P (f b) -> P a :=
-  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr rfl (Eq.symm (of_eq_true (eq_true h1)))) (eq_false_intro goal))))
+  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr (@rfl _ P) (Eq.symm (of_eq_true (eq_true h1)))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example16.lean
@@ -184,7 +192,7 @@ theorem phase00_example17 : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> 
   (by grind)
 
 theorem phase00_example17_proof : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> (g : A -> A) -> (h : A -> A) -> @Eq A a b -> @Eq A (f (g (h a))) (f (g (h b))) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr rfl (congr rfl (congr rfl (of_eq_true (eq_true h1))))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (@rfl _ f) (congr (@rfl _ g) (congr (@rfl _ h) (of_eq_true (eq_true h1))))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example18.lean
@@ -192,7 +200,7 @@ theorem phase00_example18 : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> 
   (by grind)
 
 theorem phase00_example18_proof : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> (g : A -> A) -> @Eq A a b -> @Eq A (f (g b)) (f (g a)) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr rfl (congr rfl (Eq.symm (of_eq_true (eq_true h1))))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (@rfl _ f) (congr (@rfl _ g) (Eq.symm (of_eq_true (eq_true h1))))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example19.lean
@@ -208,7 +216,7 @@ theorem phase00_example20 : (A : Type) -> (P : A -> Prop) -> (a : A) -> (b : A) 
   (by grind)
 
 theorem phase00_example20_proof : (A : Type) -> (P : A -> Prop) -> (a : A) -> (b : A) -> (f : A -> A) -> @Eq A a b -> P (f b) -> P (f a) :=
-  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr rfl (congr rfl (Eq.symm (of_eq_true (eq_true h1))))) (eq_false_intro goal))))
+  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr (@rfl _ P) (congr (@rfl _ f) (Eq.symm (of_eq_true (eq_true h1))))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example21_f.lean
@@ -256,7 +264,7 @@ theorem phase00_example26 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (f : 
   (by grind)
 
 theorem phase00_example26_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (f : A -> A -> A) -> @Eq A a b -> @Eq A (f a c) (f b c) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr rfl (of_eq_true (eq_true h1))) rfl))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (@rfl _ f) (of_eq_true (eq_true h1))) (@rfl _ c)))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example27.lean
@@ -264,7 +272,7 @@ theorem phase00_example27 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (f : 
   (by grind)
 
 theorem phase00_example27_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (f : A -> A -> A) -> @Eq A a b -> @Eq A (f c a) (f c b) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr rfl (of_eq_true (eq_true h1))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (@rfl _ (f c)) (of_eq_true (eq_true h1))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example28.lean
@@ -272,7 +280,7 @@ theorem phase00_example28 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : 
   (by grind)
 
 theorem phase00_example28_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (f : A -> A -> A) -> @Eq A a b -> @Eq A c d -> @Eq A (f a c) (f b d) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr rfl (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (@rfl _ f) (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example29.lean
@@ -280,7 +288,7 @@ theorem phase00_example29 : (A : Type) -> (P : A -> A -> Prop) -> (a : A) -> (b 
   (by grind)
 
 theorem phase00_example29_proof : (A : Type) -> (P : A -> A -> Prop) -> (a : A) -> (b : A) -> (c : A) -> @Eq A a b -> P a c -> P b c :=
-  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr (congr rfl (of_eq_true (eq_true h1))) rfl) (eq_false_intro goal))))
+  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr (congr (@rfl _ P) (of_eq_true (eq_true h1))) (@rfl _ c)) (eq_false_intro goal))))
 
 
 -- problems/phase00/example30.lean
@@ -288,7 +296,7 @@ theorem phase00_example30 : (A : Type) -> (P : A -> A -> Prop) -> (a : A) -> (b 
   (by grind)
 
 theorem phase00_example30_proof : (A : Type) -> (P : A -> A -> Prop) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> @Eq A a b -> @Eq A c d -> P a c -> P b d :=
-  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (Eq.trans (congr (congr rfl (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))) (eq_false_intro goal))))
+  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (Eq.trans (congr (congr (@rfl _ P) (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example31.lean
@@ -296,7 +304,7 @@ theorem phase00_example31 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (f : 
   (by grind)
 
 theorem phase00_example31_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (f : A -> A -> A) -> (g : A -> A) -> @Eq A a b -> @Eq A (f (g a) c) (f (g b) c) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr rfl (congr rfl (of_eq_true (eq_true h1)))) rfl))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (@rfl _ f) (congr (@rfl _ g) (of_eq_true (eq_true h1)))) (@rfl _ c)))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example32.lean
@@ -304,7 +312,7 @@ theorem phase00_example32 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : 
   (by grind)
 
 theorem phase00_example32_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (f : A -> A -> A) -> (g : A -> A -> A) -> @Eq A a b -> @Eq A c d -> @Eq A (f a c) (g b d) -> @Eq A (f a c) (g a d) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (Eq.trans (of_eq_true (eq_true h3)) (congr (congr rfl (Eq.symm (of_eq_true (eq_true h1)))) rfl)))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (Eq.trans (of_eq_true (eq_true h3)) (congr (congr (@rfl _ g) (Eq.symm (of_eq_true (eq_true h1)))) (@rfl _ d))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example33_f.lean
@@ -392,7 +400,7 @@ theorem phase00_example43 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : 
   (by grind)
 
 theorem phase00_example43_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (e : A) -> (f : A) -> (g : A -> A -> A -> A) -> @Eq A a d -> @Eq A b e -> @Eq A c f -> @Eq A (g a b c) (g d e f) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (congr rfl (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))) (of_eq_true (eq_true h3))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (congr (@rfl _ g) (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))) (of_eq_true (eq_true h3))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example43_f.lean
@@ -408,7 +416,7 @@ theorem phase00_example44 : (A : Type) -> (P : A -> A -> A -> Prop) -> (a : A) -
   (by grind)
 
 theorem phase00_example44_proof : (A : Type) -> (P : A -> A -> A -> Prop) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (e : A) -> (f : A) -> @Eq A a d -> @Eq A b e -> @Eq A c f -> P a b c -> P d e f :=
-  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr (congr (congr rfl (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))) (of_eq_true (eq_true h3))) (eq_false_intro goal))))
+  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr (congr (congr (@rfl _ P) (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))) (of_eq_true (eq_true h3))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example44_f.lean
@@ -424,7 +432,7 @@ theorem phase00_example45 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : 
   (by grind)
 
 theorem phase00_example45_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (e : A) -> (f : A) -> (g : A) -> (h : A) -> (F : A -> A -> A -> A -> A) -> @Eq A a e -> @Eq A b f -> @Eq A c g -> @Eq A d h -> @Eq A (F a b c d) (F e f g h) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (F : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (congr (congr rfl (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))) (of_eq_true (eq_true h3))) (of_eq_true (eq_true h4))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (F : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (congr (congr (@rfl _ F) (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))) (of_eq_true (eq_true h3))) (of_eq_true (eq_true h4))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example45_f.lean
@@ -440,7 +448,7 @@ theorem phase00_example46 : (A : Type) -> (P : A -> A -> A -> A -> Prop) -> (a :
   (by grind)
 
 theorem phase00_example46_proof : (A : Type) -> (P : A -> A -> A -> A -> Prop) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (e : A) -> (f : A) -> (g : A) -> (h : A) -> @Eq A a e -> @Eq A b f -> @Eq A c g -> @Eq A d h -> P a b c d -> P e f g h :=
-  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => fun (h5 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h5)) (Eq.trans (congr (congr (congr (congr rfl (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))) (of_eq_true (eq_true h3))) (of_eq_true (eq_true h4))) (eq_false_intro goal))))
+  fun (A : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => fun (h5 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h5)) (Eq.trans (congr (congr (congr (congr (@rfl _ P) (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))) (of_eq_true (eq_true h3))) (of_eq_true (eq_true h4))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example47.lean
@@ -448,7 +456,7 @@ theorem phase00_example47 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : 
   (by grind)
 
 theorem phase00_example47_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (F : A -> A -> A) -> (g : A -> A) -> (h : A -> A) -> @Eq A a c -> @Eq A b d -> @Eq A (F (g a) (h b)) (F (g c) (h d)) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (F : _) => fun (g : _) => fun (h : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr rfl (congr rfl (of_eq_true (eq_true h1)))) (congr rfl (of_eq_true (eq_true h2)))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (F : _) => fun (g : _) => fun (h : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (@rfl _ F) (congr (@rfl _ g) (of_eq_true (eq_true h1)))) (congr (@rfl _ h) (of_eq_true (eq_true h2)))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example47_f.lean
@@ -472,7 +480,7 @@ theorem phase00_example49 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : 
   (by grind)
 
 theorem phase00_example49_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (e : A) -> (f : A) -> (g : A) -> (h : A) -> (F : A -> A -> A) -> @Eq A a b -> @Eq A b c -> @Eq A c d -> @Eq A e f -> @Eq A f g -> @Eq A g h -> @Eq A (F a e) (F d h) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (F : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => fun (h5 : _) => fun (h6 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr rfl (Eq.trans (of_eq_true (eq_true h1)) (Eq.trans (of_eq_true (eq_true h2)) (of_eq_true (eq_true h3))))) (Eq.trans (of_eq_true (eq_true h4)) (Eq.trans (of_eq_true (eq_true h5)) (of_eq_true (eq_true h6))))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (e : _) => fun (f : _) => fun (g : _) => fun (h : _) => fun (F : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => fun (h5 : _) => fun (h6 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (@rfl _ F) (Eq.trans (of_eq_true (eq_true h1)) (Eq.trans (of_eq_true (eq_true h2)) (of_eq_true (eq_true h3))))) (Eq.trans (of_eq_true (eq_true h4)) (Eq.trans (of_eq_true (eq_true h5)) (of_eq_true (eq_true h6))))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example50.lean
@@ -480,7 +488,7 @@ theorem phase00_example50 : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> 
   (by grind)
 
 theorem phase00_example50_proof : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> @Eq A a b -> @Eq A (f (f (f a))) (f (f (f b))) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr rfl (congr rfl (congr rfl (of_eq_true (eq_true h1))))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (@rfl _ f) (congr (@rfl _ f) (congr (@rfl _ f) (of_eq_true (eq_true h1))))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example51.lean
@@ -488,7 +496,7 @@ theorem phase00_example51 : (A : Type) -> (P : A -> Prop) -> (Q : A -> Prop) -> 
   (by grind)
 
 theorem phase00_example51_proof : (A : Type) -> (P : A -> Prop) -> (Q : A -> Prop) -> (a : A) -> (b : A) -> (c : A) -> (f : A -> A) -> (g : A -> A) -> @Eq A a b -> @Eq A c (f b) -> P (g a) -> Q c -> P (g b) :=
-  fun (A : _) => fun (P : _) => fun (Q : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (Eq.trans (congr rfl (congr rfl (of_eq_true (eq_true h1)))) (eq_false_intro goal))))
+  fun (A : _) => fun (P : _) => fun (Q : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (Eq.trans (congr (@rfl _ P) (congr (@rfl _ g) (of_eq_true (eq_true h1)))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example52.lean
@@ -496,7 +504,7 @@ theorem phase00_example52 : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : 
   (by grind)
 
 theorem phase00_example52_proof : (A : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (f : A -> A) -> (g : A -> A -> A) -> @Eq A a b -> @Eq A (f c) d -> @Eq A (g a (f c)) (g b d) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr rfl (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (@rfl _ g) (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example53.lean
@@ -504,7 +512,7 @@ theorem phase00_example53 : (A : Type) -> (B : Type) -> (a : A) -> (b : A) -> (f
   (by grind)
 
 theorem phase00_example53_proof : (A : Type) -> (B : Type) -> (a : A) -> (b : A) -> (f : A -> B) -> @Eq A a b -> @Eq B (f a) (f b) :=
-  fun (A : _) => fun (B : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr rfl (of_eq_true (eq_true h1))))) (eq_false_intro goal)))
+  fun (A : _) => fun (B : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (@rfl _ f) (of_eq_true (eq_true h1))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example54.lean
@@ -512,7 +520,7 @@ theorem phase00_example54 : (A : Type) -> (B : Type) -> (P : B -> Prop) -> (a : 
   (by grind)
 
 theorem phase00_example54_proof : (A : Type) -> (B : Type) -> (P : B -> Prop) -> (a : A) -> (b : A) -> (f : A -> B) -> @Eq A a b -> P (f a) -> P (f b) :=
-  fun (A : _) => fun (B : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr rfl (congr rfl (of_eq_true (eq_true h1)))) (eq_false_intro goal))))
+  fun (A : _) => fun (B : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr (@rfl _ P) (congr (@rfl _ f) (of_eq_true (eq_true h1)))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example55.lean
@@ -520,7 +528,7 @@ theorem phase00_example55 : (A : Type) -> (B : Type) -> (a : A) -> (b : A) -> (c
   (by grind)
 
 theorem phase00_example55_proof : (A : Type) -> (B : Type) -> (a : A) -> (b : A) -> (c : A) -> (d : A) -> (f : A -> A -> B) -> @Eq A a b -> @Eq A c d -> @Eq B (f a c) (f b d) :=
-  fun (A : _) => fun (B : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr rfl (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))))) (eq_false_intro goal)))
+  fun (A : _) => fun (B : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (d : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (@rfl _ f) (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example56.lean
@@ -528,7 +536,7 @@ theorem phase00_example56 : (A : Type) -> (B : Type) -> (P : B -> A -> Prop) -> 
   (by grind)
 
 theorem phase00_example56_proof : (A : Type) -> (B : Type) -> (P : B -> A -> Prop) -> (a : A) -> (b : A) -> (x : B) -> (y : B) -> @Eq A a b -> @Eq B x y -> P x a -> P y b :=
-  fun (A : _) => fun (B : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (Eq.trans (congr (congr rfl (of_eq_true (eq_true h2))) (of_eq_true (eq_true h1))) (eq_false_intro goal))))
+  fun (A : _) => fun (B : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (Eq.trans (congr (congr (@rfl _ P) (of_eq_true (eq_true h2))) (of_eq_true (eq_true h1))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example57.lean
@@ -536,7 +544,7 @@ theorem phase00_example57 : (A : Type) -> (B : Type) -> (C : Type) -> (a : A) ->
   (by grind)
 
 theorem phase00_example57_proof : (A : Type) -> (B : Type) -> (C : Type) -> (a : A) -> (b : A) -> (f : A -> B) -> (g : B -> C) -> @Eq A a b -> @Eq C (g (f a)) (g (f b)) :=
-  fun (A : _) => fun (B : _) => fun (C : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr rfl (congr rfl (of_eq_true (eq_true h1)))))) (eq_false_intro goal)))
+  fun (A : _) => fun (B : _) => fun (C : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (g : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (@rfl _ g) (congr (@rfl _ f) (of_eq_true (eq_true h1)))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example58.lean
@@ -544,7 +552,7 @@ theorem phase00_example58 : (A : Type) -> (B : Type) -> (a : A) -> (b : A) -> (c
   (by grind)
 
 theorem phase00_example58_proof : (A : Type) -> (B : Type) -> (a : A) -> (b : A) -> (c : A) -> (x : B) -> (y : B) -> (z : B) -> (f : A -> B) -> @Eq A a b -> @Eq A b c -> @Eq B x y -> @Eq B y z -> @Eq B (f a) x -> @Eq B (f c) z :=
-  fun (A : _) => fun (B : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (x : _) => fun (y : _) => fun (z : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => fun (h5 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (Eq.trans (Eq.symm (congr rfl (Eq.trans (of_eq_true (eq_true h1)) (of_eq_true (eq_true h2))))) (Eq.trans (of_eq_true (eq_true h5)) (Eq.trans (of_eq_true (eq_true h3)) (of_eq_true (eq_true h4))))))) (eq_false_intro goal)))
+  fun (A : _) => fun (B : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (x : _) => fun (y : _) => fun (z : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => fun (h5 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (Eq.trans (Eq.symm (congr (@rfl _ f) (Eq.trans (of_eq_true (eq_true h1)) (of_eq_true (eq_true h2))))) (Eq.trans (of_eq_true (eq_true h5)) (Eq.trans (of_eq_true (eq_true h3)) (of_eq_true (eq_true h4))))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example59.lean
@@ -552,7 +560,7 @@ theorem phase00_example59 : (A : Type) -> (B : Type) -> (a : A) -> (b : A) -> (x
   (by grind)
 
 theorem phase00_example59_proof : (A : Type) -> (B : Type) -> (a : A) -> (b : A) -> (x : B) -> (y : B) -> (f : A -> B -> B) -> @Eq A a b -> @Eq B x y -> @Eq B (f a x) (f b y) :=
-  fun (A : _) => fun (B : _) => fun (a : _) => fun (b : _) => fun (x : _) => fun (y : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr rfl (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))))) (eq_false_intro goal)))
+  fun (A : _) => fun (B : _) => fun (a : _) => fun (b : _) => fun (x : _) => fun (y : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (@rfl _ f) (of_eq_true (eq_true h1))) (of_eq_true (eq_true h2))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example60.lean
@@ -560,7 +568,7 @@ theorem phase00_example60 : (A : Type) -> (B : Type) -> (P : B -> Prop) -> (a : 
   (by grind)
 
 theorem phase00_example60_proof : (A : Type) -> (B : Type) -> (P : B -> Prop) -> (a : A) -> (b : A) -> (c : B) -> (f : A -> B) -> @Eq A a b -> @Eq B (f a) c -> P c -> P (f b) :=
-  fun (A : _) => fun (B : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (Eq.trans (congr rfl (Eq.trans (Eq.symm (of_eq_true (eq_true h2))) (congr rfl (of_eq_true (eq_true h1))))) (eq_false_intro goal))))
+  fun (A : _) => fun (B : _) => fun (P : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (Eq.trans (congr (@rfl _ P) (Eq.trans (Eq.symm (of_eq_true (eq_true h2))) (congr (@rfl _ f) (of_eq_true (eq_true h1))))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example61.lean
@@ -568,7 +576,7 @@ theorem phase00_example61 : (A : Type) -> (B : Type) -> (a : A) -> (b : A) -> (c
   (by grind)
 
 theorem phase00_example61_proof : (A : Type) -> (B : Type) -> (a : A) -> (b : A) -> (c : A) -> (x : B) -> (y : B) -> (f : A -> B -> A -> B) -> @Eq A a b -> @Eq A c b -> @Eq B x y -> @Eq B (f a x c) (f b y b) :=
-  fun (A : _) => fun (B : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (x : _) => fun (y : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (congr rfl (of_eq_true (eq_true h1))) (of_eq_true (eq_true h3))) (of_eq_true (eq_true h2))))) (eq_false_intro goal)))
+  fun (A : _) => fun (B : _) => fun (a : _) => fun (b : _) => fun (c : _) => fun (x : _) => fun (y : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (congr (congr (@rfl _ f) (of_eq_true (eq_true h1))) (of_eq_true (eq_true h3))) (of_eq_true (eq_true h2))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example62.lean
@@ -576,7 +584,7 @@ theorem phase00_example62 : (A : Type) -> (B : Type) -> (P : B -> Prop) -> (Q : 
   (by grind)
 
 theorem phase00_example62_proof : (A : Type) -> (B : Type) -> (P : B -> Prop) -> (Q : A -> Prop) -> (a : A) -> (b : A) -> (x : B) -> (f : A -> B) -> @Eq A a b -> Q a -> @Eq B (f a) x -> P x -> P (f b) :=
-  fun (A : _) => fun (B : _) => fun (P : _) => fun (Q : _) => fun (a : _) => fun (b : _) => fun (x : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr rfl (Eq.trans (Eq.symm (of_eq_true (eq_true h3))) (congr rfl (of_eq_true (eq_true h1))))) (eq_false_intro goal))))
+  fun (A : _) => fun (B : _) => fun (P : _) => fun (Q : _) => fun (a : _) => fun (b : _) => fun (x : _) => fun (f : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr (@rfl _ P) (Eq.trans (Eq.symm (of_eq_true (eq_true h3))) (congr (@rfl _ f) (of_eq_true (eq_true h1))))) (eq_false_intro goal))))
 
 
 -- problems/phase00/example63.lean
@@ -584,7 +592,7 @@ theorem phase00_example63 : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> 
   (by grind)
 
 theorem phase00_example63_proof : (A : Type) -> (a : A) -> (b : A) -> (f : A -> A) -> @Eq A a b -> @Eq A (f a) (f b) :=
-  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr rfl (of_eq_true (eq_true h1))))) (eq_false_intro goal)))
+  fun (A : _) => fun (a : _) => fun (b : _) => fun (f : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true (congr (@rfl _ f) (of_eq_true (eq_true h1))))) (eq_false_intro goal)))
 
 
 -- problems/phase00/example64_f.lean
@@ -616,7 +624,7 @@ theorem phase10_example01 : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) 
   (by grind)
 
 theorem phase10_example01_proof : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> And (P x) (@Eq A x y) -> P y :=
-  fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (and_elim_left (eq_true h1))) (Eq.trans (congr rfl (of_eq_true (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (eq_true h1)))) (eq_false_intro goal))))
+  fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (and_elim_left (eq_true h1))) (Eq.trans (congr (@rfl _ P) (of_eq_true (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (eq_true h1)))) (eq_false_intro goal))))
 
 
 -- problems/phase10/example02.lean
@@ -648,7 +656,7 @@ theorem phase10_example05 : (T : Type) -> (A : Prop) -> (B : Prop) -> (P : T -> 
   (by grind)
 
 theorem phase10_example05_proof : (T : Type) -> (A : Prop) -> (B : Prop) -> (P : T -> Prop) -> Or A B -> (x : T) -> (y : T) -> (A -> @Eq T x y) -> (B -> @Eq T x y) -> P x -> P y :=
-  fun (T : _) => fun (A : _) => fun (B : _) => fun (P : _) => fun (h1 : _) => fun (x : _) => fun (y : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (or_elim (eq_true h1) (fun (h_case_7_left : _) => Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr rfl (of_eq_true (modus_ponens (eq_true h2) (eq_true h_case_7_left)))) (eq_false_intro goal))) (fun (h_case_7_right : _) => Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr rfl (of_eq_true (modus_ponens (eq_true h3) (eq_true h_case_7_right)))) (eq_false_intro goal)))))
+  fun (T : _) => fun (A : _) => fun (B : _) => fun (P : _) => fun (h1 : _) => fun (x : _) => fun (y : _) => fun (h2 : _) => fun (h3 : _) => fun (h4 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (or_elim (eq_true h1) (fun (h_case_7_left : _) => Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr (@rfl _ P) (of_eq_true (modus_ponens (eq_true h2) (eq_true h_case_7_left)))) (eq_false_intro goal))) (fun (h_case_7_right : _) => Eq.trans (Eq.symm (eq_true h4)) (Eq.trans (congr (@rfl _ P) (of_eq_true (modus_ponens (eq_true h3) (eq_true h_case_7_right)))) (eq_false_intro goal)))))
 
 
 -- problems/phase10/example06.lean
@@ -712,7 +720,7 @@ theorem phase10_example13 : (A : Prop) -> (B : Prop) -> And A B -> And B A :=
   (by grind)
 
 theorem phase10_example13_proof : (A : Prop) -> (B : Prop) -> And A B -> And B A :=
-  fun (A : _) => fun (B : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h1)) (Eq.trans (congr (congr rfl (Eq.trans (and_elim_left (eq_true h1)) (Eq.trans (Eq.symm (eq_true h1)) (and_eq_right_of_left_true (and_elim_left (eq_true h1)))))) (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (Eq.trans (eq_true h1) (Eq.symm (and_elim_left (eq_true h1)))))) (eq_false_intro goal))))
+  fun (A : _) => fun (B : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h1)) (Eq.trans (congr (congr (@rfl _ And) (Eq.trans (and_elim_left (eq_true h1)) (Eq.trans (Eq.symm (eq_true h1)) (and_eq_right_of_left_true (and_elim_left (eq_true h1)))))) (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (Eq.trans (eq_true h1) (Eq.symm (and_elim_left (eq_true h1)))))) (eq_false_intro goal))))
 
 
 -- problems/phase10/example14.lean
@@ -720,7 +728,7 @@ theorem phase10_example14 : (A : Prop) -> (B : Prop) -> (C : Prop) -> Or A (Or B
   (by grind)
 
 theorem phase10_example14_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> Or A (Or B C) -> Or (Or A B) C :=
-  fun (A : _) => fun (B : _) => fun (C : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h1)) (Eq.trans (or_eq_of_left_false (or_elim_left_false (or_elim_left_false (eq_false_intro goal)))) (Eq.trans (congr (Eq.trans (Eq.symm (congr rfl (Eq.trans (or_elim_left_false (or_elim_left_false (eq_false_intro goal))) (Eq.trans (Eq.symm (or_elim_left_false (eq_false_intro goal))) (or_eq_of_left_false (or_elim_left_false (or_elim_left_false (eq_false_intro goal)))))))) (congr rfl (Eq.trans (or_elim_left_false (or_elim_left_false (eq_false_intro goal))) (Eq.symm (or_elim_left_false (eq_false_intro goal)))))) rfl) (eq_false_intro goal)))))
+  fun (A : _) => fun (B : _) => fun (C : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h1)) (Eq.trans (or_eq_of_left_false (or_elim_left_false (or_elim_left_false (eq_false_intro goal)))) (Eq.trans (congr (Eq.trans (Eq.symm (congr (@rfl _ Or) (Eq.trans (or_elim_left_false (or_elim_left_false (eq_false_intro goal))) (Eq.trans (Eq.symm (or_elim_left_false (eq_false_intro goal))) (or_eq_of_left_false (or_elim_left_false (or_elim_left_false (eq_false_intro goal)))))))) (congr (@rfl _ Or) (Eq.trans (or_elim_left_false (or_elim_left_false (eq_false_intro goal))) (Eq.symm (or_elim_left_false (eq_false_intro goal)))))) (@rfl _ C)) (eq_false_intro goal)))))
 
 
 -- problems/phase10/example15.lean
@@ -744,7 +752,7 @@ theorem phase10_example17 : (A : Prop) -> (B : Prop) -> (C : Prop) -> And A (And
   (by grind)
 
 theorem phase10_example17_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> And A (And B C) -> And (And A B) C :=
-  fun (A : _) => fun (B : _) => fun (C : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h1)) (Eq.trans (and_eq_right_of_left_true (and_elim_left (eq_true h1))) (Eq.trans (congr (Eq.trans (Eq.symm (congr rfl (Eq.trans (and_elim_left (eq_true h1)) (Eq.symm (and_elim_left (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (eq_true h1))))))) (congr rfl (Eq.trans (and_elim_left (eq_true h1)) (Eq.trans (Eq.symm (eq_true h1)) (Eq.trans (and_eq_right_of_left_true (and_elim_left (eq_true h1))) (congr (Eq.symm (congr rfl (Eq.trans (and_elim_left (eq_true h1)) (Eq.symm (and_elim_left (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (eq_true h1))))))) (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (eq_true h1))))) (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (Eq.trans (eq_true h1) (Eq.symm (and_elim_left (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (eq_true h1))))))))))))) rfl) (eq_false_intro goal)))))
+  fun (A : _) => fun (B : _) => fun (C : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h1)) (Eq.trans (and_eq_right_of_left_true (and_elim_left (eq_true h1))) (Eq.trans (congr (Eq.trans (Eq.symm (congr (@rfl _ And) (Eq.trans (and_elim_left (eq_true h1)) (Eq.symm (and_elim_left (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (eq_true h1))))))) (congr (@rfl _ And) (Eq.trans (and_elim_left (eq_true h1)) (Eq.trans (Eq.symm (eq_true h1)) (Eq.trans (and_eq_right_of_left_true (and_elim_left (eq_true h1))) (congr (Eq.symm (congr (@rfl _ And) (Eq.trans (and_elim_left (eq_true h1)) (Eq.symm (and_elim_left (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (eq_true h1))))))) (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (eq_true h1))))) (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (Eq.trans (eq_true h1) (Eq.symm (and_elim_left (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (eq_true h1))))))))))))) (@rfl _ C)) (eq_false_intro goal)))))
 
 
 -- problems/phase10/example18.lean
@@ -752,7 +760,7 @@ theorem phase10_example18 : (A : Prop) -> (B : Prop) -> (C : Prop) -> Or A (And 
   (by grind)
 
 theorem phase10_example18_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> Or A (And B C) -> And (Or A B) (Or A C) :=
-  fun (A : _) => fun (B : _) => fun (C : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (or_elim (eq_true h1) (fun (h_case_10_left : _) => Eq.trans (Eq.symm (or_eq_true_of_left_true (eq_true h_case_10_left))) (Eq.trans (Eq.symm (and_eq_right_of_left_true (or_eq_true_of_left_true (eq_true h_case_10_left)))) (eq_false_intro goal))) (fun (h_case_10_right : _) => Eq.trans (Eq.symm (eq_true h_case_10_right)) (Eq.trans (congr (congr rfl (Eq.trans (and_elim_left (eq_true h_case_10_right)) (Eq.trans (Eq.symm (eq_true h1)) (congr rfl (Eq.trans (eq_true h_case_10_right) (Eq.symm (and_elim_left (eq_true h_case_10_right)))))))) (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h_case_10_right)))) (Eq.trans (eq_true h_case_10_right) (Eq.trans (Eq.symm (eq_true h1)) (congr rfl (and_eq_right_of_left_true (and_elim_left (eq_true h_case_10_right)))))))) (eq_false_intro goal)))))
+  fun (A : _) => fun (B : _) => fun (C : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (or_elim (eq_true h1) (fun (h_case_10_left : _) => Eq.trans (Eq.symm (or_eq_true_of_left_true (eq_true h_case_10_left))) (Eq.trans (Eq.symm (and_eq_right_of_left_true (or_eq_true_of_left_true (eq_true h_case_10_left)))) (eq_false_intro goal))) (fun (h_case_10_right : _) => Eq.trans (Eq.symm (eq_true h_case_10_right)) (Eq.trans (congr (congr (@rfl _ And) (Eq.trans (and_elim_left (eq_true h_case_10_right)) (Eq.trans (Eq.symm (eq_true h1)) (congr (@rfl _ (Or A)) (Eq.trans (eq_true h_case_10_right) (Eq.symm (and_elim_left (eq_true h_case_10_right)))))))) (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h_case_10_right)))) (Eq.trans (eq_true h_case_10_right) (Eq.trans (Eq.symm (eq_true h1)) (congr (@rfl _ (Or A)) (and_eq_right_of_left_true (and_elim_left (eq_true h_case_10_right)))))))) (eq_false_intro goal)))))
 
 
 -- problems/phase10/example19.lean
@@ -768,7 +776,7 @@ theorem phase10_example20 : (A : Prop) -> (B : Prop) -> (C : Prop) -> (A -> And 
   (by grind)
 
 theorem phase10_example20_proof : (A : Prop) -> (B : Prop) -> (C : Prop) -> (A -> And B C) -> And (A -> B) (A -> C) :=
-  (by sorry)
+  fun (A : _) => fun (B : _) => fun (C : _) => fun (h1 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (or_elim (push_not_and (eq_false_intro goal)) (fun (h_case_20_left : _) => Eq.trans (Eq.symm (eq_true h1)) (Eq.trans (congr (@rfl _ (Imp A)) (Eq.trans (and_eq_false_of_left_false (eq_false_of_not_eq_true (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (push_not_imp (eq_false_of_not_eq_true (eq_true h_case_20_left)))))) (push_not_imp (eq_false_of_not_eq_true (eq_true h_case_20_left)))))) (Eq.symm (eq_false_of_not_eq_true (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (push_not_imp (eq_false_of_not_eq_true (eq_true h_case_20_left)))))) (push_not_imp (eq_false_of_not_eq_true (eq_true h_case_20_left)))))))) (eq_false_of_not_eq_true (eq_true h_case_20_left)))) (fun (h_case_20_right : _) => Eq.trans (Eq.symm (eq_true h1)) (Eq.trans (congr (@rfl _ (Imp A)) (Eq.trans (and_eq_false_of_right_false (eq_false_of_not_eq_true (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (push_not_imp (eq_false_of_not_eq_true (eq_true h_case_20_right)))))) (push_not_imp (eq_false_of_not_eq_true (eq_true h_case_20_right)))))) (Eq.symm (eq_false_of_not_eq_true (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (push_not_imp (eq_false_of_not_eq_true (eq_true h_case_20_right)))))) (push_not_imp (eq_false_of_not_eq_true (eq_true h_case_20_right)))))))) (eq_false_of_not_eq_true (eq_true h_case_20_right))))))
 
 
 -- problems/phase10/example21.lean
@@ -800,7 +808,7 @@ theorem phase10_example24 : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) 
   (by grind)
 
 theorem phase10_example24_proof : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> @Eq A x y -> P x -> Not (P y) -> False :=
-  fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (not_eq_false_of_arg_true (Eq.trans (Eq.symm (congr rfl (of_eq_true (eq_true h1)))) (eq_true h2)))))
+  fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (not_eq_false_of_arg_true (Eq.trans (Eq.symm (congr (@rfl _ P) (of_eq_true (eq_true h1)))) (eq_true h2)))))
 
 
 -- problems/phase10/example25.lean
@@ -808,7 +816,7 @@ theorem phase10_example25 : (A : Type) -> (P : A -> Prop) -> (f : A -> A) -> (x 
   (by grind)
 
 theorem phase10_example25_proof : (A : Type) -> (P : A -> Prop) -> (f : A -> A) -> (x : A) -> (y : A) -> Or (@Eq A x y) (@Eq A (f x) (f y)) -> P (f x) -> P (f y) :=
-  fun (A : _) => fun (P : _) => fun (f : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (or_elim (eq_true h1) (fun (h_case_12_left : _) => Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr rfl (congr rfl (of_eq_true (eq_true h_case_12_left)))) (eq_false_intro goal))) (fun (h_case_12_right : _) => Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr rfl (of_eq_true (eq_true h_case_12_right))) (eq_false_intro goal)))))
+  fun (A : _) => fun (P : _) => fun (f : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => fun (h2 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (or_elim (eq_true h1) (fun (h_case_12_left : _) => Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr (@rfl _ P) (congr (@rfl _ f) (of_eq_true (eq_true h_case_12_left)))) (eq_false_intro goal))) (fun (h_case_12_right : _) => Eq.trans (Eq.symm (eq_true h2)) (Eq.trans (congr (@rfl _ P) (of_eq_true (eq_true h_case_12_right))) (eq_false_intro goal)))))
 
 
 -- problems/phase10/example26.lean
@@ -816,7 +824,7 @@ theorem phase10_example26 : (A : Type) -> (B : Type) -> (P : A -> Prop) -> (Q : 
   (by grind)
 
 theorem phase10_example26_proof : (A : Type) -> (B : Type) -> (P : A -> Prop) -> (Q : B -> Prop) -> (R : Prop) -> (f : A -> A) -> (x : A) -> (y : A) -> (z : B) -> And (@Eq A x y) (P (f x)) -> (P (f y) -> Q z) -> (Q z -> R) -> R :=
-  fun (A : _) => fun (B : _) => fun (P : _) => fun (Q : _) => fun (R : _) => fun (f : _) => fun (x : _) => fun (y : _) => fun (z : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (modus_ponens (eq_true h3) (modus_ponens (eq_true h2) (Eq.trans (Eq.symm (congr rfl (congr rfl (of_eq_true (and_elim_left (eq_true h1)))))) (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (eq_true h1)))))) (eq_false_intro goal)))
+  fun (A : _) => fun (B : _) => fun (P : _) => fun (Q : _) => fun (R : _) => fun (f : _) => fun (x : _) => fun (y : _) => fun (z : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (modus_ponens (eq_true h3) (modus_ponens (eq_true h2) (Eq.trans (Eq.symm (congr (@rfl _ P) (congr (@rfl _ f) (of_eq_true (and_elim_left (eq_true h1)))))) (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (eq_true h1)))) (eq_true h1)))))) (eq_false_intro goal)))
 
 
 -- problems/phase10/example27.lean
@@ -832,7 +840,7 @@ theorem phase10_example28 : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) 
   (by grind)
 
 theorem phase10_example28_proof : (A : Type) -> (P : A -> Prop) -> (x : A) -> (y : A) -> Or (P x -> @Eq A x y) (@Eq A x y -> P x) :=
-  (by sorry)
+  fun (A : _) => fun (P : _) => fun (x : _) => fun (y : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (push_not_imp (Eq.trans (Eq.symm (or_eq_of_left_false (or_elim_left_false (eq_false_intro goal)))) (eq_false_intro goal)))) (and_eq_false_of_left_false (eq_false_of_not_eq_true (Eq.trans (Eq.symm (and_eq_right_of_left_true (and_elim_left (push_not_imp (or_elim_left_false (eq_false_intro goal)))))) (push_not_imp (or_elim_left_false (eq_false_intro goal))))))))
 
 
 -- problems/phase10/example29.lean
@@ -856,6 +864,6 @@ theorem phase10_example31 : (T : Type) -> (P : T -> Prop) -> (f : T -> T) -> (x 
   (by grind)
 
 theorem phase10_example31_proof : (T : Type) -> (P : T -> Prop) -> (f : T -> T) -> (x : T) -> (y : T) -> @Eq T x y -> (@Eq T (f x) (f y) -> P x) -> Not (P y) -> Not (@Eq T (f x) (f y)) :=
-  fun (T : _) => fun (P : _) => fun (f : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (not_eq_false_of_arg_true (Eq.trans (Eq.symm (congr rfl (of_eq_true (eq_true h1)))) (modus_ponens (eq_true h2) (eq_true (congr rfl (of_eq_true (eq_true h1)))))))))
+  fun (T : _) => fun (P : _) => fun (f : _) => fun (x : _) => fun (y : _) => fun (h1 : _) => fun (h2 : _) => fun (h3 : _) => Classical.byContradiction (fun (goal : _) => false_of_true_eq_false (Eq.trans (Eq.symm (eq_true h3)) (not_eq_false_of_arg_true (Eq.trans (Eq.symm (congr (@rfl _ P) (of_eq_true (eq_true h1)))) (modus_ponens (eq_true h2) (eq_true (congr (@rfl _ f) (of_eq_true (eq_true h1)))))))))
 
 

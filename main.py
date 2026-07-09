@@ -31,6 +31,8 @@ args = parser.parse_args()
 
 
 output = """
+def Imp (A : Prop) (B : Prop) := A → B
+
 theorem eq_false_intro {a : Prop} (h : ¬a) : a = False := propext (iff_false_intro h)
 
 theorem and_elim_left {a b : Prop} (h : (a ∧ b) = True) : a = True := eq_true (of_eq_true h).left
