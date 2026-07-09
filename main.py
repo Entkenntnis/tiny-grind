@@ -83,6 +83,12 @@ eq_true ⟨
       (fun hnA => of_eq_false h (fun hA => False.elim (hnA hA))),
     fun hB => of_eq_false h (fun _ => hB)
   ⟩
+
+theorem push_not_or {A B : Prop} (h: (A ∨ B) = False) : (¬ A ∧ ¬ B) = True :=
+eq_true ⟨
+    fun hA => of_eq_false h (Or.inl hA),
+    fun hB => of_eq_false h (Or.inr hB)
+  ⟩
 """
 
 

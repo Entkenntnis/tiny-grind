@@ -193,11 +193,12 @@ class EGraph:
         raise RuntimeError(f"No proof found between {a} and {b}")
 
     def _rebuild(self, case_split_levels: int = 0):
-        while (
+        while not self.isBottom() and (
             self._do_true_equality_elimination()
             or self._do_equality_reflection()
             or self._do_congrunce_closure()
             or self._do_propositional_constraint_propagation()
+            or self._do_push_not()
             or self._do_modus_ponens()
         ):
             pass
@@ -470,6 +471,81 @@ class EGraph:
             return self._union(term, self._True, proof)
         
         return False
+
+    def _do_push_not(self) -> bool:
+        for node in range(len(self._node_to_term)):
+            if self._is_eq_false(node) and not self._is_eq_true(node): # guarantee that we have not found Bottom yet
+                term = self._node_to_term[node]
+
+                and_args = self._binary_connective_args(term, "And")
+                if and_args is not None:
+                    if self._push_not_and(node, and_args[0], and_args[1]):
+                        return True
+                
+                or_args = self._binary_connective_args(term, "Or")
+                if or_args is not None:
+                    if self._push_not_or(node, or_args[0], or_args[1]):
+                        return True
+                
+                imp_args = self._binary_connective_args(term, "Imp")
+                if imp_args is not None:
+                    if self._push_not_imp(node, imp_args[0], imp_args[1]):
+                        return True
+        return False 
+                
+    def _push_not_and(self, node: int, a_term: Term, b_term: Term) -> bool:
+
+        not_a = Application(Symbol("Not"), a_term)
+        not_b = Application(Symbol("Not"), b_term)
+
+        result_term = Application(
+            Application(Symbol("Or"), not_a),
+            not_b
+        )
+
+        result_node = self._add_term(result_term)
+        if not self._is_eq_true(result_node):
+            false_proof = self._find_proof(node, self._False)
+            proof = syntax.App(syntax.Var("push_not_and"), false_proof)
+            return self._union(result_node, self._True, proof)
+        
+        return False
+    
+    def _push_not_or(self, node: int, a_term: Term, b_term: Term) -> bool:
+
+        not_a = Application(Symbol("Not"), a_term)
+        not_b = Application(Symbol("Not"), b_term)
+
+        result_term = Application(
+            Application(Symbol("And"), not_a),
+            not_b
+        )
+
+        result_node = self._add_term(result_term)
+        if not self._is_eq_true(result_node):
+            false_proof = self._find_proof(node, self._False)
+            proof = syntax.App(syntax.Var("push_not_or"), false_proof)
+            return self._union(result_node, self._True, proof)
+        
+        return False
+    
+    def _push_not_imp(self, node: int, a_term: Term, b_term: Term) -> bool:
+
+        not_b = Application(Symbol("Not"), b_term)
+
+        result_term = Application(
+            Application(Symbol("And"), a_term),
+            not_b
+        )
+
+        result_node = self._add_term(result_term)
+        if not self._is_eq_true(result_node):
+            false_proof = self._find_proof(node, self._False)
+            proof = syntax.App(syntax.Var("push_not_imp"), false_proof)
+            return self._union(result_node, self._True, proof)
+        
+        return False
+
 
 
     def _do_true_equality_elimination(self) -> bool:
