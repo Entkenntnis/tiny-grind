@@ -67,8 +67,6 @@ theorem eq_false_of_not_eq_true {a : Prop} (hn : (¬a) = True) : a = False := eq
 
 theorem eq_true_of_not_eq_false {a : Prop} (hn : (¬a) = False) : a = True := eq_true (Classical.byContradiction (fun hna => of_eq_false hn hna))
 
-theorem modus_ponens {a b : Prop} (imp: (a → b) = True) (ha : a = True) : b = True := eq_true ((of_eq_true imp) (of_eq_true ha))
-
 theorem or_elim {A B : Prop} (hor : (A ∨ B) = True) (hA : A -> (True = False)) (hB : B -> (True = False)) : True = False := Or.elim (of_eq_true hor) hA hB
 
 theorem push_not_and {A B : Prop} (h: (A ∧ B) = False) : (¬ A ∨ ¬ B) = True := eq_true (
@@ -97,6 +95,19 @@ theorem imp_eq_true_of_left_false {A B : Prop} (h : A = False) : (A → B) = Tru
 
 theorem imp_eq_true_of_right_true {A B : Prop} (h : B = True) : (A → B) = True :=
   eq_true (fun a => of_eq_true h)
+
+theorem modus_ponens {a b : Prop} (imp: (a → b) = True) (ha : a = True) : b = True := eq_true ((of_eq_true imp) (of_eq_true ha))
+
+theorem modus_tollens {a b : Prop} (imp: (a → b) = True) (hb : b = False) : a = False :=
+  eq_false (mt (of_eq_true imp) (of_eq_false hb))
+
+theorem imp_false_implies_left_true {A B : Prop} (h : (A → B) = False) : A = True :=
+  Classical.byContradiction (fun g => ((of_eq_false h) (fun a => absurd a (fun j => (g (eq_true a))))))
+
+theorem imp_false_implies_right_false {A B : Prop} (h : (A → B) = False) : B = False :=
+  eq_false (fun b => (of_eq_false h) (fun a => b))
+
+
 
 
 
