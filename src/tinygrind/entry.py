@@ -31,13 +31,13 @@ def tinygrind(definition: Definition) -> Term:
         if isinstance(type, Sort) and type.level == 1 and name:
             names.append(name)
         elif name:
+            egraph.addSymbol(Symbol(name), type)
+            names.append(name)
+        elif isinstance(type, App) or isinstance(type, Pi) or isinstance(type, Var):
             # functions and implications are not differentiated, uff
             # interesting
             # but that's kinda complicated, no?
             # later on I should probably make this a bit more robust
-            egraph.addSymbol(Symbol(name))
-            names.append(name)
-        elif isinstance(type, App) or isinstance(type, Pi) or isinstance(type, Var):
             proof_name = f"h{h_counter}"
             h_counter += 1
             egraph.addProp(lean_to_egraph(type), Var(proof_name))
