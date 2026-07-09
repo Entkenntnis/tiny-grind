@@ -599,6 +599,7 @@ class EGraph:
         return False
 
     def _try_case_split(self, case_split_levels: int = 0) -> bool:
+        # 1. splitting on Or-True
         for node in range(len(self._node_to_term)):
             if not self._equals(node, self._True):
                 continue
@@ -641,6 +642,50 @@ class EGraph:
                 syntax.App(
                     syntax.App(
                         syntax.Var("or_elim"), self._find_proof(node, self._True)
+                    ),
+                    lam_A,
+                ),
+                lam_B,
+            )
+
+            return self._union(self._True, self._False, proof)
+
+        # 2. split on any undecided symbol
+        for node in range(len(self._node_to_term)):
+            P = self._node_to_term[node]
+            if not isinstance(P, Symbol):
+                continue
+            if self._is_eq_true(node) or self._is_eq_false(node):
+                continue
+
+            hypA = f"h_case_{node}_left"
+
+            cloneA = self._clone()
+            cloneA.addProp(P, syntax.Var(hypA))
+            cloneA._rebuild(case_split_levels=case_split_levels - 1)
+            if not cloneA.isBottom():
+                continue  # no proof found
+
+            hypB = f"h_case_{node}_right"
+            cloneB = self._clone()
+            cloneB.addProp(Application(Symbol("Not"), P), syntax.Var(hypB))
+            cloneB._rebuild(case_split_levels=case_split_levels - 1)
+            if not cloneB.isBottom():
+                continue
+
+            # now there are contradictions found for A and B
+            lam_A = syntax.Lam(
+                hypA, syntax.Var("_"), cloneA._find_proof(self._True, self._False)
+            )
+            lam_B = syntax.Lam(
+                hypB, syntax.Var("_"), cloneB._find_proof(self._True, self._False)
+            )
+
+            proof = syntax.App(
+                syntax.App(
+                    syntax.App(
+                        syntax.Var("or_elim"),
+                        syntax.App(syntax.Var("em"), termToLean(P)),
                     ),
                     lam_A,
                 ),

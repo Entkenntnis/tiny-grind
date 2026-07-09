@@ -107,6 +107,9 @@ theorem imp_false_implies_left_true {A B : Prop} (h : (A → B) = False) : A = T
 theorem imp_false_implies_right_false {A B : Prop} (h : (A → B) = False) : B = False :=
   eq_false (fun b => (of_eq_false h) (fun a => b))
 
+theorem em (P: Prop) : (Or P (Not P)) = True :=
+  eq_true (Classical.em P)
+
 
 
 
