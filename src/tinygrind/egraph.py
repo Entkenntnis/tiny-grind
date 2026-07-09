@@ -64,7 +64,7 @@ class EGraph:
         self._nodes_to_proof: dict[Node, dict[Node, syntax.Term]] = {}
 
         # some type information
-        self._nodes_to_type: dict[Node, syntax.Term] = {}
+        self._node_to_type: dict[Node, syntax.Term] = {}
 
         # "structual sharing" happens here
         self._term_to_node: dict[Term, Node] = {}
@@ -83,7 +83,7 @@ class EGraph:
         clone._nodes_to_proof = {}
         for k, v in self._nodes_to_proof.items():
             clone._nodes_to_proof[k] = v.copy()
-        clone._nodes_to_type = self._nodes_to_type.copy()
+        clone._node_to_type = self._node_to_type.copy()
         clone._True = self._True
         clone._False = self._False
         return clone
@@ -123,21 +123,41 @@ class EGraph:
     def _equals(self, a: Node, b: Node) -> bool:
         return self._find(a) == self._find(b)
 
-    def _add_term(self, term: Term, type: syntax.Term) -> Node:
+    def _add_term(self, term: Term, type: syntax.Term | None = None) -> Node:
         existing = self._term_to_node.get(term)
         if existing is not None:
             return existing
 
         # recursively add children
         if isinstance(term, Application):
-            # _TODO_ Type inference should happen here, the logic is just a little bit too simple
-            _ = self._add_term(term.head, syntax.Sort(0))  # ???
-            _ = self._add_term(term.arg, syntax.Sort(0))  # ???
-        elif isinstance(term, Equals):
-            _ = self._add_term(term.left, syntax.Sort(0))
-            _ = self._add_term(term.right, syntax.Sort(0))
+            head_node = self._add_term(
+                term.head
+            )  # I expect the head to have a proper type
+            head_type = self._node_to_type[head_node]
+            if not isinstance(head_type, syntax.Pi):
+                raise RuntimeError("Expecting head to be a function application")
 
-        print(f"Add {term} with type {type}")
+            type = head_type.body
+            _ = self._add_term(term.arg)  # arg should be able to infer type for itself
+        elif isinstance(term, Equals):
+            _ = self._add_term(term.left)
+            _ = self._add_term(term.right)
+            type = syntax.Sort(0)
+
+        if isinstance(term, Symbol):
+            if term.name == "And" or term.name == "Imp" or term.name == "Or":
+                type = syntax.Pi(
+                    var=None,
+                    var_type=syntax.Sort(0),
+                    body=syntax.Pi(
+                        var=None, var_type=syntax.Sort(0), body=syntax.Sort(0)
+                    ),
+                )
+            if term.name == "Not":
+                type = syntax.Pi(var=None, var_type=syntax.Sort(0), body=syntax.Sort(0))
+
+        if not type:
+            raise RuntimeError(f"internal error: missing type for {term}")
 
         node = len(self._parents)  # it really is just a continuous int id
         self._parents.append(node)
@@ -145,7 +165,7 @@ class EGraph:
         self._sizes.append(1)
 
         self._term_to_node[term] = node
-        self._nodes_to_type[node] = type
+        self._node_to_type[node] = type
         return node
 
     def _node(self, term: Term) -> Node:
@@ -658,13 +678,15 @@ class EGraph:
 
             return self._union(self._True, self._False, proof)
 
-        # 2. split on any undecided symbol
+        # 2. split on any undecided Prop Node
         for node in range(len(self._node_to_term)):
             P = self._node_to_term[node]
-            if not isinstance(P, Symbol):
-                continue
             if self._is_eq_true(node) or self._is_eq_false(node):
                 continue
+
+            t = self._node_to_type[node]
+            if not isinstance(t, syntax.Sort) or not t.level == 0:
+                continue  # we only case split on Props
 
             hypA = f"h_case_{node}_left"
 

@@ -4,6 +4,7 @@ def phase10_example45 :
     (C : Prop) ->
     (D : Prop) ->
     (E : Prop) ->
-    And A B -> And E (And C D) ->
+    (F : Prop) ->
+    And A (And B F) -> And E (And C D) ->
     C :=
   by grind
