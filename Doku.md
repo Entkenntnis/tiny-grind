@@ -39,19 +39,15 @@ Wenn a und b gleich sind, ist repr_arg von a und repr_arg von b gleich, und repr
 Wenn wir also den key nochmal finden, haben wir eine weitere Kombination, bei der die Funktion gleich ist und die Argumente ebenfalls gleich sind, also zb den Fall (wenn a = b, dann f(a) = f(b)). Dann werden auch die Applications f(a) und f(b) geunioned, weil sie gleich sind. In diesem Schritt wird der Proof ("congr") gespeichert.
 
 ### _find_proof
-//TODO: Erklärung
-
-
-
-
+Wir speichern für alle Unions die Beweise in beide Richtungen. Damit lässt sich zwischen je zwei nodes a und b einer Äquivalenzklasse ein Beweis konstruieren von der Form a = b. Der Beweis wird über ein Breath-First-Search gefunden, der Algorithmus bricht ab, sobald eine Verbindungen gefunden wurde und gibt den Beweis als direkten lean-Term zurück.
 
 ## E-Graph Erweiterungen (Phase 01)
 
-### _try_case_split
+### _try_case_split (1)
 (wird aufgerufen wenn congruence closure, propagation nicht mehr weiter kommen)
 Wenn ein Or existiert, kopiere den Graphen:
 - nehme die linke Seite (Term) an, versuche eine Contradiction zu finden
-- gleiches mit der rechten
+- gleiches mit der rechten Seiten
 
 ### _do_propositional_constraint_propagation
 (Es werden keine neuen Nodes erstellt, nur Existierende geunioned)
@@ -68,7 +64,7 @@ Erstellt neue Nodes für die rechte Seite (falls noch nicht existent), erstellt 
 ### _binary_connective_args und _unary_connective_args
 Helper-Funktion für die Propagator und Pusher um zu checken ob es sich um AND, OR, IMP oder NOT handelt.
 
-### _try_case_split 
-//TODO: Erklärung
+### _try_case_split (2)
+Schließlich, wenn nichts mehr zu tun ist, wird eine Prop-Node gesucht, die noch keinem Wahrheitswert (True/False) zugewiesen wurde. Nun wird einmal diese Prop auf True gesetzt, und einmal auf False. Wenn in beiden Fällen ein Widerspruch auftritt, dann kann daraus der Beweis konstruiert werden (law of the excluded middle).
 
 
