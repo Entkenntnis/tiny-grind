@@ -48,7 +48,7 @@ Run only one problem with e.g. `uv run main.py --theorem phase10_example03`.
 
 ## AI Disclosure
 
-We have used several LLMs to do research and review our code. Most test cases in the problems folder are automatically generated. we take full responsibility for the correctness of the final code in this repository.
+We have used several LLMs to do research, scaffold and review our code. Most test cases in the problems folder are automatically generated. we take full responsibility for the correctness of the final code in this repository.
 
 ## Sources
 
